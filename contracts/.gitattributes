@@ -1,0 +1,4 @@
+src/v3/** text eol=lf
+test/AccountV3*.sol text eol=lf
+dependency-integrity.json text eol=lf
+deployments/**/*.tar.gz binary

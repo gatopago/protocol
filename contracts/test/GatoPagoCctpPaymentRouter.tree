@@ -1,0 +1,20 @@
+pay
+├── given valid authorization and supported finality
+│   ├── pulls gross payer amount atomically
+│   ├── sends platform fee to treasury
+│   ├── burns the remainder through CCTP
+│   └── guarantees burn minus max CCTP fee is at least merchant settlement
+├── given Base/Fast capability
+│   └── accepts 1000 and 2000 finality
+├── given Avalanche/no-Fast capability
+│   ├── rejects 1000
+│   └── accepts 2000
+├── given wrong destination, payer, signature, fee or time window
+│   └── reverts before moving funds
+└── given replayed attempt or paid intent on this source chain
+    └── reverts
+
+administration
+├── owner rotates signer, treasury and guardian
+├── guardian can pause but never unpause
+└── configured fee cap is immutable and bounded to 1 percent

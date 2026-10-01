@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gatopago.example/schemas/contract-deployment-manifest-v1.json",
+  "title": "GatoPago contract deployment manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "chainId",
+    "contractName",
+    "address",
+    "transactionHash",
+    "blockNumber",
+    "deployer",
+    "constructorArguments",
+    "runtimeBytecodeHash",
+    "runtimeBytecodeChecks",
+    "roles",
+    "compiler",
+    "source",
+    "createdAt"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "chainId": { "type": "integer", "minimum": 1 },
+    "contractName": { "type": "string", "minLength": 1 },
+    "address": { "$ref": "#/$defs/address" },
+    "transactionHash": { "$ref": "#/$defs/hash" },
+    "blockNumber": { "type": "integer", "minimum": 0 },
+    "deployer": { "$ref": "#/$defs/address" },
+    "constructorArguments": { "type": "array" },
+    "runtimeBytecodeHash": { "$ref": "#/$defs/hash" },
+    "runtimeBytecodeChecks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latest", "deploymentBlock"],
+      "properties": {
+        "latest": { "const": true },
+        "deploymentBlock": { "type": "boolean" }
+      }
+    },
+    "roles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "owner",
+        "treasury",
+        "authorizationSigner",
+        "pauseGuardian",
+        "pendingOwner",
+        "ownershipAccepted"
+      ],
+      "properties": {
+        "owner": { "$ref": "#/$defs/address" },
+        "treasury": { "$ref": "#/$defs/address" },
+        "authorizationSigner": {
+          "oneOf": [{ "$ref": "#/$defs/address" }, { "type": "null" }]
+        },
+        "pauseGuardian": {
+          "oneOf": [{ "$ref": "#/$defs/address" }, { "type": "null" }]
+        },
+        "pendingOwner": { "$ref": "#/$defs/address" },
+        "ownershipAccepted": { "const": true }
+      }
+    },
+    "compiler": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["solc", "viaIr", "evmVersion", "optimizer", "optimizerRuns"],
+      "properties": {
+        "solc": { "const": "0.8.34" },
+        "viaIr": { "const": true },
+        "evmVersion": { "const": "cancun" },
+        "optimizer": { "const": true },
+        "optimizerRuns": { "const": 1000000 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "commit",
+        "matchesCurrentHead",
+        "worktreeDirty",
+        "broadcastFile",
+        "verification"
+      ],
+      "properties": {
+        "commit": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+        "matchesCurrentHead": { "type": "boolean" },
+        "worktreeDirty": { "type": "boolean" },
+        "broadcastFile": { "type": "string" },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "url"],
+          "properties": {
+            "status": { "enum": ["pending", "verified"] },
+            "url": { "type": ["string", "null"] }
+          }
+        }
+      }
+    },
+    "createdAt": { "type": "string", "format": "date-time" }
+  },
+  "$defs": {
+    "address": { "type": "string", "pattern": "^0x[0-9a-f]{40}$" },
+    "hash": { "type": "string", "pattern": "^0x[0-9a-f]{64}$" }
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "chainId": 43113,
+  "contractName": "ParmeliaCrosschainRouter",
+  "address": "0x64424c87e70f3973aaca3f3ab40593b994a52d06",
+  "transactionHash": "0xe0bc8d58fb68b9a4db48e27c46338de9acd473681e63a43a5e3a85440e4d9b6e",
+  "blockNumber": 58106537,
+  "deployer": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+  "constructorArguments": [
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x5425890298aed601595a70AB815c96711a31Bc65",
+    "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "[3]"
+  ],
+  "runtimeBytecodeHash": "0xa3d76f4c42192e7f2970ce390a74cdb865a29855fe33b7bb143d201ef835a580",
+  "runtimeBytecodeChecks": {
+    "latest": true,
+    "deploymentBlock": true
+  },
+  "roles": {
+    "owner": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "treasury": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "authorizationSigner": null,
+    "pauseGuardian": null,
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "ownershipAccepted": true
+  },
+  "compiler": {
+    "solc": "0.8.34",
+    "viaIr": true,
+    "evmVersion": "cancun",
+    "optimizer": true,
+    "optimizerRuns": 1000000
+  },
+  "source": {
+    "commit": "4161cd66001874dea44c9fa8c323dd6bd1907031",
+    "matchesCurrentHead": true,
+    "worktreeDirty": true,
+    "broadcastFile": "contracts/broadcast/Deploy.s.sol/43113/run-1788227060567.json",
+    "verification": {
+      "status": "verified",
+      "url": "https://sourcify.dev/server/v2/contract/43113/0x64424C87E70F3973AAcA3F3Ab40593B994A52d06"
+    }
+  },
+  "createdAt": "2026-09-01T01:48:14.487Z"
+}

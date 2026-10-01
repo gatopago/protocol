@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "purpose": "local-test-artifacts-not-deployment-attestation",
+  "compiler": "solc-0.8.34",
+  "foundry_toml_sha256": "ca940be659877043f78014757c6357911b6b32a53bf2f768720b2b53648688ae",
+  "artifacts": [
+    {
+      "name": "EntryPoint",
+      "compiled_artifact_sha256": "9e8123523460910b2015697bb155ba56cdc3f09a714e8af8d3a6991f21b12cb3",
+      "snapshot_sha256": "af4dc5befdc93a415040e0f5ca7ea699b0bfa65f4224e6c8d454da6b9f45254d"
+    },
+    {
+      "name": "AccountV3Security",
+      "compiled_artifact_sha256": "1a876dcfcc0a6526e399b09c573f4cb023f7188c535c1213551965676bc32b52",
+      "snapshot_sha256": "7acb0963bb4005906cdce8c1d21ac4166ff47769606218c43b40d7e476f4d381"
+    },
+    {
+      "name": "AccountV3Upgrade",
+      "compiled_artifact_sha256": "5c9174ce54d299f35d0575b8a64c2202a7d4ce3b254927bbcd8d4ee60e0b046f",
+      "snapshot_sha256": "b5b13f2e6e4ddf0c60e2cf9163a942cc85b2d6bc7b3b6acf8c9f0bb557f85090"
+    },
+    {
+      "name": "AccountV3",
+      "compiled_artifact_sha256": "05cb7d3a0fc1ee41718ef4e3bae16f7d6e16a057486d67075d8a7642c45b76d3",
+      "snapshot_sha256": "8d903effbcaafe794a1246f8d4205092f918b2b2419a379d249f9e9897d1e7bb"
+    },
+    {
+      "name": "AccountFactoryV3",
+      "compiled_artifact_sha256": "adb92cd9cfbc90e860b6c2fe8994f086d2685c1b1a0bb5e5826830b8b6d6c6db",
+      "snapshot_sha256": "fb889924f5517576e3f7a871ba46fd075d6aad3d1dfc357acb7e15933568d741"
+    },
+    {
+      "name": "AccountV3WebAuthnVerifier",
+      "compiled_artifact_sha256": "efa8b2f5cdcf2da44a85b92cad5dbc53007c7c5df7b9defe8d546571d0ed3c95",
+      "snapshot_sha256": "bf22c70b30bd24c64ede238c93ad7a270ca06f2e0feddfa1606c49f38c1691e3"
+    },
+    {
+      "name": "AccountV3Proxy",
+      "compiled_artifact_sha256": "385528886e343440b75ad12bd4c00cffff2ca317e36fa85b5f788c69bfb1d6e7",
+      "snapshot_sha256": "af858c3d3e8be7ddfae86a304be161193a1675a785687d426572e10aed33062f"
+    },
+    {
+      "name": "GatoPagoPaymaster",
+      "compiled_artifact_sha256": "c15633e5795a0cba791a5de0fe41a32fa15ebbe703ba683f84ff3f6119300ab5",
+      "snapshot_sha256": "ab85e17f9afc7c3681ee0cf82ed41958879e372520c2b41f84f7600f45330896"
+    },
+    {
+      "name": "AccountV3Interop",
+      "compiled_artifact_sha256": "09837aae61d7829aa4a7bddcd1b63546244ea1215c9a66916dcbebfeb4837107",
+      "snapshot_sha256": "aa19ce4fd2ca20b8e9a89473a854ccecb72c87be1040c36371304fce25465698"
+    },
+    {
+      "name": "AccountV3Execution",
+      "compiled_artifact_sha256": "62a748bf07da7f9b04d5215e478fde8d04cdb46324cc23092359c2cae0d2775e",
+      "snapshot_sha256": "8443b8f16f3cd05cf1d197ae9a9f401bac58b6760009457d08592cce0056978c"
+    }
+  ]
+}

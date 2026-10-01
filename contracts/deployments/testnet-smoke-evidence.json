@@ -1,0 +1,219 @@
+{
+  "schemaVersion": 1,
+  "environment": "testnet",
+  "createdAt": "2026-08-24T05:12:08Z",
+  "operator": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "smokeAmountAtomic": "100000",
+  "usdcDecimals": 6,
+  "deploymentManifests": [
+    "contracts/deployments/421614/payment-router-v2.json",
+    "contracts/deployments/84532/cctp-payment-router.json",
+    "contracts/deployments/43113/cctp-payment-router.json",
+    "contracts/deployments/421614/crosschain-router.json"
+  ],
+  "routes": [
+    {
+      "id": "arbitrum-local",
+      "kind": "same-chain-payment",
+      "sourceChainId": 421614,
+      "settlementChainId": 421614,
+      "router": "0x64e0B48A4D360B235C3fEDe2431D79413aebb7A4",
+      "intentId": "0x6c543ca009bcb1578c9d1dc282f2073ae1ee98ab688edae04809572abe8a16e0",
+      "attemptId": "0x7f33425cf0d463de139f10c517de7481cad286a3908a8f33a5d70240187cf064",
+      "broadcastFile": "contracts/broadcast/SmokeUniversalCheckout.s.sol/421614/run-1787547050303.json",
+      "sourceTransaction": {
+        "hash": "0x27c3261d9a22558acc64d61c71ada3e94253531ce9829fd9c2490ff47f909fe0",
+        "blockNumber": 301399736,
+        "blockHash": "0xc62f00659341b3329c55751c50ccdebb0f3aed4ffe7488cc930004c2da34d679",
+        "timestamp": "2026-08-24T04:50:48Z",
+        "status": "success",
+        "gasUsed": 148370,
+        "logCount": 3
+      },
+      "postconditions": {
+        "paidIntent": true,
+        "usedAttempt": true,
+        "routerUsdcBalanceAtomic": "0"
+      }
+    },
+    {
+      "id": "base-to-arbitrum",
+      "kind": "cctp-payment",
+      "sourceChainId": 84532,
+      "settlementChainId": 421614,
+      "router": "0x961C08Bd5a11EFB7264B06d7f14a44FB4d9958Ba",
+      "intentId": "0xa4fbd8d9bdb8d3238deb043bd53d62d6901a6df0fe0c016e473308508a223af1",
+      "attemptId": "0x834b2f942dc6fb1b5b48f8fe0cd4c8cc6e55ef39e118b6ce9a5de89dc6004a53",
+      "broadcastFile": "contracts/broadcast/SmokeUniversalCheckout.s.sol/84532/run-1787547130658.json",
+      "sourceTransaction": {
+        "hash": "0xe7bb87277875d7a3e2c9ee7cd35c80b90316386c52af67df74a88b2a636bc071",
+        "blockNumber": 45889422,
+        "blockHash": "0xcff78e5b38197d59c215b416c7ea50bb3be50afc718e135a75d101813bfbb674",
+        "timestamp": "2026-08-24T04:52:12Z",
+        "status": "success",
+        "gasUsed": 245689,
+        "logCount": 9
+      },
+      "postconditions": {
+        "paidIntent": true,
+        "usedAttempt": true,
+        "routerUsdcBalanceAtomic": "0"
+      }
+    },
+    {
+      "id": "fuji-to-arbitrum",
+      "kind": "cctp-payment",
+      "sourceChainId": 43113,
+      "settlementChainId": 421614,
+      "router": "0xd8289B87b155e8691Da192b12E12E2b592fE7D1E",
+      "intentId": "0x2d8b578c38d279f86540b22be26ff1b1b9a2a69c62eb0ec8cf0d7a949fe0cb06",
+      "attemptId": "0xb6cd8d0c24525237013942c44622c618de15c96dd589abd8fae4a0ab8cbab25d",
+      "broadcastFile": "contracts/broadcast/SmokeUniversalCheckout.s.sol/43113/run-1787547938570.json",
+      "sourceTransaction": {
+        "hash": "0x8b692d553801c3436f2db3c3875c956940fdc39f3129f29f0d40ffd8f1fccea0",
+        "blockNumber": 57934524,
+        "blockHash": "0xb826a1ebb0a45b0a6eb2522327e69d57ddcbd15cade0cac0a01d795bdbb53e73",
+        "timestamp": "2026-08-24T05:05:36Z",
+        "status": "success",
+        "gasUsed": 318727,
+        "logCount": 9
+      },
+      "postconditions": {
+        "paidIntent": true,
+        "usedAttempt": true,
+        "routerUsdcBalanceAtomic": "0"
+      }
+    },
+    {
+      "id": "arbitrum-to-fuji-outbound",
+      "kind": "cctp-outbound",
+      "sourceChainId": 421614,
+      "settlementChainId": 43113,
+      "router": "0xD089c3764a8F2E62eFDf280Eb2432c1dC647400c",
+      "opId": "0xcd31bdad2ffb1f10fbe1477eb588e097eef034b6cc463adcadef8031ca8f4507",
+      "broadcastFile": "contracts/broadcast/SmokeUniversalCheckout.s.sol/421614/run-1787547202672.json",
+      "permitTransaction": {
+        "hash": "0x8e6cc4d428a3d17f498c4cf01f05af146b99c34508990c0c7ec68ad86d644e51",
+        "blockNumber": 301400332,
+        "blockHash": "0xf7ac68a77ba879d7691273c941a55fa5e99ca89fc5de952ef83e09541b42a19a",
+        "timestamp": "2026-08-24T04:53:17Z",
+        "status": "success",
+        "gasUsed": 73791,
+        "logCount": 1
+      },
+      "sourceTransaction": {
+        "hash": "0xa4741fd805f2b8f4d815875fc39d9136ab25716ca2e305212cc21235bb722364",
+        "blockNumber": 301400344,
+        "blockHash": "0x83cd07b44667a646c212fca27de766ebb2762e49886334174e96f5fe458f8548",
+        "timestamp": "2026-08-24T04:53:20Z",
+        "status": "success",
+        "gasUsed": 169782,
+        "logCount": 8
+      },
+      "postconditions": {
+        "usedOpId": true,
+        "routerUsdcBalanceAtomic": "0"
+      }
+    }
+  ],
+  "cctpMessages": [
+    {
+      "routeId": "base-to-arbitrum",
+      "cctpVersion": 2,
+      "status": "complete",
+      "eventNonce": "0x5729a65f386fde912f6099a882a849857e745296b4c48527203f298ebed468ae",
+      "sourceDomain": 6,
+      "destinationDomain": 3,
+      "destinationCaller": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "minFinalityThreshold": 2000,
+      "finalityThresholdExecuted": 2000,
+      "amountAtomic": "100000",
+      "maxFeeAtomic": "0",
+      "feeExecutedAtomic": "0",
+      "destinationNonceUsed": true,
+      "destinationTransaction": {
+        "hash": "0x849df136cc6176d489436bd2114dbc8498a850d1417ee5fb09567b1b363ce3e2",
+        "chainId": 421614,
+        "blockNumber": 301404543,
+        "blockHash": "0x4ba288623735ab065d99093b2c558b368ef60f50e99c1276dfa391d6b5947fd3",
+        "timestamp": "2026-08-24T05:10:45Z",
+        "status": "success",
+        "gasUsed": 193638,
+        "logCount": 4
+      }
+    },
+    {
+      "routeId": "fuji-to-arbitrum",
+      "cctpVersion": 2,
+      "status": "complete",
+      "eventNonce": "0x7b5a88b79361ce0cceafdc627489467deb847e9afed2912eb5fa5dd3abf411e9",
+      "sourceDomain": 1,
+      "destinationDomain": 3,
+      "destinationCaller": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "minFinalityThreshold": 2000,
+      "finalityThresholdExecuted": 2000,
+      "amountAtomic": "100000",
+      "maxFeeAtomic": "0",
+      "feeExecutedAtomic": "0",
+      "destinationNonceUsed": true,
+      "destinationTransaction": {
+        "hash": "0x441bc801018d2dd8f66a8ca959820e1fa26e6cbb798a481e3db629eaf159268a",
+        "chainId": 421614,
+        "blockNumber": 301403465,
+        "blockHash": "0x860c864ddf6debe274fe526e9c6fc6e3a68559532935e1b7672325096ce76721",
+        "timestamp": "2026-08-24T05:06:19Z",
+        "status": "success",
+        "gasUsed": 154152,
+        "logCount": 4
+      }
+    },
+    {
+      "routeId": "arbitrum-to-fuji-outbound",
+      "cctpVersion": 2,
+      "status": "complete",
+      "eventNonce": "0xcc927e113f1cca68e7027700083abcc2d95417f4c0b198be5654809cfd134bcb",
+      "sourceDomain": 3,
+      "destinationDomain": 1,
+      "destinationCaller": "0x0000000000000000000000000000000000000000000000000000000000000000",
+      "minFinalityThreshold": 2000,
+      "finalityThresholdExecuted": 2000,
+      "amountAtomic": "100000",
+      "maxFeeAtomic": "0",
+      "feeExecutedAtomic": "0",
+      "destinationNonceUsed": true,
+      "destinationTransaction": {
+        "hash": "0x7bb5b42292ecf3adb74c2be469d5b4c5afe9b4f47225d85743f316490d99aa44",
+        "chainId": 43113,
+        "blockNumber": 57934599,
+        "blockHash": "0x6477cf19fa28c118b5080b137f9819d66fa44cf8f27e38b641d0b75c51faac97",
+        "timestamp": "2026-08-24T05:09:59Z",
+        "status": "success",
+        "gasUsed": 500000,
+        "logCount": 4
+      }
+    }
+  ],
+  "walletUsdcBalanceSnapshot": [
+    {
+      "chainId": 421614,
+      "amountAtomic": "12100000"
+    },
+    {
+      "chainId": 84532,
+      "amountAtomic": "21899740"
+    },
+    {
+      "chainId": 43113,
+      "amountAtomic": "20000000"
+    }
+  ],
+  "gates": {
+    "allReceiptsSuccessful": true,
+    "allSourceIdsConsumed": true,
+    "allRoutersRetainZeroUsdc": true,
+    "allCctpMessagesComplete": true,
+    "allDestinationNoncesUsed": true,
+    "allDeploymentSourcesExactMatch": true,
+    "mainnetPaymentSourcesEnabled": false
+  }
+}

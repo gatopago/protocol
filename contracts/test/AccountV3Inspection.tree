@@ -1,0 +1,18 @@
+AccountFactoryV3 composition and read-only account inspection
+├── given creation dependencies
+│   ├── partial account, wrong layout, UUPS slot or upgrade library metadata -> reject factory construction
+│   ├── both fixed library hashes -> capture and enforce runtime drift
+│   └── real EntryPoint -> unchanged gas/validation rules, full Account execution (no auth probe override)
+│       └── trace includes library initialization AND production signature predicate
+├── given counterfactual or pending creation
+│   ├── absent code -> report not deployed; never create or reserve
+│   └── initialized but not validated -> observe identity only, never mark spend-ready
+├── given user-authorized UUPS upgrade
+│   ├── stale expectation -> reject without calling unknown delegated getters
+│   ├── current expectation -> same address, actual implementation/version, no writes
+│   ├── original initializer -> cannot overwrite upgraded implementation
+│   └── retired initial implementation -> current inspection and direct spend still work
+└── given adversarial current state
+    ├── any expected tuple field, proxy, identity, code or library mismatch -> reject
+    ├── security proposal/freeze -> no mutation or reset
+    └── upgrade library unavailable -> full-profile inspection fails, independent direct exit remains usable

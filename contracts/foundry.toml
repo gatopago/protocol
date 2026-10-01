@@ -1,0 +1,26 @@
+[profile.default]
+src = "src"
+out = "out"
+libs = ["lib"]
+allow_paths = ["node_modules/@gatopago/entrypoint-source"]
+# Required by the executable V3 opcode-trace regression (not merely verbose logging).
+verbosity = 3
+remappings = ["@openzeppelin/=lib/openzeppelin-contracts/", "@entrypoint/=node_modules/@gatopago/entrypoint-source/contracts/"]
+fs_permissions = [{ access = "read", path = "test/fixtures" }]
+# Pin the exact compiler: every future CREATE2 address derives from this
+# bytecode. The testnet addresses produced with 0.8.28 remain historical
+# deployments; changing this value requires a new manifest and redeploy.
+# 0.8.34 is the first release containing the via-IR transient-storage fix.
+solc = "0.8.34"
+via_ir = true
+evm_version = "cancun"
+optimizer = true
+# V3 clean testnet cut: the inherited V2 1,000,000-run profile makes the full
+# Account V3 + UUPS exceed EIP-170. The measured 200-run profile retains the
+# ECDSA first-spend regression and restores code headroom. Consumer software-P256
+# creation exceeds 496,000 verification gas; public bundler admission is NOT proven.
+# This changes bytecode/CREATE2 predictions: never reuse historical manifests.
+# Pin this profile for all new V3 implementations, fixed libraries and factories.
+optimizer_runs = 200
+
+# See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options

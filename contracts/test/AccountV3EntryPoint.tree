@@ -1,0 +1,23 @@
+AccountV3EntryPoint with official EntryPoint v0.9 source
+├── undeployed counterfactual account
+│   ├── valid possession and UserOp signature -> create, validate, execute, charge prefund
+│   ├── bad possession -> rollback creation and prefund
+│   ├── bad UserOp signature or tampered gas -> rollback creation and prefund
+│   ├── creation or operation window excluded -> rollback at EntryPoint validation
+│   ├── two ECDSA signers and counterfactual prefund -> fit 500,000 verification gas
+│   ├── canonical estimation slack -> also fit 496,000 without changing prefund/signatures
+│   └── valid validation but reverted execution -> preserve account, charge gas, consume nonce
+├── already deployed account
+│   ├── stale initCode -> ignore without resetting authority or creation window
+│   ├── replay -> reject nonce
+│   └── two signed operations -> validate and execute both
+├── pending creation (isolated SenderCreator caller fixture)
+│   ├── external security transitions -> blocked until EntryPoint validation
+│   └── expired validation -> reject and preserve persistent pending window
+├── direct caller is not EntryPoint -> reject validation and execution
+└── validation trace
+    └── factory/account/linked-initializer frames must not read clock, balances or EntryPoint code
+
+These tests use full production Account V3 validation/execution and both linked libraries.
+The acknowledgement is an external action invoked through the real signed CALL path.
+They do not claim bundler admission, remote deployment, physical passkeys or a mainnet gate.

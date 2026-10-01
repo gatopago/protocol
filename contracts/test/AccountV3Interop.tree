@@ -1,0 +1,22 @@
+AccountV3Interop
+├── given an active, fully initialized account
+│   ├── valid SPEND quorum: return magic, no nonce/write/log, any caller
+│   ├── change account, chain, generation, version or app hash: invalid
+│   ├── shared signers across accounts: no signature replay
+│   ├── raw owner, execution or admin digest: no cross-purpose authorization
+│   ├── missing/duplicate/non-SPEND/oversized/malformed votes: fail closed
+│   ├── application nonce/domain/deadline: consumer enforces them, not the wallet
+│   ├── callback during signed CALL: read-only approval remains usable
+│   ├── actual WebAuthn assertion: approve using current active policy
+│   └── trace: no SSTORE/TSTORE/LOG/TIMESTAMP/BLOCKNUMBER, fixed library observed
+├── given implementation or creation pending: no application authority
+├── given a policy transition
+│   ├── prepared: old policy remains authoritative
+│   ├── committed: old signatures invalid, even with updated envelope version
+│   └── empty/unreachable policy never becomes active
+├── given linked library code drift: fail closed
+├── native/ERC721/ERC1155 single and batch receipts
+│   └── authenticated direct CALL can transfer all received assets out
+└── introspection
+    ├── advertise only actual 165/1271/4337/5267/receiver interfaces
+    └── domain matches signing digest, proxy address and current chain

@@ -1,0 +1,53 @@
+{
+  "local": {
+    "domain": {
+      "name": "GatoPago Payment Router",
+      "version": "2",
+      "chainId": 421614,
+      "verifyingContract": "0x1111111111111111111111111111111111111111"
+    },
+    "primaryType": "PaymentAuthorization",
+    "message": {
+      "intentId": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "attemptId": "0x0000000000000000000000000000000000000000000000000000000000000002",
+      "payer": "0x2222222222222222222222222222222222222222",
+      "merchant": "0x3333333333333333333333333333333333333333",
+      "settlementAmount": 100000000,
+      "platformFee": 250000,
+      "validAfter": 1787540000,
+      "validUntil": 1787540600,
+      "metadataHash": "0x4444444444444444444444444444444444444444444444444444444444444444"
+    },
+    "expectedTypeHash": "0xa00df1f8134ed2bb93a00a66ffd91c4dfbd85c7ffd0c084117879d9c7e96a0da",
+    "expectedStructHash": "0xb6fef89ea4c4f623f0c71b35e3583dd6db92396fd64697c06f04283fba9c2834",
+    "expectedDigest": "0xf911ca5742f27b007b6d7c51c456edd43b54a36c5c03dc19bbf3ea91c554879c"
+  },
+  "cctp": {
+    "domain": {
+      "name": "GatoPago CCTP Payment Router",
+      "version": "1",
+      "chainId": 84532,
+      "verifyingContract": "0x4444444444444444444444444444444444444444"
+    },
+    "primaryType": "CctpPaymentAuthorization",
+    "message": {
+      "intentId": "0x00000000000000000000000000000000000000000000000000000000000000a1",
+      "attemptId": "0x00000000000000000000000000000000000000000000000000000000000000a2",
+      "payer": "0x5555555555555555555555555555555555555555",
+      "merchant": "0x6666666666666666666666666666666666666666",
+      "settlementChainId": 421614,
+      "destinationDomain": 3,
+      "settlementAmount": 100000000,
+      "grossPayerAmount": 100150000,
+      "platformFee": 0,
+      "maxCctpFee": 150000,
+      "minFinalityThreshold": 1000,
+      "validAfter": 1787540000,
+      "validUntil": 1787540600,
+      "metadataHash": "0x7777777777777777777777777777777777777777777777777777777777777777"
+    },
+    "expectedTypeHash": "0x29751e5c144b8d9409ab8def4c175496e24b590e840501ed5c648a31a0bc84ec",
+    "expectedStructHash": "0x5e7c9f504b3ebc0ab5039b027933b6f34ec6970695c830a9177ea8d99a3ab682",
+    "expectedDigest": "0x9ee41363a2611c2c97856e98d00499e02138ad336a60660e63634e5597340b49"
+  }
+}

@@ -1,0 +1,48 @@
+lockfileVersion: '9.0'
+
+settings:
+  autoInstallPeers: true
+  excludeLinksFromLockfile: false
+
+overrides:
+  typescript: 6.0.3
+  browserslist@<4.28.7: 4.28.8
+  baseline-browser-mapping@<2.11.0: 2.11.20
+  '@grpc/grpc-js@<1.9.16': '>=1.9.16'
+  protobufjs@<7.6.3: '>=7.6.3'
+  ws@<8.21.0: '>=8.21.0'
+  esbuild@>=0.18.0 <0.28.1: '>=0.28.1'
+  picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
+  postcss@<8.5.23: '>=8.5.23'
+  nanoid@<3.3.18: '>=3.3.18'
+  websocket-driver@<0.7.5: '>=0.7.5'
+  slow-redact: 0.3.1
+  '@peculiar/asn1-android': 2.8.0
+  '@peculiar/asn1-cms': 2.8.0
+  '@peculiar/asn1-csr': 2.8.0
+  '@peculiar/asn1-ecc': 2.8.0
+  '@peculiar/asn1-pfx': 2.8.0
+  '@peculiar/asn1-pkcs8': 2.8.0
+  '@peculiar/asn1-pkcs9': 2.8.0
+  '@peculiar/asn1-rsa': 2.8.0
+  '@peculiar/asn1-schema': 2.8.0
+  '@peculiar/asn1-x509': 2.8.0
+  '@peculiar/asn1-x509-attr': 2.8.0
+
+importers:
+
+  .:
+    devDependencies:
+      '@gatopago/entrypoint-source':
+        specifier: https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410
+        version: accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410
+
+packages:
+
+  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410:
+    resolution: {tarball: https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410}
+    version: 0.9.0
+
+snapshots:
+
+  accountabstraction@https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410: {}

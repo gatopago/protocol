@@ -1,0 +1,24 @@
+AccountV3Policy / AccountV3Signatures
+├── given a policy candidate
+│   ├── when count, mode, roles, lengths, delays or thresholds are invalid -> reject
+│   ├── when legacy mode or RECOVERY role is supplied -> deny
+│   ├── when key is repeated through verifier/RP/kind aliases -> reject
+│   ├── when membership is duplicated or unsorted -> reject
+│   ├── when SPEND or ADMIN thresholds cannot be reached -> reject
+│   └── when independent thresholds are reachable -> preserve the TS policy hash
+├── given an explicitly typed signer
+│   ├── ECDSA -> OZ recovery, low-S, exact digest; never automatic ERC-1271 dispatch
+│   ├── WebAuthn -> actual pinned V3 verifier, exact TS wire bytes, bounded gas
+│   └── ERC-1271 -> exact wallet/key/codehash and live revocable signature validation
+│       ├── changed/revoked wallet authorization -> deny
+│       ├── absent or changed verifier code -> deny
+│       ├── revert, gas exhaustion, short/malformed/wrong magic -> deny
+│       └── state-writing callback -> staticcall prevents mutation
+└── given a quorum request
+    ├── when role is unknown or combined -> deny
+    ├── when too few/many, repeated or out-of-range members -> deny
+    ├── when an extra signature is invalid -> deny the entire set
+    ├── when signatures belong to another digest/role -> deny
+    └── when distinct current members satisfy the selected threshold -> accept
+        ├── user-owned consumer key can spend and administer without GatoPago
+        └── no support/email/assisted authority exists

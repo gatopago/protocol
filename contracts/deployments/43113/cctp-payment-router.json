@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "chainId": 43113,
+  "contractName": "ParmeliaCctpPaymentRouter",
+  "address": "0xd8289b87b155e8691da192b12e12e2b592fe7d1e",
+  "transactionHash": "0x1cdd667076100b11abd55717265090a67abd0343e9935ed32f8291462db9babf",
+  "blockNumber": 57934363,
+  "deployer": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+  "constructorArguments": [
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x5425890298aed601595a70AB815c96711a31Bc65",
+    "0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "421614",
+    "false",
+    "0"
+  ],
+  "runtimeBytecodeHash": "0x7b0fb6ed9fc96bc6a37d9c222ff0180e4ff559fb0beed6d0b1bcd8a937027c6c",
+  "runtimeBytecodeChecks": {
+    "latest": true,
+    "deploymentBlock": true
+  },
+  "roles": {
+    "owner": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "treasury": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "authorizationSigner": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "pauseGuardian": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "ownershipAccepted": true
+  },
+  "compiler": {
+    "solc": "0.8.34",
+    "viaIr": true,
+    "evmVersion": "cancun",
+    "optimizer": true,
+    "optimizerRuns": 1000000
+  },
+  "source": {
+    "commit": "60e36bfdc4f6afa80a71dcc232129741a49ba7ee",
+    "matchesCurrentHead": true,
+    "worktreeDirty": true,
+    "broadcastFile": "contracts/broadcast/Deploy.s.sol/43113/run-1787546921276.json",
+    "verification": {
+      "status": "verified",
+      "url": "https://sourcify.dev/server/v2/contract/43113/0xd8289B87b155e8691Da192b12E12E2b592fE7D1E"
+    }
+  },
+  "createdAt": "2026-08-24T04:48:55.965Z"
+}

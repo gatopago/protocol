@@ -1,0 +1,23 @@
+AccountV3 user-controlled UUPS
+├── Given the standard UUPS selector, an implementation, a proxy, a caller or EntryPoint
+│   └── It cannot bypass typed proposal and commit authority
+├── Given an active account and a proposed UpgradeManifest
+│   ├── It binds account, chain, predecessor, version, nonce, target code and layout
+│   ├── It requires distinct current ADMIN votes; spend/purpose replay never suffices
+│   ├── It rejects another pending proposal and validity shorter than the wait
+│   └── Its minimum 72h wait starts at acceptance, not a backdated signature
+├── Given a queued upgrade
+│   ├── Current ADMIN quorum can cancel; expiry never restores consumed nonces
+│   ├── Freeze cancels a pending upgrade irreversibly
+│   └── It needs a fresh CommitProposal, acknowledgements and current admin quorum
+├── Given target compatibility metadata
+│   ├── Wrong UUPS/layout/EntryPoint, code drift, missing or malformed responses fail
+│   ├── Every invalid target category runs deterministically and preserves the previous state
+│   └── Gas and returndata bombs fail within a bounded metadata read
+└── Given a valid mature commit
+    ├── It preserves identity, policy, funds and nonces; increments securityVersion
+    ├── Old signatures fail; new direct and EntryPoint operations still work
+    ├── Only the exact migration bytes run; reverting/corrupting migrations roll back
+    ├── Every core corruption and explicit migration revert runs deterministically with its exact error
+    ├── Spend callbacks cannot use even otherwise-valid admin consent
+    └── Fixed library drift fails closed; metadata does not replace bytecode review

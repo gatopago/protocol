@@ -1,0 +1,8 @@
+{
+  "name": "@gatopago/contract-artifacts",
+  "version": "3.1.0",
+  "private": true,
+  "type": "module",
+  "files": ["artifacts/*.json", "provenance.json"],
+  "exports": { "./*": "./artifacts/*" }
+}

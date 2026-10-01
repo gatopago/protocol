@@ -1,0 +1,19 @@
+Consumer V3 (production Account + actual local EntryPoint + software P256)
+├── create with one user-owned passkey
+│   ├── no mandatory activation/guardian/second key
+│   └── 496k verification ceiling fails atomically (public admission unresolved)
+├── spend
+│   ├── self-funded complete USDC balance transfer
+│   ├── sponsored creation without account ETH
+│   ├── replacement paymaster requires a freshly signed operation
+│   └── original paymaster unavailable -> self-funded operation still works
+├── atomic batches
+│   ├── checkout approval + payment -> exactly one settlement
+│   ├── replay -> batch rollback, no dangling approval or second payment
+│   ├── outbound burn -> scoped operation id, no remaining router allowance
+│   └── CCTP checkout -> source evidence only, NOT destination settlement
+└── optional backup
+    ├── requires current authority plus new key possession
+    ├── either consumer key may administer (1-of-N), no support authority
+    ├── backup retires old key and authorizes direct exit
+    └── empty/unreachable authority rejected

@@ -1,0 +1,11 @@
+AccountV3Enrollment.verifyChange
+├── current policy authorizes exact SecurityChange
+│   ├── existing ADMIN quorum, not prospective keys or SPEND-only signers
+│   ├── new or role-changed descriptor proves possession
+│   ├── unchanged/removed keys do not need new proof
+│   └── missing, duplicate, extra, stale, wrong-scope proofs fail
+├── consumer profile
+│   ├── one active WebAuthn key can spend and administer
+│   └── optional equivalent backup keeps SPEND/ADMIN at 1-of-N
+└── pure consent verification
+    └── account owns proposal, nonce, fresh commit and storage transitions

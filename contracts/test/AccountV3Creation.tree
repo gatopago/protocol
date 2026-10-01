@@ -1,0 +1,19 @@
+AccountFactoryV3 / AccountV3Initializable
+├── immutable deployment profile
+│   ├── missing code / mismatched EntryPoint -> reject constructor
+│   ├── changed implementation, linked library or senderCreator code -> reject creation
+│   └── EntryPoint codehash -> constructor capture plus manifest admission, never validation EXTCODE
+├── creator is not pinned senderCreator -> reject even valid proofs
+├── identity or deployment differs from signed commitment -> reject
+├── account does not exist
+│   ├── wrong scope, time window, signer index or possession -> rollback CREATE2
+│   ├── direct/rogue proxy -> reject canonical authorization/context
+│   ├── every initial signer proves consent -> one-time install
+│   ├── prefunded native/ERC20 -> preserve balances on success and rejection
+│   ├── same deployment inputs on two local chain IDs -> same address/code
+│   └── chain or authorization window differs -> require a new signature
+├── implementation/direct initializer -> locked
+├── account already exists
+│   ├── code, implementation or immutable identity differs -> reject
+│   └── same creation identity after rotation -> return without writes
+└── single active consumer WebAuthn -> spend/admin after successful creation

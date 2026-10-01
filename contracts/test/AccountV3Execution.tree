@@ -1,0 +1,21 @@
+AccountV3Execution
+├── when the first UserOperation creates the account
+│   ├── it transfers counterfactually funded native assets with real EntryPoint fees
+│   ├── it binds the canonical call array and security version
+│   └── completeCreation ends initialization; consumer needs no later activation
+├── given an active account
+│   ├── when CALL batches succeed
+│   │   ├── it transfers native assets and ERC20 through arbitrary calldata
+│   │   └── it supports 1 to 32 calls and rejects 0 or 33
+│   ├── when a target fails
+│   │   └── all asset effects roll back; EntryPoint nonce and gas remain consumed
+│   ├── when using a direct signed relay
+│   │   ├── no bundler, paymaster or GatoPago service is required
+│   │   ├── separate nonce, mode, validity and signatures prevent replay/substitution
+│   │   └── failed batches roll back direct nonce; retry is atomic
+│   ├── when callbacks attempt nested execution or security mutations
+│   │   └── reentrancy and the cross-domain executing flag block them
+│   └── when another account changes security after batch validation
+│       └── execution rechecks current version before any asset call
+└── when sender, plan, calldata, domain or authorization is wrong
+    └── reject without transferring assets

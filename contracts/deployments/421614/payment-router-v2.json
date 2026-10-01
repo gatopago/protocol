@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "chainId": 421614,
+  "contractName": "ParmeliaPaymentRouterV2",
+  "address": "0x64e0b48a4d360b235c3fede2431d79413aebb7a4",
+  "transactionHash": "0xa04f0e95ab1db2f8581d04e8bb7c21264bb0a14d96894f918191c33a5d8a9cbe",
+  "blockNumber": 301398497,
+  "deployer": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+  "constructorArguments": [
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+    "0x75464f762bc50d0A0B127ab5a085504BF102Bb88"
+  ],
+  "runtimeBytecodeHash": "0x3728f0f853f07d06d04b08317e74855c72391a9738308d3b3d49261949f2687e",
+  "runtimeBytecodeChecks": {
+    "latest": true,
+    "deploymentBlock": true
+  },
+  "roles": {
+    "owner": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "treasury": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "authorizationSigner": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "pauseGuardian": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+    "pendingOwner": "0x0000000000000000000000000000000000000000",
+    "ownershipAccepted": true
+  },
+  "compiler": {
+    "solc": "0.8.34",
+    "viaIr": true,
+    "evmVersion": "cancun",
+    "optimizer": true,
+    "optimizerRuns": 1000000
+  },
+  "source": {
+    "commit": "60e36bfdc4f6afa80a71dcc232129741a49ba7ee",
+    "matchesCurrentHead": true,
+    "worktreeDirty": true,
+    "broadcastFile": "contracts/broadcast/Deploy.s.sol/421614/run-1787546762205.json",
+    "verification": {
+      "status": "verified",
+      "url": "https://sourcify.dev/server/v2/contract/421614/0x64e0B48A4D360B235C3fEDe2431D79413aebb7A4"
+    }
+  },
+  "createdAt": "2026-08-24T04:46:42.222Z"
+}

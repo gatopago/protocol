@@ -1,0 +1,19 @@
+pay
+├── given a valid, active authorization
+│   ├── when allowance exists
+│   │   └── settles exact merchant amount, fee, replay state and metadata hash
+│   └── when a valid permit is supplied
+│       └── settles without a prior approval transaction
+├── given caller or signed economic terms differ
+│   └── reverts without moving funds or consuming replay state
+├── given attempt or intent was already settled
+│   └── reverts
+├── given authorization is early, expired or malformed
+│   └── reverts
+└── given router is paused
+    └── reverts; only owner can resume
+
+administration
+├── owner rotates treasury, signer and pause guardian
+├── pause guardian can only pause
+└── owner can rescue accidental tokens; normal settlement retains zero

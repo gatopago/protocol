@@ -1,0 +1,421 @@
+{
+  "schema_version": 1,
+  "purpose": "gatopago_v3_deployment_evidence",
+  "chain_id": 421614,
+  "network": "arbitrum-sepolia",
+  "deployer": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "verified_at": "2026-09-26T13:42:23.092459+00:00",
+  "rpc_operator": "Offchain Labs public RPC",
+  "genesis_hash": "0x77194da4010e549a7028a9c3c51c3e277823be6ac7d138d0bb8a70197b5c004c",
+  "observation": {
+    "block_number": 312937773,
+    "block_hash": "0xc613550ea9609d41496dc6bb45b899750497d8b8307f82f3c1157a90e424de26",
+    "finalized_block_number": 312934999,
+    "finalized_block_hash": "0xd654c279ec336347fb623b3d8315f1082292c754546c7e9f699149c12357fa27"
+  },
+  "entrypoint": {
+    "address": "0x433709009b8330fda32311df1c2afa402ed8d009",
+    "runtimeCodeHash": "0x66104e61203e3b9cf29303ececd9367b6329f6caa2bb063361ea75b7b92a7678",
+    "senderCreator": "0x0a630a99df908a81115a3022927be82f9299987e",
+    "senderCreatorCodeHash": "0xa7d4dd260bca9c96da49f7c0682fdda7f0074694d935815a336d3e60ee3ec6ad"
+  },
+  "create2_deployer": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
+  "components": {
+    "AccountV3Security": {
+      "address": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+      "runtimeCodeHash": "0x419956b09a94179f282782910abaacb0d36597378f837c8f29c077a0a89591e1",
+      "initCodeHash": "0x98e1649a344206c5689dc04362f3892d427c36891dcff091b74aa963fde51202",
+      "transactionHash": "0xdedf0a1af707bd346bbd3f2cae49a87fdafd5db2a4289d9fc9e556b6fb3d6a1f",
+      "blockNumber": 312936350,
+      "blockHash": "0xbaed768ca20c6de79953acfd73724e1441e3bef881d7fe581238176e28e88d86",
+      "gasUsed": 4173165,
+      "effectiveGasPrice": 29126001,
+      "runtimeMatchesCompiledArtifact": true,
+      "sourceVerification": {
+        "provider": "Sourcify",
+        "status": "exact_match",
+        "url": "https://sourcify.dev/server/v2/contract/421614/0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+        "evidence": {
+          "matchId": "52904264",
+          "creationMatch": "exact_match",
+          "runtimeMatch": "exact_match",
+          "verifiedAt": "2026-09-26T13:34:01Z",
+          "match": "exact_match",
+          "chainId": "421614",
+          "address": "0x5d35d52853f1649EB05BeeDFcE4AA2b33CF37539"
+        }
+      },
+      "explorerUrl": "https://sepolia.arbiscan.io/address/0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+      "artifactSha256": "0x1a876dcfcc0a6526e399b09c573f4cb023f7188c535c1213551965676bc32b52",
+      "receipt": {
+        "status": "0x1",
+        "transactionHash": "0xdedf0a1af707bd346bbd3f2cae49a87fdafd5db2a4289d9fc9e556b6fb3d6a1f",
+        "transactionIndex": "0xf",
+        "blockNumber": "0x12a7079e",
+        "blockHash": "0xbaed768ca20c6de79953acfd73724e1441e3bef881d7fe581238176e28e88d86",
+        "from": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+        "to": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+        "gasUsed": "0x3fad6d",
+        "effectiveGasPrice": "0x1bc6d71"
+      },
+      "compilerSettings": {
+        "remappings": [
+          "@entrypoint/=../node_modules/@gatopago/entrypoint-source/contracts/",
+          "@openzeppelin/=lib/openzeppelin-contracts/",
+          "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+          "forge-std/=lib/forge-std/src/",
+          "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+          "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 200
+        },
+        "metadata": {
+          "bytecodeHash": "ipfs"
+        },
+        "compilationTarget": {
+          "src/v3/AccountV3Security.sol": "AccountV3Security"
+        },
+        "evmVersion": "cancun",
+        "libraries": {},
+        "viaIR": true
+      }
+    },
+    "AccountV3Upgrade": {
+      "address": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10",
+      "runtimeCodeHash": "0xbe281fc7dcd894adb4265909a7bcf42914ac6ed30f4bf3edf5a1869cb476896c",
+      "initCodeHash": "0x9c37fd1b06a7a3e3fab030bb4d57dfcea86b9e93efb30445f79a6930dc6b1ab5",
+      "transactionHash": "0xef1d444a18715632f870cdf4927db67ec52aa18867a3dcfc4dfe6bae536abd45",
+      "blockNumber": 312936362,
+      "blockHash": "0xc0ecd759acfd47c1fa5960c8970ba4ac537a0c838633575ab174ea7baf8a43bd",
+      "gasUsed": 2479367,
+      "effectiveGasPrice": 29122001,
+      "runtimeMatchesCompiledArtifact": true,
+      "sourceVerification": {
+        "provider": "Sourcify",
+        "status": "exact_match",
+        "url": "https://sourcify.dev/server/v2/contract/421614/0xcfa137d56dd8eaa3fd115bfade009bd897092f10",
+        "evidence": {
+          "matchId": "52904538",
+          "creationMatch": "exact_match",
+          "runtimeMatch": "exact_match",
+          "verifiedAt": "2026-09-26T13:34:38Z",
+          "match": "exact_match",
+          "chainId": "421614",
+          "address": "0xcFA137d56DD8EaA3FD115BFaDe009bd897092F10"
+        }
+      },
+      "explorerUrl": "https://sepolia.arbiscan.io/address/0xcfa137d56dd8eaa3fd115bfade009bd897092f10",
+      "artifactSha256": "0x5c9174ce54d299f35d0575b8a64c2202a7d4ce3b254927bbcd8d4ee60e0b046f",
+      "receipt": {
+        "status": "0x1",
+        "transactionHash": "0xef1d444a18715632f870cdf4927db67ec52aa18867a3dcfc4dfe6bae536abd45",
+        "transactionIndex": "0xf",
+        "blockNumber": "0x12a707aa",
+        "blockHash": "0xc0ecd759acfd47c1fa5960c8970ba4ac537a0c838633575ab174ea7baf8a43bd",
+        "from": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+        "to": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+        "gasUsed": "0x25d507",
+        "effectiveGasPrice": "0x1bc5dd1"
+      },
+      "compilerSettings": {
+        "remappings": [
+          "@entrypoint/=../node_modules/@gatopago/entrypoint-source/contracts/",
+          "@openzeppelin/=lib/openzeppelin-contracts/",
+          "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+          "forge-std/=lib/forge-std/src/",
+          "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+          "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 200
+        },
+        "metadata": {
+          "bytecodeHash": "ipfs"
+        },
+        "compilationTarget": {
+          "src/v3/AccountV3Upgrade.sol": "AccountV3Upgrade"
+        },
+        "evmVersion": "cancun",
+        "libraries": {},
+        "viaIR": true
+      }
+    },
+    "AccountV3WebAuthnVerifier": {
+      "address": "0x33def7fd931a7df910fe7def70327cb15712c71a",
+      "runtimeCodeHash": "0xf8a1dfb1c354a462144c89eb6037f638d7a7816bc31f84246f491756aa00d0a9",
+      "initCodeHash": "0xafaa92e0897930bb12615b002fbc8248d69803f7475e484899e1efda4dc82a49",
+      "transactionHash": "0x8ae893b7d4313b8d005bac2f2c05e359778a93a5e34d693b32acf264ff4ecfbd",
+      "blockNumber": 312937265,
+      "blockHash": "0x2cfd157d5a20f84aaf8b03eac5ea43d42ddf89f25811eb5cbc55de3bf5e8b2f7",
+      "gasUsed": 1366424,
+      "effectiveGasPrice": 29146001,
+      "runtimeMatchesCompiledArtifact": true,
+      "sourceVerification": {
+        "provider": "Sourcify",
+        "status": "exact_match",
+        "url": "https://sourcify.dev/server/v2/contract/421614/0x33def7fd931a7df910fe7def70327cb15712c71a",
+        "evidence": {
+          "matchId": "52906407",
+          "creationMatch": "exact_match",
+          "runtimeMatch": "exact_match",
+          "verifiedAt": "2026-09-26T13:37:16Z",
+          "match": "exact_match",
+          "chainId": "421614",
+          "address": "0x33Def7fd931a7Df910fE7DEF70327cB15712C71A"
+        }
+      },
+      "explorerUrl": "https://sepolia.arbiscan.io/address/0x33def7fd931a7df910fe7def70327cb15712c71a",
+      "artifactSha256": "0x315f1f40d29656ba9f653cd51a90fa6ea580c808abd7b7a286e56dd7a636d2c1",
+      "receipt": {
+        "status": "0x1",
+        "transactionHash": "0x8ae893b7d4313b8d005bac2f2c05e359778a93a5e34d693b32acf264ff4ecfbd",
+        "transactionIndex": "0x5",
+        "blockNumber": "0x12a70b31",
+        "blockHash": "0x2cfd157d5a20f84aaf8b03eac5ea43d42ddf89f25811eb5cbc55de3bf5e8b2f7",
+        "from": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+        "to": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+        "gasUsed": "0x14d998",
+        "effectiveGasPrice": "0x1bcbb91"
+      },
+      "compilerSettings": {
+        "remappings": [
+          "@entrypoint/=../node_modules/@gatopago/entrypoint-source/contracts/",
+          "@openzeppelin/=lib/openzeppelin-contracts/",
+          "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+          "forge-std/=lib/forge-std/src/",
+          "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+          "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 200
+        },
+        "metadata": {
+          "bytecodeHash": "ipfs"
+        },
+        "compilationTarget": {
+          "src/v3/AccountV3WebAuthnVerifier.sol": "AccountV3WebAuthnVerifier"
+        },
+        "evmVersion": "cancun",
+        "libraries": {
+          "src/v3/AccountV3Security.sol:AccountV3Security": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+          "src/v3/AccountV3Upgrade.sol:AccountV3Upgrade": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10"
+        },
+        "viaIR": true
+      }
+    },
+    "AccountV3": {
+      "address": "0xfe909a09561632a0f9b1a5a00090a658820e4122",
+      "runtimeCodeHash": "0x61e2c0a98de282ebf0ea5aa798234935bf58d72751cbba57560a2e4ef79bd7c0",
+      "initCodeHash": "0xbaa530c8d248be06ba9db7ede83c2ccb9cd4b0dd0de70ff40d5b10ce85590d11",
+      "transactionHash": "0x42af04c29d7cecb7c199dabccf4eea4d3d52613ccb7f8fcc5e0379645026d80b",
+      "blockNumber": 312937277,
+      "blockHash": "0xdd55a986435f901ba24d3a184266e1f51fcbe002230ab961f245851c967ac20a",
+      "gasUsed": 4417720,
+      "effectiveGasPrice": 29162001,
+      "runtimeMatchesCompiledArtifact": true,
+      "sourceVerification": {
+        "provider": "Sourcify",
+        "status": "exact_match",
+        "url": "https://sourcify.dev/server/v2/contract/421614/0xfe909a09561632a0f9b1a5a00090a658820e4122",
+        "evidence": {
+          "matchId": "52906437",
+          "creationMatch": "exact_match",
+          "runtimeMatch": "exact_match",
+          "verifiedAt": "2026-09-26T13:37:43Z",
+          "match": "exact_match",
+          "chainId": "421614",
+          "address": "0xFe909a09561632a0f9b1A5a00090A658820e4122"
+        }
+      },
+      "explorerUrl": "https://sepolia.arbiscan.io/address/0xfe909a09561632a0f9b1a5a00090a658820e4122",
+      "artifactSha256": "0xc64533d83330cedd335f81a0068956cadfb79e741ff58e62739f7c35bcc373d6",
+      "receipt": {
+        "status": "0x1",
+        "transactionHash": "0x42af04c29d7cecb7c199dabccf4eea4d3d52613ccb7f8fcc5e0379645026d80b",
+        "transactionIndex": "0xd",
+        "blockNumber": "0x12a70b3d",
+        "blockHash": "0xdd55a986435f901ba24d3a184266e1f51fcbe002230ab961f245851c967ac20a",
+        "from": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+        "to": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+        "gasUsed": "0x4368b8",
+        "effectiveGasPrice": "0x1bcfa11"
+      },
+      "compilerSettings": {
+        "remappings": [
+          "@entrypoint/=../node_modules/@gatopago/entrypoint-source/contracts/",
+          "@openzeppelin/=lib/openzeppelin-contracts/",
+          "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+          "forge-std/=lib/forge-std/src/",
+          "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+          "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 200
+        },
+        "metadata": {
+          "bytecodeHash": "ipfs"
+        },
+        "compilationTarget": {
+          "src/v3/AccountV3.sol": "AccountV3"
+        },
+        "evmVersion": "cancun",
+        "libraries": {
+          "src/v3/AccountV3Security.sol:AccountV3Security": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+          "src/v3/AccountV3Upgrade.sol:AccountV3Upgrade": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10"
+        },
+        "viaIR": true
+      }
+    },
+    "AccountFactoryV3": {
+      "address": "0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+      "runtimeCodeHash": "0x83beb3526e01dd5be9f005de8e039a057b1a937688b52ad771b1d247f7d59604",
+      "initCodeHash": "0xfed0733a4a29406d785862bd1f8326f96a139fe46801f2e8a407c5acf8439645",
+      "transactionHash": "0x981a7299fb6ccbc68b578ce35a1238e9103db51c64e6de6d0515a8f8b93e9230",
+      "blockNumber": 312937289,
+      "blockHash": "0xa001c86ad97a043c09f29f52b48faa9970e2d5243fef78e59dad90766865a6c0",
+      "gasUsed": 2014444,
+      "effectiveGasPrice": 29042001,
+      "runtimeMatchesCompiledArtifact": true,
+      "sourceVerification": {
+        "provider": "Sourcify",
+        "status": "exact_match",
+        "url": "https://sourcify.dev/server/v2/contract/421614/0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+        "evidence": {
+          "matchId": "52906544",
+          "creationMatch": "exact_match",
+          "runtimeMatch": "exact_match",
+          "verifiedAt": "2026-09-26T13:37:55Z",
+          "match": "exact_match",
+          "chainId": "421614",
+          "address": "0x61C74d8F0834791db732Fba9AC022224bF3bBB5f"
+        }
+      },
+      "explorerUrl": "https://sepolia.arbiscan.io/address/0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+      "artifactSha256": "0x4a28635d9412bd0b82b514a81746c440ec6574b967729ef0b0f8ebcb34d0de0a",
+      "receipt": {
+        "status": "0x1",
+        "transactionHash": "0x981a7299fb6ccbc68b578ce35a1238e9103db51c64e6de6d0515a8f8b93e9230",
+        "transactionIndex": "0x10",
+        "blockNumber": "0x12a70b49",
+        "blockHash": "0xa001c86ad97a043c09f29f52b48faa9970e2d5243fef78e59dad90766865a6c0",
+        "from": "0x75464f762bc50d0a0b127ab5a085504bf102bb88",
+        "to": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+        "gasUsed": "0x1ebcec",
+        "effectiveGasPrice": "0x1bb2551"
+      },
+      "compilerSettings": {
+        "remappings": [
+          "@entrypoint/=../node_modules/@gatopago/entrypoint-source/contracts/",
+          "@openzeppelin/=lib/openzeppelin-contracts/",
+          "erc4626-tests/=lib/openzeppelin-contracts/lib/erc4626-tests/",
+          "forge-std/=lib/forge-std/src/",
+          "halmos-cheatcodes/=lib/openzeppelin-contracts/lib/halmos-cheatcodes/src/",
+          "openzeppelin-contracts/=lib/openzeppelin-contracts/"
+        ],
+        "optimizer": {
+          "enabled": true,
+          "runs": 200
+        },
+        "metadata": {
+          "bytecodeHash": "ipfs"
+        },
+        "compilationTarget": {
+          "src/v3/AccountFactoryV3.sol": "AccountFactoryV3"
+        },
+        "evmVersion": "cancun",
+        "libraries": {
+          "src/v3/AccountV3Security.sol:AccountV3Security": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+          "src/v3/AccountV3Upgrade.sol:AccountV3Upgrade": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10"
+        },
+        "viaIR": true
+      }
+    }
+  },
+  "identity": {
+    "initialImplementation": "0xfe909a09561632a0f9b1a5a00090a658820e4122",
+    "factory": "0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+    "proxyInitCodeHash": "0x947236caf6a186e24935d88388ceb4217c365cb02e5ff1282bf6011480d7e612",
+    "proxyRuntimeCodeHash": "0xe816d0e9aa79a8b09f84d7c4a01a456181d503afdd51ad0f41f9935228e8cac1",
+    "storageLayoutHash": "0xdcd24b64ea3d183f0c8ec0cf5f2f5a3ed15545805791416ab100c3a0ca160f49"
+  },
+  "total_transaction_cost_wei": "420910571207120",
+  "source": {
+    "base_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+    "worktree_dirty": true,
+    "compiler": "0.8.34+commit.80d5c536",
+    "foundry": "1.7.1",
+    "evm_version": "cancun",
+    "via_ir": true,
+    "optimizer_runs": 200,
+    "file_sha256": {
+      "contracts/foundry.lock": "864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+      "contracts/foundry.toml": "75b0f2e8a57cbc829ba478358af1f643b76c0d264f0c003f6d2c85da55ef4390",
+      "contracts/script/Deploy.s.sol": "dcb03cf40359df6f48bc1e31d8157257f65e3fad3cf3c83745661711ee871512",
+      "contracts/script/DeployV3.s.sol": "b998ff5dcc625c543d2e950366262ae6f4107bb8cde7b978bcae7d6e086213c7",
+      "contracts/script/DeploymentRoles.sol": "53ffe88782758a7f21d38810588025e21eff9b79a1a7cae2f313632d516fae60",
+      "contracts/script/NetworkDeploymentConfig.sol": "1d62d83443924266cb3a5f88875080ed8a6d7c162eccedd07d59117f39553070",
+      "contracts/script/SmokeUniversalCheckout.s.sol": "055fcea97509ff48f5aaf0c9206f70627f2988d961a197dc607bc7fbb07d6523",
+      "contracts/src/GatoPagoCctpPaymentRouter.sol": "2b46a8e640c135f61078012c17cf0f439d565b53e681334c3cd984d0439ca44e",
+      "contracts/src/GatoPagoCrosschainRouter.sol": "05aabaf04e990450b611c7e8e57f97ac6388519731f8c282916f8455275e3de9",
+      "contracts/src/GatoPagoPaymaster.sol": "ef62f78cbe2b6c09b24480307b216e4ed7f48170ac9ad9f1dc902987e3dc0ca4",
+      "contracts/src/GatoPagoPaymentRouter.sol": "775cf01b0673521597ec2344038c915febfd2ccb00c8a527b316e1033e0a74c6",
+      "contracts/src/interfaces/ITokenMessengerV2.sol": "64e3ae551b489aee2490cd13fd0b6c72b3835bd66d80bba46168d686d9505672",
+      "contracts/src/v3/AccountFactoryV3.sol": "6982d7918960a99c7900628923a4403db3b9786b16c93ecbebe6e7ef112b02a6",
+      "contracts/src/v3/AccountV3.sol": "e71e75a4ab23be93493753264cd8fab431f72a8d22cdb7bde7920785ac4e9954",
+      "contracts/src/v3/AccountV3Enrollment.sol": "6e1067ba7542e9c245081d163ab131f9b31ac630568b7707e9907f93170515bb",
+      "contracts/src/v3/AccountV3EntryPoint.sol": "1fbc5ac62389368b12ff758e06c6a3e1b3a4794cf5760fd285a76b92b63ed08b",
+      "contracts/src/v3/AccountV3Execution.sol": "b2eca8038d1ce42d3fabaededb70d58194ae0c93d066ab6def9352214269b262",
+      "contracts/src/v3/AccountV3Initializable.sol": "061074154dcd6431fa7443faeac2cdcf858d4c9b9711f6545d1d671c42312d91",
+      "contracts/src/v3/AccountV3Initialization.sol": "ba87b0e72510174e0762539e70927654505b7ecd72c05177459cba23f9791b79",
+      "contracts/src/v3/AccountV3Interop.sol": "5db7f0b84b233a28e5a4f88e49d9acee74ad6c13c8036534199a2b2029615d41",
+      "contracts/src/v3/AccountV3Policy.sol": "75c16fb8e37ca73e0fb2551ad49b12ac55dcc250e543cdebd24b026a4ec870e0",
+      "contracts/src/v3/AccountV3PolicyStorage.sol": "d1ce533bb30b8b87220853039a8473baa3efb750194c638240ba1c7b42a17719",
+      "contracts/src/v3/AccountV3Proxy.sol": "fe89f618d1f5e1f3edf9ecfe62f0bf60749423c2a62efb703aa1b40271da7c14",
+      "contracts/src/v3/AccountV3Security.sol": "4bc2170dab1b40f5c68f83905ea214e8d60498cfd06b36a9328e9d492ba3856e",
+      "contracts/src/v3/AccountV3SecurityModule.sol": "e0de7790c2668903f33e5908bf3095e76ec7f0b75e95039f8865ceef3d281f24",
+      "contracts/src/v3/AccountV3Signatures.sol": "766a8d9cbd9099f0d096c6ebd42d6bfed941c38627cf25066163a75844e2e17f",
+      "contracts/src/v3/AccountV3Storage.sol": "9044aeab68a61c8454ab24e5495f23ecb519cc0e0f1d70462aeb90d76601e947",
+      "contracts/src/v3/AccountV3Types.sol": "27f8b279519c32c85dfd1afa12c33a28984e57a536561fd46811aba23ca1e26b",
+      "contracts/src/v3/AccountV3Upgrade.sol": "751fc0b25c42f936d03af6e33f81adad4ae7909993ecd688062b35f90f99ed22",
+      "contracts/src/v3/AccountV3Validity.sol": "5199c9d80fd8448204644958e88acf588430fc74aedcb8d76fc85ad9729640b4",
+      "contracts/src/v3/AccountV3WebAuthnVerifier.sol": "f0ac16d8f33265f824a836869a47fb4e1531c140db14ca52b1b35dbd9c5a1c53"
+    },
+    "archive_sha256": "0x66279ff8946b0eeafb3dfb4494ba1533479cdf56e0131c5c11b706e597f71121",
+    "archive_file": "deployment-source.tar.gz",
+    "build_artifacts_file": "build-artifacts.tar.gz",
+    "build_artifacts_sha256": "0x9c9056d99ffbd1ec773ee3f039cab390aa43a4f12032481f9e2c82ea78268ddc"
+  },
+  "checks": {
+    "all_receipts_successful": true,
+    "creation_calldata_matches_simulation_and_artifacts": true,
+    "all_runtime_bytes_and_immutables_match": true,
+    "factory_and_implementation_getters_match": true,
+    "source_verification": "exact_match for all five components",
+    "browser_bundler_smoke": false,
+    "runtime_admitted": false,
+    "deployment_in_observed_finalized_block": false
+  },
+  "scope": {
+    "deployed": [
+      "AccountV3Security",
+      "AccountV3Upgrade",
+      "AccountV3WebAuthnVerifier",
+      "AccountV3",
+      "AccountFactoryV3"
+    ],
+    "not_included": [
+      "GatoPagoPaymaster",
+      "GatoPagoPaymentRouter",
+      "GatoPagoCctpPaymentRouter",
+      "GatoPagoCrosschainRouter"
+    ],
+    "runtime_admission": "Not enabled; Wallet Core and Web require creation/finality profiles, providers and smoke validation."
+  },
+  "balance_after_wei": "1078690721314709680",
+  "nonce_after": 105
+}

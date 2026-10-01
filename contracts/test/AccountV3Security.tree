@@ -1,0 +1,18 @@
+AccountV3Security
+├── prepare a SecurityChange
+│   ├── require current ADMIN, current nonce/version/manifest and a live consent window
+│   ├── each new or role-changed key proves possession of this exact proposal
+│   ├── reject another pending proposal; leave current authority unchanged
+│   └── consume nonce, store bounded deadline, require fresh current ADMIN to commit
+├── cancel
+│   ├── exact pending proposal + fresh current ADMIN quorum
+│   └── SPEND-only member, former member and replay cannot cancel
+├── expire
+│   └── clear only expired proposal; consumed nonces never return
+├── freeze upgrades
+│   └── current ADMIN; monotonic freeze, cancel pending upgrade, no asset movement
+└── invariants
+    ├── manifest/version advance exactly once per accepted policy
+    ├── account-local monotonic nonces and reachable SPEND/ADMIN
+    ├── no RECOVERY role, assisted authority or individual veto
+    └── security transitions do not move ETH/ERC20 or change implementation
