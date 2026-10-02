@@ -46,13 +46,12 @@ Los hashes y archivos anteriores identifican el contenido desplegado; ese commit
 por sí solo no lo reproduce. Los metadatos de compilación incluyen los hashes de
 las dependencias y los enlaces de cada fase.
 
-Este registro es evidencia de despliegue. El perfil de creación compartido por
-Wallet Core/Web está en `shared/v3/arbitrum-sepolia-creation.json`; se deriva de
-estos artefactos mediante `scripts/v3-deployment-profile.mjs`. La inspección
-del backend con Offchain Labs y Tenderly ya comprobó la composición en un bloque
-finalizado. Faltan los recursos de staging y el bundler para activar el entorno
-y realizar el smoke con passkey y transferencia. El checkpoint de este registro
-es la observación inicial del despliegue, anterior a esa inspección.
+This record is deployment evidence. Independent Wallet Core and Web projects
+consume the pinned creation profile through `@gatopago/shared/v3/wallet-release`.
+The previously recorded Offchain Labs and Tenderly checks verified composition
+at a finalized block; this snapshot does not prove the complete deployed
+passkey-and-transfer workflow. Its checkpoint is the initial deployment
+observation, before those checks. Production hosting remains testnet-only.
 
 Este despliegue no incluye paymaster ni routers de pagos. No se desplegaron
 cuentas de usuarios, Workers ni frontend.

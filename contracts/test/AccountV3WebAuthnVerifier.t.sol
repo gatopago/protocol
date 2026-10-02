@@ -77,7 +77,7 @@ contract AccountV3WebAuthnVerifierTest is Test {
     function test_wrongOriginsAreRejectedEvenWhenResigned() public view {
         string[5] memory origins = [
             "https://app.gatopago.com",
-            "https://staging.gatopago.com",
+            "https://other.gatopago.com",
             "https://gatopago.com/",
             "http://gatopago.com",
             "https://gatopago.com.attacker.test"

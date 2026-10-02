@@ -13,10 +13,8 @@ coverage/
 out/
 cache/
 lib/
-broadcast/**/run-*.json
-!broadcast/**/run-latest.json
-broadcast/**/dry-run/
-broadcast/*/31337/
+# Raw broadcasts can contain signed transactions and provider metadata.
+broadcast/
 lcov.info
 docs/
 .DS_Store

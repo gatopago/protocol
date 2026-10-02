@@ -26,7 +26,7 @@ duplicated in the repository.
 After broadcasting and verifying source, generate one manifest per router:
 
 Use the immutable timestamped `run-<timestamp>.json` path in the final manifest;
-`run-latest.json` is only a convenient staging pointer and can be overwritten by
+`run-latest.json` is only a convenient latest-run pointer and can be overwritten by
 the next script on the same chain.
 
 ```powershell
