@@ -1,0 +1,554 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-03T12:54:52.776Z",
+  "status": "local_sdk_revalidated_public_user_flow_unproven",
+  "sdk": {
+    "schema_version": 1,
+    "packages": [
+      {
+        "name": "@gatopago/shared",
+        "version": "3.2.1",
+        "file": "gatopago-shared-3.2.1.tgz",
+        "sha256": "fe13cdf1a4d040f4b189cecc664d87bb07943f52571e40a3a4eac9eb93b0c273",
+        "producer": "packages/shared"
+      },
+      {
+        "name": "@gatopago/environment",
+        "version": "3.2.1",
+        "file": "gatopago-environment-3.2.1.tgz",
+        "sha256": "b22dda69e2832b27d20ab45f5488bb3c76b15ecf667d2552793823a4450fb977",
+        "producer": "packages/environment"
+      },
+      {
+        "name": "@gatopago/test-fixtures",
+        "version": "3.2.1",
+        "file": "gatopago-test-fixtures-3.2.1.tgz",
+        "sha256": "1af7856138ca4cded5c8cfa2e9950e973ed04d35f6c40a161b5e26d34939196f",
+        "producer": "packages/test-fixtures"
+      }
+    ],
+    "pnpm_version": "11.23.0",
+    "provenance": {
+      "git_head": "7e6bea96088decd8a970ee3298034c8f8f04cb28",
+      "source_dirty": true,
+      "source_tree_sha256": "0a73fd445e7cf8765dab808a12f4cb69dd9796235b90ccd1a07b545498c74bbe",
+      "source_inputs": [
+        {
+          "path": ".github/workflows/ci.yml",
+          "sha256": "9545106ab7b1265cb2df039783fb8a6bf81210105e499139963218311b1b5ace"
+        },
+        {
+          "path": "package.json",
+          "sha256": "35b67faf76f91bdc570d3a90acf5e6f7f4f508a1aa55e0040aa0c65fa8c8ff3d"
+        },
+        {
+          "path": "packages/environment/environments.json",
+          "sha256": "6e9204db851f0a82a4b094d9a74ba97596bc370e6ec8efa91a1392306e404ca3"
+        },
+        {
+          "path": "packages/environment/index.ts",
+          "sha256": "96a32f3b0e45a31efc72f426e4ce746489c62c49ad5f6e9b5dcd4188d6d3f3e1"
+        },
+        {
+          "path": "packages/environment/package.json",
+          "sha256": "2205b63d71833d833a606e522a4757ee824ce5abbae0da1a872593844ecdff39"
+        },
+        {
+          "path": "packages/environment/tsconfig.build.json",
+          "sha256": "c6307d595ae8b864c09754ab8c23fc3cc949c9df566140f95f51394c0e15ff16"
+        },
+        {
+          "path": "packages/shared/abis/GatoPagoCctpPaymentRouter.json",
+          "sha256": "9661430e31e8833ef9f51548baedb7dd672ab946f22bc2362acd68750c79005d"
+        },
+        {
+          "path": "packages/shared/abis/GatoPagoCrosschainRouter.json",
+          "sha256": "5610d9e3157ef569d73dd669d4b4f1c1669c80a1cd23d9db354b37df4fa4b8e8"
+        },
+        {
+          "path": "packages/shared/abis/GatoPagoPaymentRouter.json",
+          "sha256": "72370f891d6c5906136b5de231972f979b11b58dbb7d131c9ad7d6bb26557f66"
+        },
+        {
+          "path": "packages/shared/fees.ts",
+          "sha256": "7672353dbf803ba27e921d60995f33a85d53e1e85cbb47a9effb77f24ea3b335"
+        },
+        {
+          "path": "packages/shared/fixtures/payment-authorizations.json",
+          "sha256": "b9f79427fced1812eb536f93b06a8dd748e3bee39bf018588fbbf91b636f038f"
+        },
+        {
+          "path": "packages/shared/fixtures/v3-protocol.json",
+          "sha256": "df930552b112fed088e93a59a4c9328037d969e62201bce2dfa1adc0d5abe789"
+        },
+        {
+          "path": "packages/shared/fixtures/v3-storage-layout.json",
+          "sha256": "5ae21f57ac3eed782392f796e4b37a67170cada6de325db1a3cbd845903a6cf3"
+        },
+        {
+          "path": "packages/shared/fixtures/v3-webauthn-chromium.json",
+          "sha256": "d9409e33453ff0c3167fde11d584a6649f18c166b9713a30406ba549960116e5"
+        },
+        {
+          "path": "packages/shared/fixtures/v3-webauthn-encoding.json",
+          "sha256": "3c206224f4c35e2b3063c7280d1741923aef1735d994bd1837a57e52d8a029c1"
+        },
+        {
+          "path": "packages/shared/http.ts",
+          "sha256": "3f072c62c522f6e9d0c7e7ee44b4014e5171b2ef47cdeb46ad8984286a59529e"
+        },
+        {
+          "path": "packages/shared/package.json",
+          "sha256": "9ce29eb58d431659d56042fd7ddc0c6503a960ca810725b42563fbe652b89322"
+        },
+        {
+          "path": "packages/shared/paymentAbis.ts",
+          "sha256": "c8f103635b1d07e8834bc815c3375ccde8753fc2f1c1cf7c9eb14949ddf32543"
+        },
+        {
+          "path": "packages/shared/paymentAuthorizations.ts",
+          "sha256": "2036ed8fb1a634e077b60e60b4e10512bea0b0a06bb239f70e85e89c3115880f"
+        },
+        {
+          "path": "packages/shared/paymentContracts.ts",
+          "sha256": "3506716010d578bf4a0dbf05f4babaccea271d3b043385bbc0f3e3d45ca74abe"
+        },
+        {
+          "path": "packages/shared/paymentErrors.ts",
+          "sha256": "e72aec365125da37ed57df6c0ff5ad41873877990116a7cedd6e5d29b02c900e"
+        },
+        {
+          "path": "packages/shared/paymentNetworks.ts",
+          "sha256": "6446b81d0bf9602d5395b84793e78cf8eee92fb97a117fb591f438a29838aeec"
+        },
+        {
+          "path": "packages/shared/tsconfig.build.json",
+          "sha256": "c6307d595ae8b864c09754ab8c23fc3cc949c9df566140f95f51394c0e15ff16"
+        },
+        {
+          "path": "packages/shared/v3/aaveMarket.ts",
+          "sha256": "43d4ccb1d8dfd0d19c8cfff2fc9ab502fc87282c76a4a190586dde3ae3dd6e37"
+        },
+        {
+          "path": "packages/shared/v3/accountInspection.ts",
+          "sha256": "c5b311beadae406f06193354f88dcd91d7236fdf8efa9f0bf998c03a89b98f0d"
+        },
+        {
+          "path": "packages/shared/v3/amount.ts",
+          "sha256": "4a018c83218a053d13113090e3c7d84ed5c6f22c3c0931a8f9f23512fdd02d3e"
+        },
+        {
+          "path": "packages/shared/v3/arbitrum-sepolia-creation.json",
+          "sha256": "f881fee9665cf5c69a5f86dea6117585ad4a8c1c25569cecd23c9e3d5db97468"
+        },
+        {
+          "path": "packages/shared/v3/assertionRecord.ts",
+          "sha256": "b4a72ae3efd2c1bef4fc5a21b69e72ef2d5019fb4f17bb484320cd7823c6e294"
+        },
+        {
+          "path": "packages/shared/v3/authorizations.ts",
+          "sha256": "ad59d2d8563c452d92d60cbd895756db5cb0e93d5303108a69cda3b18f291cf9"
+        },
+        {
+          "path": "packages/shared/v3/backupEnrollment.ts",
+          "sha256": "e6d061391bfccc6dcbb6623f750e61b490f35c86eeb9aeadf7275df8349a081e"
+        },
+        {
+          "path": "packages/shared/v3/backupStatus.ts",
+          "sha256": "32af548a75d7712ae6224c0bdedf64357d589d3740eaa401a1f7d814655c44e3"
+        },
+        {
+          "path": "packages/shared/v3/backupWire.ts",
+          "sha256": "77ee9d8b77e3af92fe531ae855aec39ecedbea4f2084d0770fb168a3b833c4f3"
+        },
+        {
+          "path": "packages/shared/v3/clientRelease.ts",
+          "sha256": "dbacbc5bcb17ca54e632cb408387db84a273dc25fe7614340bfcb9af0121be6b"
+        },
+        {
+          "path": "packages/shared/v3/constants.d.mts",
+          "sha256": "ba73eae59c67ba33722b0b7e811cc27ec2631724ca038adfa32bbf4fc784c27d"
+        },
+        {
+          "path": "packages/shared/v3/constants.mjs",
+          "sha256": "e6364cd3ef4d1468d8ee3e180dac991a60c450ec9d876bb73a98d4242110ab34"
+        },
+        {
+          "path": "packages/shared/v3/contractSignature.ts",
+          "sha256": "a9f44e466e52d14d494cb6b34a86a799790b945436c861bfd178bbd6d12ecfd7"
+        },
+        {
+          "path": "packages/shared/v3/creationInspection.ts",
+          "sha256": "d3cf309a42e8f66a0233913f188d0441704a87064591d9ab6980bc8075b624cc"
+        },
+        {
+          "path": "packages/shared/v3/creationLifecycle.ts",
+          "sha256": "b1ab6dc67431179a42643ad9ee5202545219ad1f1b181c0113e28a3a81b27cac"
+        },
+        {
+          "path": "packages/shared/v3/creationOperation.ts",
+          "sha256": "8e4869a9583435a78f2bac71a9e53c236c8532f4a64546756a9ad43e6357a7c3"
+        },
+        {
+          "path": "packages/shared/v3/creationOperationWire.ts",
+          "sha256": "09c0247ad4ab6c08779d0415b7a69cda5463535bbcb0303f66674b3fcde0a748"
+        },
+        {
+          "path": "packages/shared/v3/creationReceipt.ts",
+          "sha256": "c0381a106dcc7aa2c2a2b7b1566a4a306179aff8bdf2a7114e3aa2993025389e"
+        },
+        {
+          "path": "packages/shared/v3/credentialDetail.ts",
+          "sha256": "2878eb6c9faddc12f5c8de96db7ec7a428101282f47192cfbeb88b4ca8af2007"
+        },
+        {
+          "path": "packages/shared/v3/credentialInventory.ts",
+          "sha256": "b8616c5775916084617be31cae3acf89abb566ecaf7cb118816a81263ce220c3"
+        },
+        {
+          "path": "packages/shared/v3/deployment-schema.json",
+          "sha256": "6a39886e4fd0913040f0f42c96e9528562f89cc2df9973ac79b7b347b0f963cf"
+        },
+        {
+          "path": "packages/shared/v3/deployment.ts",
+          "sha256": "ba1596efae556df426f5ac64684dbcb245b8351660b6fe3eca8f34b6d5ffc135"
+        },
+        {
+          "path": "packages/shared/v3/execution.ts",
+          "sha256": "bd1f6adfacca161217b1b94242ee27df81ed8059fa212bcce007f6cc03973cfa"
+        },
+        {
+          "path": "packages/shared/v3/externalEnrollment.ts",
+          "sha256": "8adc6f6e79e3edbcb3a2b6a3b5ccc2ccf69ead2e2f405b3f62317ce6fd6fc69b"
+        },
+        {
+          "path": "packages/shared/v3/finality.ts",
+          "sha256": "c24fb1342ca5437c0890aa88cab8a96ca9f0c1702326ed12e9c140e0c71b8a6e"
+        },
+        {
+          "path": "packages/shared/v3/initialization.ts",
+          "sha256": "0b727f79834001c8b519c51c144296a6e7dff8a5c5f9c952526d629261e693b0"
+        },
+        {
+          "path": "packages/shared/v3/initializationWire.ts",
+          "sha256": "8eda8bc4c5b81ddb5fb5e764ccca8f57d71243b8c76b7a374b9374ec06158f3c"
+        },
+        {
+          "path": "packages/shared/v3/moneyCalls.ts",
+          "sha256": "0f6430e358a12bdd65ad1c0874d15b1ce1c86643511c05afdbbf9c6f1ddc5498"
+        },
+        {
+          "path": "packages/shared/v3/moneyOperation.ts",
+          "sha256": "ac57dd4d5885f47c7f2d836566620744744185da85044a2ebb505483533e52a4"
+        },
+        {
+          "path": "packages/shared/v3/moneyReviewRecord.ts",
+          "sha256": "16daecd6f4c9c5b3e9073da8d7bc682eb398917de575307212d88c6bc05d6d70"
+        },
+        {
+          "path": "packages/shared/v3/moneyWire.ts",
+          "sha256": "839eb05a2387e177758926017796fa46b57a9fd85abb848188799aab1c3e6506"
+        },
+        {
+          "path": "packages/shared/v3/paymaster.ts",
+          "sha256": "01187cbf7baed0852af51d37fb71c700c52dbdf12a508bd3551b0690c436c1e4"
+        },
+        {
+          "path": "packages/shared/v3/primitives.ts",
+          "sha256": "296b15a0c5a93a7fd05da4c414299e8da02b369bf00f902e733bac52ff47a196"
+        },
+        {
+          "path": "packages/shared/v3/securityInspection.ts",
+          "sha256": "4c7695ef6499984924ab83d2623aef0b84788d871362652d22d0590c16204df8"
+        },
+        {
+          "path": "packages/shared/v3/securityPolicy.ts",
+          "sha256": "1a967ebe5f311e262b3525c7653bb0b5001323aba21a77bc8d0faa0cbf6c3254"
+        },
+        {
+          "path": "packages/shared/v3/securityPolicyRecord.ts",
+          "sha256": "2d69c9f3d911d8c1c681efee4c16ca7e0af7d4b3eed318c003bdaa388fff7b5a"
+        },
+        {
+          "path": "packages/shared/v3/transfer.ts",
+          "sha256": "3cd58a64f4830d9fd4b08963f6b325dc66ae70fb20de50a472e204a8e927d4ad"
+        },
+        {
+          "path": "packages/shared/v3/transferAuthorization.ts",
+          "sha256": "1cd16944fbfbb57345717944e641cff9cef0e035931cf7ba87cba5a1e2d0dd5f"
+        },
+        {
+          "path": "packages/shared/v3/transferBalance.ts",
+          "sha256": "72c47cedd6ad2891872d8ab727db52740ccb21c5a8a1fbbd12840607fda0f9e2"
+        },
+        {
+          "path": "packages/shared/v3/transferCalls.ts",
+          "sha256": "9fc1f49188e0e8411963a73ea21122697111475eb8e67906678669ac3b1e559c"
+        },
+        {
+          "path": "packages/shared/v3/transferOperation.ts",
+          "sha256": "5835b947e490ee3ed1b477946c31efe0a03df7456a95a75ab2aceb656c24dd14"
+        },
+        {
+          "path": "packages/shared/v3/transferReviewRecord.ts",
+          "sha256": "6810ac4839aa5991c88ac4b00c722760a057645a082b53be7004bbdaf6d50834"
+        },
+        {
+          "path": "packages/shared/v3/transferSecurity.ts",
+          "sha256": "b440f2093be91ec0eb476f579350251c2d97e5907ed7dd3649eb283ee46579e5"
+        },
+        {
+          "path": "packages/shared/v3/transferWire.ts",
+          "sha256": "fe461fa662e8994c3b3487b3a1d6a2d2e67c2513c1b7a780a5ad660882695853"
+        },
+        {
+          "path": "packages/shared/v3/upgrade.ts",
+          "sha256": "c020878dc3b38d39fe6ef64ba3e10529d7d5e5d904f7fefaa50cb1c1e3e739c3"
+        },
+        {
+          "path": "packages/shared/v3/walletRelease.ts",
+          "sha256": "0183ce20b302b6d56be6416d935414f7ed9f38b71bfc1fe862f8f603eaec5e5d"
+        },
+        {
+          "path": "packages/shared/v3/webauthn.ts",
+          "sha256": "811e9258b5ab27d000df5552a73ddca04e75c92c745f6a546237638c30289481"
+        },
+        {
+          "path": "packages/shared/v3/wire-schemas.json",
+          "sha256": "c406b59669bcb2d06bb47cb97e7d7b0a868dd87bc57f754a30aa264da1825bf5"
+        },
+        {
+          "path": "packages/shared/v3/wire-validators.d.mts",
+          "sha256": "5911475b1b95ed12aa63f9407c95451bd54cafe0d2d79ac54819320e13b03355"
+        },
+        {
+          "path": "packages/shared/v3/wire-validators.mjs",
+          "sha256": "5ef2c9505a6f5590538424d7679923c2cb0c585933f173dcbde036e3652701ba"
+        },
+        {
+          "path": "packages/test-fixtures/package.json",
+          "sha256": "4d7dabe88a447302bbbd6716255db20e09c51ef8b3d3e8ee47d71edc998f6ae0"
+        },
+        {
+          "path": "packages/test-fixtures/tsconfig.build.json",
+          "sha256": "c6307d595ae8b864c09754ab8c23fc3cc949c9df566140f95f51394c0e15ff16"
+        },
+        {
+          "path": "packages/test-fixtures/v3Backup.ts",
+          "sha256": "1c69db90f6019fbe5725c133a34b9f238607f099450e3c325c691fd8e67fbb49"
+        },
+        {
+          "path": "packages/test-fixtures/v3CreationInspection.ts",
+          "sha256": "dba960bb737b771d2a1d401d46ed1e758d400f892f9073ae23ab8e016b90958b"
+        },
+        {
+          "path": "packages/test-fixtures/v3CreationReceipt.ts",
+          "sha256": "f529c7d45a9b1a12ebda06af6d612303053aa9e4b66e5b687b6845e2d18b9ab7"
+        },
+        {
+          "path": "packages/test-fixtures/v3DeploymentFixture.ts",
+          "sha256": "5be0a6a2840683512357215492d3afb3b5994813733b50605a68301c5a4d0b10"
+        },
+        {
+          "path": "packages/test-fixtures/v3Finality.ts",
+          "sha256": "1142fe50291cb642640f8a4bbd9a91d364cd7f2b80f6bf741285a5d2c567f289"
+        },
+        {
+          "path": "packages/test-fixtures/v3Initialization.ts",
+          "sha256": "eba2ea866e3203f78728c3bc4de7c32890d8508f2d148c06750ee74b31acd30e"
+        },
+        {
+          "path": "packages/test-fixtures/v3Inspection.ts",
+          "sha256": "87471c71716e2be811ee117910fc24b71d91f73e4f3d2c42d178c14f651fd1f5"
+        },
+        {
+          "path": "packages/test-fixtures/v3SecurityInspection.ts",
+          "sha256": "fb9bc66e85e9de28461ca09ff733250a480c8f825f43e4c66f2f506deb85c40d"
+        },
+        {
+          "path": "packages/test-fixtures/v3Transfer.ts",
+          "sha256": "76e085c871252c083495c69dc385bf1008d411441dfb442385be76adf9c14496"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "86bfc0764af845fbbb75abaf7711e20c7db8df3f26853d1e81afe6d8e7005950"
+        },
+        {
+          "path": "pnpm-workspace.yaml",
+          "sha256": "ea9970bae234e8f69bae702a7f80f68185a3ce8fe1eaa59b3323189c208cf8a2"
+        },
+        {
+          "path": "scripts/build-sdk.mjs",
+          "sha256": "6bd6ebade4ff5f28d2b1768e004461ebd920d92cc111abb8667a190b55bd6d36"
+        },
+        {
+          "path": "scripts/check-sdk-consumer.mjs",
+          "sha256": "0ec6fb7bf9889e3e9e5cb96a5f680d1de432f809323c34498061e29b073fc4c7"
+        },
+        {
+          "path": "scripts/distribute.mjs",
+          "sha256": "b2ea8cfe4a3d738ecada26277a1e93b720cef3ea4110e919d06c6e8fd3004fc5"
+        },
+        {
+          "path": "scripts/pack-sdk.mjs",
+          "sha256": "604923e7a186f4e7c4d2ff3375cd5b473af86ca61fd41483a65bf2a357531b6b"
+        },
+        {
+          "path": "test/money-golden.test.ts",
+          "sha256": "83d326cb89e355912640d5cc974b2c60f6274ecdd124baaf4fc8be3bdcf2451f"
+        },
+        {
+          "path": "test/money-operations.test.ts",
+          "sha256": "f475fcceafc1bd43485f61890f5a756a254c1566917f0676a06fc001a0963358"
+        },
+        {
+          "path": "test/sdk-release.test.ts",
+          "sha256": "5d98efa28bc69b199d9749419519e8f570ddd478d65e0839021c0f4dec88e45f"
+        },
+        {
+          "path": "vitest.config.ts",
+          "sha256": "255b814286c7203afacec5ad66c36ab35c83a0b781c6bf6fcf5902a005a69d00"
+        }
+      ]
+    },
+    "verification": {
+      "build_passed": true,
+      "tests_passed": 39,
+      "test_files": 3,
+      "real_pack_passed": true,
+      "source_hashes_verified": true,
+      "market_web_configuration_verified": true,
+      "registry_publication": false,
+      "remote_ci_run": false,
+      "local_checks_rechecked_at": "2026-10-03T13:13:17.303Z",
+      "isolated_consumer_passed": true
+    },
+    "isolated_consumer": {
+      "schema_version": 1,
+      "observed_at": "2026-10-03T13:08:53.620Z",
+      "status": "isolated_compiled_consumer_passed",
+      "node": "v24.19.0",
+      "pnpm": "11.23.0",
+      "typescript": "6.0.3",
+      "esm_exports": 67,
+      "require_exports": 67,
+      "strict_nodenext_types": true,
+      "frozen_install": true,
+      "inherited_node_modules": false,
+      "producer_source_aliases": false,
+      "local_tarball_overrides": true,
+      "registry_publication": false,
+      "registry_sdk_installation": false,
+      "consumer_lockfile_sha256": "962242f220d2b49f05b8b01e868ff8057979a61af5329f8cb842b8146e7940e6",
+      "packages": [
+        {
+          "name": "@gatopago/shared",
+          "version": "3.2.1",
+          "sha256": "fe13cdf1a4d040f4b189cecc664d87bb07943f52571e40a3a4eac9eb93b0c273"
+        },
+        {
+          "name": "@gatopago/environment",
+          "version": "3.2.1",
+          "sha256": "b22dda69e2832b27d20ab45f5488bb3c76b15ecf667d2552793823a4450fb977"
+        },
+        {
+          "name": "@gatopago/test-fixtures",
+          "version": "3.2.1",
+          "sha256": "1af7856138ca4cded5c8cfa2e9950e973ed04d35f6c40a161b5e26d34939196f"
+        }
+      ]
+    }
+  },
+  "public_api": {
+    "deployment_observed": {
+      "id": "f4afae79-cced-4275-9c26-96d4dcb299fb",
+      "created_on": "2026-10-03T12:33:02.979733Z",
+      "version_id": "d1a38798-0605-4c8b-9727-318395a6ccd6",
+      "percentage": 100,
+      "source_match_to_local_checkout_unproven": true
+    },
+    "checks": [
+      {
+        "path": "/app/v1/health/live",
+        "status": 200,
+        "body": {
+          "service": "gatopago-wallet-core",
+          "status": "ok"
+        },
+        "observed_at": "2026-10-03T12:54:50.495Z"
+      },
+      {
+        "path": "/app/v1/health/ready",
+        "status": 200,
+        "body": {
+          "service": "gatopago-wallet-core",
+          "configured": true,
+          "capabilities": {
+            "creation": true,
+            "transfers": true,
+            "backup": false
+          },
+          "networks": [
+            {
+              "network_id": "eip155:421614",
+              "transport": "self",
+              "relayer_address": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88"
+            }
+          ]
+        },
+        "observed_at": "2026-10-03T12:54:50.741Z"
+      },
+      {
+        "path": "/app/v1/client-compatibility",
+        "status": 200,
+        "body": {
+          "policy_version": 1,
+          "environment": "production",
+          "api_version": "wallet-core-v3.1",
+          "minimum_mutating_release": "wallet-client-v3.1",
+          "accepted_mutating_releases": [
+            "wallet-client-v3.1"
+          ],
+          "account_profiles": [
+            {
+              "generation": "3",
+              "contract_manifest_version": "33da0dc1-1656-41a9-9448-0ca9d53ad798"
+            }
+          ],
+          "environment_status": "provisioned"
+        },
+        "observed_at": "2026-10-03T12:54:50.826Z"
+      }
+    ]
+  },
+  "public_web": {
+    "login_http_status": 200,
+    "csp_present": true,
+    "cache_control": "private, no-cache, no-store, max-age=0, must-revalidate"
+  },
+  "browser": {
+    "page": "https://gatopago.com/login",
+    "surface": "registration",
+    "visible_verification_message": "La comprobación falló o venció.",
+    "authenticated_session_observed": false,
+    "cause_confirmed": false,
+    "no_form_submitted_by_this_refresh": true
+  },
+  "npm": {
+    "whoami_exit_code": 1,
+    "error_code": "ENEEDAUTH",
+    "publisher_workflow_present": false,
+    "publication_policy_present": false,
+    "packages_private": true,
+    "license_and_visibility_decisions_missing": true
+  },
+  "financial_demo": {
+    "public_transactions_sent": 0,
+    "completed": false
+  },
+  "limitations": [
+    "The current Worker version has not been tied to the historical R1 source proof.",
+    "Local SDK and HTTP checks do not prove the authenticated financial journey.",
+    "No remote CI or npm registry installation has been demonstrated."
+  ]
+}

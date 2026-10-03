@@ -1,7 +1,7 @@
 import { execFileSync } from 'node:child_process';
 import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { copySdkRelease } from './sdk-release.mjs';
+import { copySdkRelease } from './pack-sdk.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const parent = resolve(root, '..');

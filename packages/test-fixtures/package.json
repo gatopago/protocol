@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/test-fixtures",
   "private": true,
-  "version": "3.2.1",
+  "version": "3.2.2",
   "files": [
     "dist"
   ],
@@ -63,7 +63,7 @@
     }
   },
   "dependencies": {
-    "@gatopago/shared": "workspace:3.2.1",
+    "@gatopago/shared": "workspace:3.2.2",
     "viem": "2.55.19"
   },
   "peerDependencies": {

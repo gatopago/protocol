@@ -7,13 +7,9 @@
   "scripts": {
     "build": "node scripts/build-sdk.mjs",
     "pack": "node scripts/pack-sdk.mjs",
+    "check:consumer": "node scripts/check-sdk-consumer.mjs",
     "distribute": "node scripts/distribute.mjs",
-    "test": "vitest run",
-    "money:fixtures": "node scripts/generate-money-contract-fixtures.mjs",
-    "money:composition": "node scripts/verify-money-composition.mjs",
-    "money:web-config": "node scripts/generate-money-web-config.mjs",
-    "money:web-config:check": "node scripts/generate-money-web-config.mjs --check",
-    "baseline": "node scripts/capture-arbitrum-baseline.mjs"
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "24.13.3",

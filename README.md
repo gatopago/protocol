@@ -11,22 +11,32 @@ It is not the frontend, the backend, or a shared wallet holding every user's fun
 compiled ESM and declarations. The current local consumer snapshots are 3.2.1.
 Packages remain private; registry publication and licensing are pending.
 
-Run `pnpm sdk:verify` for build and tests. `pnpm sdk:pack` creates a new
-immutable candidate and refuses to overwrite an existing version.
-`pnpm sdk:release:check` compares packed bytes with the compiled producer and
-records source provenance; `pnpm sdk:verify-consumers` installs the archives in
-a standalone temporary consumer and checks exports, Node 24 require and types.
-`pnpm sdk:verify-producer` copies only SDK sources, tooling and test inputs into
-a fresh temporary producer, installs its frozen lockfile, builds, tests and packs,
-then compares every packed file with the immutable snapshots. It does not inherit
-generated files or claim that the source snapshot is a committed Git checkout.
-The SDK CI job is prepared locally; no remote CI run is claimed.
+Run `pnpm build`, `pnpm test` and `pnpm run pack` from this repository root.
+Use `pnpm run pack` explicitly: `pnpm pack` is the package manager's own command.
+The pack script validates all three archives in a temporary directory before
+promoting them. An existing version retains its original bytes; changed contents
+require a new version. `output/sdk-releases/manifest.json` records archive hashes,
+the producer commit, working-tree status and individual source hashes.
 
-The separate SDK release workflow is also prepared locally. Publication remains
-disabled in `config/sdk-publication.json` until package ownership, license,
-visibility and npm trusted publishers are established. The
-[registry runbook](docs/arbitrum-delivery/sdk-registry-runbook.md) describes the
-exact-ref validation, OIDC publisher, integrity checks and partial-release recovery.
+`pnpm distribute` builds, packs and copies only the release selected by that
+manifest. It verifies integrity and all consumer destinations before copying,
+and preserves older archives still referenced by a consumer's package.json.
+The root SDK CI runs build, tests, pack and the independent consumer check;
+a workflow file is not evidence of a successful remote run.
+
+`pnpm check:consumer` installs the current archives in a fresh temporary
+consumer using a frozen lockfile. It checks every exported subpath through
+native ESM, Node 24 `require` and strict TypeScript NodeNext resolution, with
+no aliases to producer sources. Its report is
+`output/sdk-releases/consumer-local.json`. This validates local archives;
+publication and SDK installation from npm remain separate requirements.
+
+Registry publication is pending. The earlier release workflow and
+`config/sdk-publication.json` are absent from the current checkout; their
+historical local verification does not prove current publication tooling.
+Ownership, licenses, visibility and npm authentication still need to be
+established. The [registry runbook](docs/arbitrum-delivery/sdk-registry-runbook.md)
+records the intended OIDC release process and the remaining prerequisites.
 
 The Arbitrum money programs reuse AccountV3 CALL/SPEND. Production contract
 source and bytecode are unchanged. Their local, fork and public delivery states

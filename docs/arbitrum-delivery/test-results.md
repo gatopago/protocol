@@ -1,6 +1,16 @@
 # Resultados de verificación Arbitrum
 
-Fecha: 2026-10-02. Los resultados se separan por alcance. Los tests sintéticos no demuestran login físico, disponibilidad pública ni efectos financieros públicos.
+Actualización: 2026-10-03. Los resultados se separan por alcance. Los tests sintéticos no demuestran login físico, disponibilidad pública ni efectos financieros públicos.
+
+## Comprobaciones del 3 de octubre
+
+[Registro actual](current-state-2026-10-03.json): `pnpm build`, `pnpm test` (39 casos en tres archivos), `pnpm run pack` y `pnpm money:web-config:check` aprobaron en el productor local. Los 94 hashes de fuentes del manifest se comprobaron y los tres archives 3.2.1 conservan sus bytes anteriores. Siete pruebas nuevas cubren manipulación, rutas, paquetes incompletos/duplicados, colisiones antes de copiar y repetición idempotente. El consumidor de esas pruebas es temporal y sintético; no es una instalación desde npm.
+
+Se verificaron las referencias de comandos de CI en sus package.json correspondientes y `pnpm lint` aprobó en WalletCore. No se ejecutó la CI remota ni una suite financiera pública. Salud, readiness y compatibilidad de la API, y la página pública de login, devolvieron HTTP 200. El Worker observado es una versión posterior a la entrega histórica; sus fuentes no se han vinculado a esa evidencia anterior. El navegador seguía sin una sesión y mostraba fallo/vencimiento de la comprobación de registro, con causa sin confirmar. `npm whoami` devolvió `ENEEDAUTH`.
+
+La ampliación posterior añadió `pnpm check:consumer` a la CI. [sdk-consumer-current.json](sdk-consumer-current.json) registra instalación frozen desde cero, 67 exports ESM, 67 exports require y tipos NodeNext con strict/skipLibCheck=false. Se usaron los tarballs 3.2.1, con overrides locales de distribución y sin aliases a fuentes; no prueba instalación desde npm. `pnpm test` volvió a aprobar sus 39 casos después de compartir la resolución de pnpm entre pack y checker. `pnpm run pack` conservó los archives y registró 94 inputs de procedencia.
+
+## Comprobaciones históricas del 2 de octubre
 
 | Comando y directorio | Resultado observado | Alcance y límites |
 | --- | --- | --- |

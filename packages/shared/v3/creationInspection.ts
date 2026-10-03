@@ -48,6 +48,13 @@ function block(value: unknown, number: bigint, hash: Hex) {
 		|| quantity(value.number) !== number || value.hash !== hash) error('CHECKPOINT_MISMATCH');
 }
 
+// Drain every sibling before leaving a stage, including on a failed check.
+// Independent reads can share an HTTP batch without orphaning Worker I/O.
+async function complete(operations: readonly Promise<void>[]) {
+	const results = await Promise.allSettled(operations);
+	for (const result of results) if (result.status === 'rejected') throw result.reason;
+}
+
 /** Consistency observation of ORIGINAL creation composition. Every state read is pinned
  * with EIP-1898, and unknown code is never interrogated for its own identity first.
  * A successful result is NOT source provenance, an audit, an honest-RPC proof, freshness,
@@ -86,10 +93,10 @@ export async function inspectCreationDeployment(client: PublicClient, input: Cre
 		if (quantity(await client.request({ method: 'eth_chainId' }, options)) !== evmChainId(manifest.network_id)) error('CHAIN_MISMATCH');
 		block(await client.request({ method: 'eth_getBlockByNumber', params: ['0x0', false] }, options), 0n, manifest.genesis_hash);
 		block(await client.request({ method: 'eth_getBlockByNumber', params: [toHex(height), false] }, options), height, checkpoint.block_hash);
-		for (const expected of expectedCode) {
+		await complete(expectedCode.map(async (expected) => {
 			const runtime = data(await client.request({ method: 'eth_getCode', params: [expected.address, pinned] }, options), 24576);
 			if (runtime === '0x' || keccak256(runtime) !== expected.hash) error('UNEXPECTED_CODE');
-		}
+		}));
 		const factory = components.factory.address, implementation = components.implementation.address;
 		const expectations: readonly [Address, Getter, 'address' | 'bytes32', Hex][] = [
 			[factory, 'implementation', 'address', implementation],
@@ -111,8 +118,9 @@ export async function inspectCreationDeployment(client: PublicClient, input: Cre
 			[implementation, 'storageLayoutHash', 'bytes32', manifest.storage_layout_hash],
 			[implementation, 'proxiableUUID', 'bytes32', slot],
 		];
-		// Sequential bounded calls avoid orphaned sibling I/O after a Worker request fails.
-		for (const expectation of expectations) await expectGetter(...expectation);
+		// Do not interrogate getters until ALL runtime code hashes match.
+		await complete(expectations.map(expectation => expectGetter(...expectation)));
+		// This closing read remains a separate, uncached observation.
 		block(await client.request({ method: 'eth_getBlockByNumber', params: [toHex(height), false] }, options), height, checkpoint.block_hash);
 		return Object.freeze({ status: 'composition_matches' as const, network_id: manifest.network_id,
 			profile_sha256: profileDigest, checkpoint, network_admitted: false as const });

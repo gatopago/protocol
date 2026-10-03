@@ -1,6 +1,16 @@
 # Estado de implementación Arbitrum
 
-Actualización: 2026-10-02. Este documento distingue implementación local, fork y ejecución pública. El inventario histórico está en [sources.json](sources.json); sus HEAD y cantidades de cambios pertenecen a la captura inicial, no al árbol actual. El [manifest de la candidata local](release-manifest.json) vincula 303 inputs de WalletCore, 27 inputs contractuales, builds, SDK, configuración, migración y evidencia actual. Los [resultados de pruebas](test-results.md), la [matriz de compatibilidad](compatibility-matrix.md), el [checklist de candidatura](submission-checklist.md) y el [recorrido de demo](demo-transactions.json) conservan pendientes sus gates públicos.
+Actualización: 2026-10-03. Este documento distingue implementación local, fork y ejecución pública. El inventario histórico está en [sources.json](sources.json); sus HEAD y cantidades de cambios pertenecen a la captura inicial, no al árbol actual. El [manifest de la entrega del 2 de octubre](release-manifest.json) vincula sus 303 inputs de WalletCore, 27 inputs contractuales, builds, SDK, configuración, migración y pruebas históricas. Los [resultados de pruebas](test-results.md), la [matriz de compatibilidad](compatibility-matrix.md), el [checklist de candidatura](submission-checklist.md) y el [recorrido de demo](demo-transactions.json) conservan pendientes sus gates públicos.
+
+El checkout y los despliegues cambiaron después de esa entrega. El 3 de octubre se observó WalletCore `d1a38798-0605-4c8b-9727-318395a6ccd6` al 100 %, despliegue `f4afae79-cced-4275-9c26-96d4dcb299fb`, publicado a las 12:33:02 UTC. Salud, readiness, compatibilidad y `/login` devolvieron 200. No se vincula esa versión nueva con las fuentes o pruebas de la versión 52. La pestaña de prueba seguía en registro sin sesión y mostraba «La comprobación falló o venció»; no se identifica la causa ni se atribuye exclusivamente a la passkey.
+
+La simplificación del productor conservó los paquetes 3.2.1 y cambió los comandos a `pnpm build`, `pnpm test`, `pnpm run pack` y `pnpm distribute`. Ya no están la política ni el workflow de publicación npm preparados anteriormente. Se corrigieron el pack y su distribución para comprobar integridad, conservar versiones existentes, seleccionar sólo el manifest vigente y registrar procedencia. Se repararon referencias a un helper eliminado durante cambios concurrentes. La CI de WalletCore ahora usa sus comandos existentes de lint, tipos, pruebas Node/workerd y build; falta demostrar esa CI en un runner remoto.
+
+[La comprobación actual](current-state-2026-10-03.json) registra 39 pruebas aprobadas en tres archivos, build/pack real aprobados, los tres hashes 3.2.1 conservados y 94 inputs de SDK verificados. El productor es un árbol local modificado; no se presenta como un checkout limpio ni una publicación npm. La configuración monetaria Web coincide con el mercado y la evidencia fijados. No se envió ninguna transacción pública en esta revisión.
+
+La comprobación posterior del consumidor está en [sdk-consumer-current.json](sdk-consumer-current.json). `pnpm check:consumer` generó un lockfile y realizó una instalación frozen en un directorio temporal sin node_modules heredado. Pasaron 67 imports ESM, 67 requires y los tipos NodeNext estrictos de todos los subpaths. Los tres archives conservan sus hashes anteriores. La CI ya incluye este comando; no se acredita una ejecución remota ni instalación del SDK desde registry. El pack incorpora ahora ese checker a sus 94 inputs de procedencia.
+
+[La auditoría de dependencias](dependency-audit-2026-10-03.json) volvió a comprobar los 94 inputs y las decisiones de publicación ausentes. El navegador seguía sin sesión autenticada y con fallo/vencimiento de la comprobación de registro; npm no tenía una sesión local. Son las mismas condiciones observadas durante tres turnos consecutivos de la ejecución retomada. El plan completo sigue sin acreditar O1/O2 y la distribución desde registry; T11 exige ownership, permisos, licencia y visibilidad antes de habilitar publicación, y T12 depende de ella.
 
 ## Objetivos
 
@@ -9,17 +19,17 @@ Actualización: 2026-10-02. Este documento distingue implementación local, fork
 | O1 Recorrido básico | PENDIENTE PÚBLICO | Login/passkey real, activación, recepción, envío y comprobante de una cuenta de prueba |
 | O2 Operaciones compuestas | IMPLEMENTADO LOCAL / FORK | Las tres recetas y sus efectos en la release pública autenticada |
 | O3 Configuración | CONFIGURADO / PUBLICADO | Parámetros públicos provisionados y comprobaciones anónimas aprobadas; faltan las comprobaciones autenticadas y de gas de cada operación |
-| O4 Paquetes | PARCIAL | CI de publicación preparada localmente; faltan ownership/licencia/visibilidad, bootstrap y trusted publishers npm, ejecución real e instalación limpia desde registry |
+| O4 Paquetes | PARCIAL | Build/pack local y CI de validación; el publisher anterior ya no está en el checkout. Faltan ownership/licencia/visibilidad, autenticación, publisher, ejecución real e instalación limpia desde registry |
 | O5 Permisos persistentes | FUERA DE R1 | Decisión explícita de producto y entrega contractual R3 |
 
-Las tres flags monetarias permanecen deshabilitadas. Se aplicó y verificó la migración remota 0004 y se publicaron WalletCore versión 52 y Web en `gatopago.com`. [Core y D1](r1-core-deployed.json) y [Web](r1-web-deployed.json) registran copias Git limpias, fuentes, IDs de proveedor y comprobaciones públicas. No se envió una transacción financiera pública ni se completó la demo.
+Las tres flags monetarias del checkout local permanecen deshabilitadas. La entrega del 2 de octubre aplicó y verificó la migración remota 0004 y publicó WalletCore versión 52 y Web en `gatopago.com` con esas flags cerradas. [Core y D1](r1-core-deployed.json) y [Web](r1-web-deployed.json) registran sus copias Git limpias, fuentes, IDs de proveedor y comprobaciones públicas. La revisión actual no vincula las fuentes de la nueva versión remota con ese manifest anterior. No se envió una transacción financiera pública ni se completó la demo.
 
 ## Tareas
 
 | Tarea | Estado y evidencia |
 | --- | --- |
 | T00 | DONE: integridad y procedencia de los archives iniciales registradas en sources.json |
-| T01 | PENDIENTE DE USUARIO: corrección de reloj publicada y parser contra API actual aprobado. La página pública se renderiza; el último intento mostró cancelación de la confirmación. Passkey física, sesión y recorrido completo sin demostrar |
+| T01 | PENDIENTE PÚBLICO: corrección de reloj y parser registrados en la entrega histórica. La página actual se renderiza; la última observación permanecía en registro sin sesión y mostraba fallo/vencimiento de la comprobación. Causa, passkey, sesión y recorrido completo sin demostrar |
 | T02 | PASS READONLY: mercado y posición verificados con dos RPC en market-admission.json y position-readonly.json; ownership de la dirección consultada no demostrado |
 | T03 | IMPLEMENTADO LOCAL: SDK compilado 3.2.1, reconstructores estrictos de revisión, P256, tres recetas y vectores Solidity/TypeScript |
 | T04 | PASS LOCAL: application JSON, pins de mercado/despliegue, lector bilateral de posición, políticas de gas acotadas y configuración pública Web generada; coordinador de posición y rutas probados directamente |
@@ -29,11 +39,11 @@ Las tres flags monetarias permanecen deshabilitadas. Se aplicó y verificó la m
 | T08 | IMPLEMENTADO LOCAL: posición, depósito, retiro y pago; revisión independiente, passkeys, recuperación por IDs y seguimiento sólo de lectura. Comprobación real de usuario pendiente |
 | T09 | API/WEB PUBLICADAS CON FLAGS CERRADAS: Core 52 al 100 %, Web READY y promovida al dominio; salud/compatibilidad/HTTP y un Cron real aprobados. Faltan T01, admisión de gas de cada envío, demo pública y candidatura |
 | T10 | PASS LOCAL: productor protocol/packages, build ESM/declaraciones, procedencia y snapshots inmutables; Web/Core consumen 3.2.1; consumidor aislado aprobado y CI de validación preparada localmente |
-| T11 | PREPARADO LOCAL / PENDIENTE REGISTRY: workflow manual con ref exacto, OIDC, integridades y recuperación de release parcial; 18 pruebas y dry-run npm de 139 archivos aprobados. Publicación deshabilitada; ownership/licencia/visibilidad, bootstrap/trusted publishers y ejecución real pendientes |
+| T11 | PENDIENTE REGISTRY: política y workflow anteriores ausentes del checkout actual. Sus 18 pruebas y dry-run son evidencia histórica; ownership/licencia/visibilidad, autenticación, publisher y ejecución real pendientes |
 | T12 | PENDIENTE: migración de consumidores desde registry después de T11 |
 | T13–T16 | FUERA DE R1: no se habilitaron permisos persistentes ni un nuevo spender |
 
-## Verificación registrada
+## Verificación histórica registrada el 2 de octubre
 
 - Publicación Core/D1: [r1-core-deployed.json](r1-core-deployed.json) registra el commit aislado `850c4847c58f3830d8a353f92c1736420716fe2b`, 303 inputs y digest `1b10fb55c57df32b30547408351d522647c68f5f5d0a6888bf111e316aed0ef1`. La copia limpia anterior `0e8e6b2…` pasó 918 pruebas Node, ocho del guard y 1.546 workerd. Después de corregir únicamente los CASE de 0004 pasaron ocho del guard, dos de migración y ocho workerd de locks. El primer intento remoto falló sin aplicar sus objetos; el segundo aplicó 38 comandos y el guard confirmó los 36 objetos exactos.
 - Worker público: versión 52, `5d207340-6449-4263-bddc-301388e5f858`, despliegue `e4d3cd20-d02c-4638-be87-f92a18bb1462` al 100 %. Se conservaron D1, las dos colas y los nombres de bindings secretos; no se cargaron valores de secretos. Salud y compatibilidad devolvieron HTTP 200. La observación acotada capturó un Cron con `outcome=ok` y ninguna excepción; no acredita un envío financiero.
@@ -74,6 +84,6 @@ Las tres flags monetarias permanecen deshabilitadas. Se aplicó y verificó la m
 
 1. Demostrar T01 en una cuenta de prueba real, incluida passkey física, activación y transferencia conciliada. Esta interacción requiere al titular; el harness no la sustituye.
 2. Cerrar la validación autenticada de la release ya publicada y comprobar funding/gas Nitro de cada operación; ejecutar después la demo O2 conservando referencias y comprobantes reales. 0004, Worker y Web ya están publicados. Las flags continúan cerradas hasta pasar los gates.
-3. Completar los datos de R2 y el bootstrap/trusted publisher según el runbook; ejecutar la CI preparada y demostrar publicación/instalación desde registry. Comprobación actual de npm: `whoami` devolvió `ENEEDAUTH`; no existe una sesión npm utilizable en este entorno. Paquetes/política siguen privados/deshabilitados. La CI escrita no se presenta como ejecución remota y el puente vendor no cierra O4.
+3. Completar los datos de R2 y el bootstrap/trusted publisher según el runbook; implementar el publisher sobre los comandos actuales y demostrar publicación/instalación desde registry. Comprobación actual de npm: `whoami` devolvió `ENEEDAUTH`; no existe una sesión npm utilizable en este entorno. Los paquetes siguen privados y la política anterior está ausente. La CI de validación escrita no se presenta como ejecución remota y el puente vendor no cierra O4.
 
 No se marca R1, O1 u O2 como completado mientras falte el recorrido público y sus efectos conciliados.

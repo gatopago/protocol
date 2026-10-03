@@ -1,0 +1,35 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-03T13:08:53.620Z",
+  "status": "isolated_compiled_consumer_passed",
+  "node": "v24.19.0",
+  "pnpm": "11.23.0",
+  "typescript": "6.0.3",
+  "esm_exports": 67,
+  "require_exports": 67,
+  "strict_nodenext_types": true,
+  "frozen_install": true,
+  "inherited_node_modules": false,
+  "producer_source_aliases": false,
+  "local_tarball_overrides": true,
+  "registry_publication": false,
+  "registry_sdk_installation": false,
+  "consumer_lockfile_sha256": "962242f220d2b49f05b8b01e868ff8057979a61af5329f8cb842b8146e7940e6",
+  "packages": [
+    {
+      "name": "@gatopago/shared",
+      "version": "3.2.1",
+      "sha256": "fe13cdf1a4d040f4b189cecc664d87bb07943f52571e40a3a4eac9eb93b0c273"
+    },
+    {
+      "name": "@gatopago/environment",
+      "version": "3.2.1",
+      "sha256": "b22dda69e2832b27d20ab45f5488bb3c76b15ecf667d2552793823a4450fb977"
+    },
+    {
+      "name": "@gatopago/test-fixtures",
+      "version": "3.2.1",
+      "sha256": "1af7856138ca4cded5c8cfa2e9950e973ed04d35f6c40a161b5e26d34939196f"
+    }
+  ]
+}

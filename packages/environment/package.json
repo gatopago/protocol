@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/environment",
   "private": true,
-  "version": "3.2.1",
+  "version": "3.2.2",
   "files": [
     "dist"
   ],
@@ -16,7 +16,7 @@
     "./environments.json": "./dist/environments.json"
   },
   "dependencies": {
-    "@gatopago/shared": "workspace:3.2.1"
+    "@gatopago/shared": "workspace:3.2.2"
   },
   "engines": {
     "node": ">=24"

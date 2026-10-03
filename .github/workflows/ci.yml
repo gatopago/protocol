@@ -20,6 +20,8 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
       - run: pnpm test
+      - run: pnpm run pack
+      - run: pnpm check:consumer
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 30

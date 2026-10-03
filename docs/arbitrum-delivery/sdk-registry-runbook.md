@@ -1,13 +1,18 @@
 # Publicación del SDK R2
 
-Estado actual: preparación local. No se ha ejecutado este workflow en GitHub ni
-se ha publicado un paquete. `config/sdk-publication.json` conserva `enabled:
-false`, ningún paquete seleccionado y licencia/visibilidad sin decidir. Los
-archives privados 3.2.0/3.2.1 y los consumidores actuales siguen vigentes.
+Estado actual (2026-10-03): publicación pendiente. El checkout simplificado ya
+no contiene `config/sdk-publication.json` ni `.github/workflows/sdk-release.yml`.
+La preparación y sus pruebas registradas el 2 de octubre son históricas; no
+acreditan tooling de publicación presente ni una ejecución en GitHub o npm.
+Los paquetes actuales siguen en `private: true`, sin licencia o visibilidad
+de publicación definidas, y `npm whoami` sigue devolviendo `ENEEDAUTH`.
+Los archives 3.2.1 conservan sus hashes anteriores.
 
-El productor es `gatopago/protocol`; el registry previsto es npm y el workflow es
-[sdk-release.yml](../../.github/workflows/sdk-release.yml). La validación de PR
-no tiene permiso OIDC de publicación. El workflow de release sólo acepta
+El productor es `gatopago/protocol`; el registry previsto es npm. Lo que sigue
+es la especificación del workflow pendiente `sdk-release.yml`, que debe
+implementarse sobre los comandos actuales después de resolver los datos de
+distribución. La validación de PR no debe tener permiso OIDC de publicación.
+El workflow de release sólo acepta
 `workflow_dispatch`, un commit completo y una versión exacta; `publish` empieza
 en `false`. El ref del workflow, `GITHUB_SHA`, `GITHUB_WORKFLOW_SHA` y el checkout
 deben corresponder al mismo commit. No usa un environment con un nuevo paso de
@@ -66,20 +71,29 @@ integridad y estado por paquete. Se conserva también si falla el preflight o la
 publicación. El workflow sube los resultados como artifact; un artifact de
 validación no acredita publicación ni instalación desde registry.
 
-Comprobaciones locales disponibles:
+Comprobaciones locales disponibles en el checkout actual:
 
 ```sh
-node --test test/sdk-publication.test.mjs
-node scripts/sdk-publication.mjs --schema-only
-node scripts/sdk-publication.mjs --pack-check --version 3.2.1
-node scripts/sdk-publication.mjs --check --version 3.2.1
+pnpm build
+pnpm test
+pnpm run pack
+pnpm check:consumer
 ```
 
-El último comando informa `publication_dependencies_pending` mientras falten
-los datos; ese resultado esperado no significa `T11 DONE`. T11 todavía necesita
-ejecución real autorizada, publicación comprobada e instalación limpia desde
-registry. T12 conserva su orden de migración: WalletCore, Web, Dashboard y Flow,
+El último comando instala los archives actuales en un consumidor temporal,
+comprueba ESM, require y tipos NodeNext estrictos, y guarda
+`output/sdk-releases/consumer-local.json`. Usa overrides hacia esos tarballs,
+sin aliases al código fuente del productor. No instala el SDK desde npm y no
+significa `T11 DONE`. Los comandos anteriores de `sdk-publication.mjs` ya no
+existen. T11 todavía necesita los datos de distribución, el publisher,
+ejecución real, publicación comprobada e instalación limpia desde registry.
+T12 conserva su orden de migración: WalletCore, Web, Dashboard y Flow,
 con verificación y lockfile exacto de cada consumidor antes del siguiente.
+
+`npm whoami` sólo comprueba la sesión npm local. Su `ENEEDAUTH` no determina
+los permisos de un trusted publisher OIDC: esos permisos se comprueban con la
+operación de publicación en el runner configurado, como explica la
+[documentación de npm](https://docs.npmjs.com/trusted-publishers/).
 
 La [documentación de trusted publishing de npm](https://docs.npmjs.com/trusted-publishers/)
 explica la configuración inicial, Node/npm mínimos y la limitación de provenance

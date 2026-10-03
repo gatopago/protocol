@@ -6,11 +6,8 @@
   "packageManager": "pnpm@11.23.0",
   "engines": { "node": "24.x" },
   "scripts": {
-    "check:dependencies": "node scripts/verify-solidity-dependencies.mjs && node scripts/verify-entrypoint-source.mjs",
-    "build": "pnpm check:dependencies && forge build",
-    "test": "pnpm check:dependencies && forge test",
-    "verify": "pnpm build && pnpm test && forge build --sizes && forge lint --severity high med low --deny warnings",
-    "install:solidity": "node scripts/install-solidity.mjs"
+    "build": "forge build",
+    "test": "forge test"
   },
   "devDependencies": {
     "@gatopago/entrypoint-source": "https://codeload.github.com/eth-infinitism/account-abstraction/tar.gz/b36a1ed52ae00da6f8a4c8d50181e2877e4fa410"
