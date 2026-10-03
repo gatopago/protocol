@@ -1,0 +1,25 @@
+{
+  "name": "@gatopago/protocol-workspace",
+  "private": true,
+  "type": "module",
+  "engines": { "node": "24.x" },
+  "packageManager": "pnpm@11.23.0",
+  "scripts": {
+    "build": "node scripts/build-sdk.mjs",
+    "pack": "node scripts/pack-sdk.mjs",
+    "distribute": "node scripts/distribute.mjs",
+    "test": "vitest run",
+    "money:fixtures": "node scripts/generate-money-contract-fixtures.mjs",
+    "money:composition": "node scripts/verify-money-composition.mjs",
+    "money:web-config": "node scripts/generate-money-web-config.mjs",
+    "money:web-config:check": "node scripts/generate-money-web-config.mjs --check",
+    "baseline": "node scripts/capture-arbitrum-baseline.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "24.13.3",
+    "esbuild": "0.28.1",
+    "typescript": "6.0.3",
+    "viem": "2.55.19",
+    "vitest": "4.1.11"
+  }
+}

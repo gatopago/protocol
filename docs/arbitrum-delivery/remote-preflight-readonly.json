@@ -1,0 +1,161 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-02T18:18:08.298Z",
+  "status": "remote_metadata_read_only",
+  "remote_writes": false,
+  "public_financial_transactions": false,
+  "authentication": {
+    "cloudflare": {
+      "logged_in": true,
+      "auth_type": "OAuth Token",
+      "target_account_matches": true,
+      "reported_scopes": [
+        "account:read",
+        "user:read",
+        "workers_scripts:write",
+        "workers_tail:read",
+        "d1:write",
+        "queues:write"
+      ],
+      "scope_list_complete": false,
+      "secret_values_exported": false
+    },
+    "npm": {
+      "authenticated": false,
+      "exit_code": 1,
+      "error_code": "ENEEDAUTH"
+    }
+  },
+  "target": {
+    "account_id": "c26e82cd341803c9136e19e668da67c6",
+    "worker": "gatopago-wallet-core",
+    "config": "gatopago-wallet-core/wrangler.remote.jsonc",
+    "database": {
+      "binding": "WALLET_DB",
+      "name": "gatopago-wallet-core",
+      "id": "48996f36-0c69-4b0c-af75-b73e88b4f09b"
+    }
+  },
+  "deployment": {
+    "id": "1cc88994-56a1-4efe-a8b8-c9b699026c97",
+    "created_on": "2026-10-02T11:18:17.369349Z",
+    "version_id": "ab14c697-be85-4c0c-8f4e-270424a157a2",
+    "version_number": 51,
+    "percentage": 100,
+    "source": "wrangler",
+    "matches_local_candidate": null
+  },
+  "d1": {
+    "applied_migrations": [
+      {
+        "name": "0001_initial.sql",
+        "applied_at": "2026-09-29 00:32:15"
+      },
+      {
+        "name": "0002_production_namespace.sql",
+        "applied_at": "2026-10-02 06:22:12"
+      },
+      {
+        "name": "0003_plaintext_invitation_codes.sql",
+        "applied_at": "2026-10-02 12:08:17"
+      }
+    ],
+    "expected_money_tables": [
+      "wallet_spend_locks",
+      "money_preparations",
+      "money_operations",
+      "money_jobs",
+      "money_finality_journal",
+      "money_reconciliations",
+      "money_finality_conflicts",
+      "money_expirations"
+    ],
+    "present_money_tables": [],
+    "money_migration_applied": false,
+    "query_meta": {
+      "changes": 0,
+      "rows_written": 0,
+      "changed_db": false
+    },
+    "user_rows_read_or_exported": false
+  },
+  "queues": [
+    {
+      "name": "gatopago-wallet-core-jobs",
+      "id": "167dadefcaf745c69bfcf268130adc60",
+      "producers": [
+        "worker:gatopago-wallet-core"
+      ],
+      "consumers": [
+        "worker:gatopago-wallet-core"
+      ]
+    },
+    {
+      "name": "gatopago-wallet-core-jobs-dlq",
+      "id": "ac1119ef6d084485915bc67e2fc25ce4",
+      "producers": [],
+      "consumers": []
+    }
+  ],
+  "runtime": {
+    "compatibility_date": "2026-09-08",
+    "compatibility_flags": [
+      "nodejs_compat"
+    ],
+    "migration_tag": "v3_wallet_core",
+    "database_binding_matches": true,
+    "queue_binding_matches": true
+  },
+  "commands": [
+    {
+      "command": "wrangler whoami --json",
+      "exit_code": 0
+    },
+    {
+      "command": "wrangler deployments list --json",
+      "exit_code": 0
+    },
+    {
+      "command": "wrangler deployments status --json",
+      "exit_code": 0
+    },
+    {
+      "command": "wrangler versions view ab14c697-be85-4c0c-8f4e-270424a157a2 --json",
+      "exit_code": 0,
+      "export": "selected_nonsecret_metadata_only"
+    },
+    {
+      "command": "wrangler d1 execute WALLET_DB --remote --json --command SELECT metadata",
+      "exit_code": 0,
+      "sql": [
+        "SELECT name, applied_at FROM d1_migrations ORDER BY id",
+        "SELECT name, type FROM sqlite_master WHERE name IN ('wallet_spend_locks','money_preparations','money_operations','money_jobs','money_finality_journal','money_reconciliations','money_finality_conflicts','money_expirations') ORDER BY name"
+      ]
+    },
+    {
+      "command": "wrangler queues info gatopago-wallet-core-jobs",
+      "exit_code": 0
+    },
+    {
+      "command": "wrangler queues info gatopago-wallet-core-jobs-dlq",
+      "exit_code": 0
+    }
+  ],
+  "tool": {
+    "wrangler": "4.136.0",
+    "source": "project_local"
+  },
+  "limitations": [
+    "Recorded from observations during this implementation turn; recorded_at is artifact creation time, not each remote query time.",
+    "Existing remote resources and a valid Cloudflare session do not attest deployment of the current local candidate.",
+    "Only migration ledger and schema metadata were queried; no credentials or user records were exported.",
+    "No migration, upload, deployment, secret change, queue message or public financial transaction was performed.",
+    "T01 requires a real registered passkey and user presence; anonymous challenge/CORS success cannot substitute for it."
+  ],
+  "documentation": [
+    "https://developers.cloudflare.com/workers/wrangler/commands/general/",
+    "https://developers.cloudflare.com/workers/wrangler/commands/workers/",
+    "https://developers.cloudflare.com/workers/wrangler/commands/d1/",
+    "https://developers.cloudflare.com/workers/wrangler/commands/queues/"
+  ]
+}

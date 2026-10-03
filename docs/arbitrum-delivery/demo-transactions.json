@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "status": "pending_public_execution",
+  "network_id": "eip155:421614",
+  "release": null,
+  "accounts": { "a": null, "b": null },
+  "preconditions": { "a_available_usdc_atomic": "100000000", "a_initial_position_atomic": "0", "a_debt_atomic": "0", "funding_observed": false },
+  "steps": [
+    { "id": "D01", "action": "login_activate_receive", "status": "pending", "evidence": null },
+    { "id": "D02", "action": "aave_supply", "amount_atomic": "40000000", "expected_a_available_atomic": "60000000", "status": "pending", "evidence": null },
+    { "id": "D03", "action": "aave_withdraw", "amount_atomic": "10000000", "expected_a_available_atomic": "70000000", "status": "pending", "evidence": null },
+    { "id": "D04", "action": "aave_withdraw_and_pay", "amount_atomic": "20000000", "expected_a_available_atomic": "70000000", "expected_b_increase_atomic": "20000000", "status": "pending", "evidence": null },
+    { "id": "D05", "action": "close_reopen_recover", "expected_additional_sends": 0, "status": "pending", "evidence": null },
+    { "id": "D06", "action": "legacy_transfer", "amount_atomic": "5000000", "status": "pending", "evidence": null }
+  ],
+  "public_transactions": [],
+  "limits": [
+    "Expected amounts are the plan's scenario, not observed balances or executed transactions.",
+    "Gas is accounted in ETH separately; Aave position assertions must account for interest and rounding.",
+    "Actual evidence must identify operation, UserOperation, transaction, block/finality, own events, balances, position and costs without signatures or sessions."
+  ]
+}

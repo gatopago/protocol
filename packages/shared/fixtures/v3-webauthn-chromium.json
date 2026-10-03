@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "provenance": "Chromium navigator.credentials.create/get, CDP virtual CTAP2/internal authenticator, 2026-09-08. Public assertion only; browser context discarded. Not a physical-device or account lifecycle proof.",
+  "challenge": "0x0202020202020202020202020202020202020202020202020202020202020202",
+  "rpId": "localhost",
+  "origin": "http://localhost:3000",
+  "spki": "0x3059301306072a8648ce3d020106082a8648ce3d0301070342000494c2f6c465f8fb90aa4e577aa20b56de6f11ab262c8058f115ce92ea50856bbf73c9438954c69c3cb3f580ce2cae425e2da3f5b1b405d89458f500e0adf4bc2b",
+  "algorithm": -7,
+  "authenticatorData": "0x49960de5880e8c687434170f6476605b8fe4aeb9a28632c7995cf3ba831d97630500000002",
+  "clientDataJSON": "{\"type\":\"webauthn.get\",\"challenge\":\"AgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgI\",\"origin\":\"http://localhost:3000\",\"crossOrigin\":false}",
+  "signatureDER": "0x304502203e819c29bccf1898a05d1982321bc3bb1584e4034853012c8456679953a75a4e022100bfb3499d59ebda7224b6aac9e0b198b4af70fc6d54318d78c8e036645020082e",
+  "r": "0x3e819c29bccf1898a05d1982321bc3bb1584e4034853012c8456679953a75a4e",
+  "sRaw": "0xbfb3499d59ebda7224b6aac9e0b198b4af70fc6d54318d78c8e036645020082e",
+  "sNormalized": "0x404cb661a614258edb4955361f4e674b0d75fe4052e6110c2ad9945eac431d23"
+}

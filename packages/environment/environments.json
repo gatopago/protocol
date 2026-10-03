@@ -1,0 +1,18 @@
+{
+  "production": {
+    "schema_version": 1,
+    "environment": "production",
+    "status": "provisioned",
+    "web_origin": "https://gatopago.com",
+    "business_origin": "https://business.gatopago.com",
+    "api_origin": "https://api.gatopago.com",
+    "webauthn_rp_id": "gatopago.com",
+    "webauthn_allowed_origins": ["https://gatopago.com"],
+    "api_modes": ["test"],
+    "blockchain_tiers": ["testnet"],
+    "wallet_candidates": ["eip155:84532", "eip155:421614", "eip155:43113"],
+    "wallet_enabled": ["eip155:421614"],
+    "payment_live_enabled": false,
+    "firebase_project_id": "proyecto-prueba-push-firebase"
+  }
+}

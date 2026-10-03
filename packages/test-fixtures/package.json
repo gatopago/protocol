@@ -1,0 +1,80 @@
+{
+  "name": "@gatopago/test-fixtures",
+  "private": true,
+  "version": "3.2.1",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    "./v3-creation-inspection": {
+      "types": "./dist/v3CreationInspection.d.ts",
+      "import": "./dist/v3CreationInspection.js",
+      "require": "./dist/v3CreationInspection.js",
+      "default": "./dist/v3CreationInspection.js"
+    },
+    "./v3-deployment-fixture": {
+      "types": "./dist/v3DeploymentFixture.d.ts",
+      "import": "./dist/v3DeploymentFixture.js",
+      "require": "./dist/v3DeploymentFixture.js",
+      "default": "./dist/v3DeploymentFixture.js"
+    },
+    "./v3-transfer": {
+      "types": "./dist/v3Transfer.d.ts",
+      "import": "./dist/v3Transfer.js",
+      "require": "./dist/v3Transfer.js",
+      "default": "./dist/v3Transfer.js"
+    },
+    "./v3-finality": {
+      "types": "./dist/v3Finality.d.ts",
+      "import": "./dist/v3Finality.js",
+      "require": "./dist/v3Finality.js",
+      "default": "./dist/v3Finality.js"
+    },
+    "./v3-backup": {
+      "types": "./dist/v3Backup.d.ts",
+      "import": "./dist/v3Backup.js",
+      "require": "./dist/v3Backup.js",
+      "default": "./dist/v3Backup.js"
+    },
+    "./v3-inspection": {
+      "types": "./dist/v3Inspection.d.ts",
+      "import": "./dist/v3Inspection.js",
+      "require": "./dist/v3Inspection.js",
+      "default": "./dist/v3Inspection.js"
+    },
+    "./v3-security-inspection": {
+      "types": "./dist/v3SecurityInspection.d.ts",
+      "import": "./dist/v3SecurityInspection.js",
+      "require": "./dist/v3SecurityInspection.js",
+      "default": "./dist/v3SecurityInspection.js"
+    },
+    "./v3-creation-receipt": {
+      "types": "./dist/v3CreationReceipt.d.ts",
+      "import": "./dist/v3CreationReceipt.js",
+      "require": "./dist/v3CreationReceipt.js",
+      "default": "./dist/v3CreationReceipt.js"
+    },
+    "./v3-initialization": {
+      "types": "./dist/v3Initialization.d.ts",
+      "import": "./dist/v3Initialization.js",
+      "require": "./dist/v3Initialization.js",
+      "default": "./dist/v3Initialization.js"
+    }
+  },
+  "dependencies": {
+    "@gatopago/shared": "workspace:3.2.1",
+    "viem": "2.55.19"
+  },
+  "peerDependencies": {
+    "vitest": "^4.1.11"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.3",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

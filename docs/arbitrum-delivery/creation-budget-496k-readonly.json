@@ -1,0 +1,89 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-02T17:36:44.643Z",
+  "status": "readonly_verifier_passed_creation_budget_unproven",
+  "network_id": "eip155:421614",
+  "block_number": "315056036",
+  "block_hash": "0xffd87114d66c2e7696cf8ce1693bcf37318099ff9694450750940c433774a800",
+  "creation_profile_sha256": "0x3709554790fa58a63b0c0677c608061cb7faae7ad53220774c0bca4070389856",
+  "deployment_sha256": "0xb844255cc678be977b9400d2407db6b8cbc7eabeec3aa2bc23e549f5a9c198ec",
+  "verifier": "0x33def7fd931a7df910fe7def70327cb15712c71a",
+  "verifier_code_hash": "0xf8a1dfb1c354a462144c89eb6037f638d7a7816bc31f84246f491756aa00d0a9",
+  "vector": "real Node P256 signature using public scalar 1; synthetic WebAuthn data",
+  "observations": [
+    {
+      "operator": "offchain-labs",
+      "block_hash": "0xffd87114d66c2e7696cf8ce1693bcf37318099ff9694450750940c433774a800",
+      "native_valid": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "native_invalid": "0x",
+      "deployed_verifier_valid": "0x024ad318",
+      "deployed_verifier_wrong_challenge": "0xffffffff"
+    },
+    {
+      "operator": "tenderly",
+      "block_hash": "0xffd87114d66c2e7696cf8ce1693bcf37318099ff9694450750940c433774a800",
+      "native_valid": "0x0000000000000000000000000000000000000000000000000000000000000001",
+      "native_invalid": "0x",
+      "deployed_verifier_valid": "0x024ad318",
+      "deployed_verifier_wrong_challenge": "0xffffffff"
+    }
+  ],
+  "creation_simulation": {
+    "account": "0x696545eec0b7a34316582D5Db0fbD098dDe04d9c",
+    "user_op_hash": "0x7311afb7aa7fa77a2221dd301ef50e47a0aa63a3ef7df86068ff772811a91ce4",
+    "signed_verification_gas_limit": "496000",
+    "signed_call_gas_limit": "100000",
+    "signed_pre_verification_gas": "150000",
+    "signed_max_fee_per_gas": "100000000",
+    "signed_max_priority_fee_per_gas": "0",
+    "outer_gas_limit": "2000000",
+    "funding": "eth_call state overrides only; 10 synthetic ETH each for vector account and caller",
+    "public_account_code_unchanged": true,
+    "budgets": [
+      {
+        "verification_gas_limit": "496000",
+        "runtime_budget": true,
+        "user_op_hash": "0x7311afb7aa7fa77a2221dd301ef50e47a0aa63a3ef7df86068ff772811a91ce4",
+        "observations": [
+          {
+            "operator": "offchain-labs",
+            "exact_handle_ops_eth_call": "failed",
+            "reason": "AA13 initCode failed or OOG"
+          },
+          {
+            "operator": "tenderly",
+            "exact_handle_ops_eth_call": "failed",
+            "reason": "AA13 initCode failed or OOG"
+          }
+        ]
+      },
+      {
+        "verification_gas_limit": "750000",
+        "runtime_budget": false,
+        "user_op_hash": "0x66b41f41737665e51195b5e50e642496e8ecd12085d0147d2dc20e509840640e",
+        "observations": [
+          {
+            "operator": "offchain-labs",
+            "exact_handle_ops_eth_call": "passed"
+          },
+          {
+            "operator": "tenderly",
+            "exact_handle_ops_eth_call": "passed"
+          }
+        ]
+      }
+    ]
+  },
+  "catalog_source_sha256": "406d2755e332ea02f6dbab87668405ef354d601a9e7ca169573213c70ed20718",
+  "script_sha256": "15af7a0c9605254a534bc11317f9a8f0e5090e0a7f782d305bb7792a9a9c7b26",
+  "account_created": false,
+  "hardware_passkey": false,
+  "login_completed": false,
+  "public_transactions": false,
+  "limits": [
+    "Latest common checkpoint is not a finality proof.",
+    "Budget diagnostics are synthetic signatures, not accepted runtime limits; no real funding, hardware passkey, broadcast or receipt is demonstrated.",
+    "An empty handleOps return is not proof of its inner execution outcome or a complete public creation workflow.",
+    "No account, credential, reusable user assertion, session or financial transaction is produced."
+  ]
+}

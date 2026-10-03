@@ -1,0 +1,189 @@
+{
+  "schema_version": 1,
+  "purpose": "local_pinned_fork_only",
+  "funding": "synthetic_cheatcodes",
+  "block_number": 314973083,
+  "block_tag": "0x12c61b9b",
+  "block_hash": "0x7a693f61f664ca6847dbe44a6e6310c8746d146887b49d24e313defbcdb247a4",
+  "market_sha256": "0x98067ffe93fe8f9627dfeceb13704cf8fe50e7da4cea1aef0869509295ff1746",
+  "creation_sha256": "0xf881fee9665cf5c69a5f86dea6117585ad4a8c1c25569cecd23c9e3d5db97468",
+  "account": {
+    "schema_version": 1,
+    "purpose": "account_creation",
+    "deployment": {
+      "schema_version": 1,
+      "generation": 3,
+      "manifest_id": "33da0dc1-1656-41a9-9448-0ca9d53ad798",
+      "network_id": "eip155:421614",
+      "genesis_hash": "0x77194da4010e549a7028a9c3c51c3e277823be6ac7d138d0bb8a70197b5c004c",
+      "lifecycle_status": "deployed",
+      "entry_point": "0x433709009b8330fda32311df1c2afa402ed8d009",
+      "storage_layout_hash": "0xdcd24b64ea3d183f0c8ec0cf5f2f5a3ed15545805791416ab100c3a0ca160f49",
+      "proxy": {
+        "runtime_code_hash": "0xe816d0e9aa79a8b09f84d7c4a01a456181d503afdd51ad0f41f9935228e8cac1",
+        "init_code_hash": "0x947236caf6a186e24935d88388ceb4217c365cb02e5ff1282bf6011480d7e612",
+        "artifact_sha256": "0x16af0620675a5b9c7215d6a57f7792fcba056309157fd0c5cce23981ac52524c"
+      },
+      "components": {
+        "factory": {
+          "address": "0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+          "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+          "salt": "0x4effbf67747c4469c2b17a954584cdfdcd230ea1831aa4ced9fe5076f54abc98",
+          "creation_code_hash": "0xfed0733a4a29406d785862bd1f8326f96a139fe46801f2e8a407c5acf8439645",
+          "runtime_code_hash": "0x83beb3526e01dd5be9f005de8e039a057b1a937688b52ad771b1d247f7d59604",
+          "abi_sha256": "0x50b3b94dd9e941768248a682223b4f9d1a070f2a5f2dc68d7855840671c6037b",
+          "source_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+          "source_tree_sha256": "0xcf612209f661545c34e814617c2752da999cc4a4b22fa0f79c06cb40cdfbd6ef",
+          "dependency_lock_sha256": "0x864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+          "build_info_sha256": "0x4a28635d9412bd0b82b514a81746c440ec6574b967729ef0b0f8ebcb34d0de0a",
+          "compiler": {
+            "version": "0.8.34",
+            "optimizer_runs": 200,
+            "via_ir": true,
+            "evm_version": "cancun"
+          },
+          "deployment_tx": "0x981a7299fb6ccbc68b578ce35a1238e9103db51c64e6de6d0515a8f8b93e9230",
+          "deployed_block": "312937289",
+          "verification_url": "https://sourcify.dev/server/v2/contract/421614/0x61c74d8f0834791db732fba9ac022224bf3bbb5f"
+        },
+        "implementation": {
+          "address": "0xfe909a09561632a0f9b1a5a00090a658820e4122",
+          "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+          "salt": "0x4effbf67747c4469c2b17a954584cdfdcd230ea1831aa4ced9fe5076f54abc98",
+          "creation_code_hash": "0xbaa530c8d248be06ba9db7ede83c2ccb9cd4b0dd0de70ff40d5b10ce85590d11",
+          "runtime_code_hash": "0x61e2c0a98de282ebf0ea5aa798234935bf58d72751cbba57560a2e4ef79bd7c0",
+          "abi_sha256": "0xd34acb28602d6b2f7e8b04fac87c828342eadbf92d1a0335f35e2784b4224438",
+          "source_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+          "source_tree_sha256": "0xfdc39ba7ea4e5d381532359d56f76e91913f723dfa183acfdb6979a1dc5936bc",
+          "dependency_lock_sha256": "0x864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+          "build_info_sha256": "0xc64533d83330cedd335f81a0068956cadfb79e741ff58e62739f7c35bcc373d6",
+          "compiler": {
+            "version": "0.8.34",
+            "optimizer_runs": 200,
+            "via_ir": true,
+            "evm_version": "cancun"
+          },
+          "deployment_tx": "0x42af04c29d7cecb7c199dabccf4eea4d3d52613ccb7f8fcc5e0379645026d80b",
+          "deployed_block": "312937277",
+          "verification_url": "https://sourcify.dev/server/v2/contract/421614/0xfe909a09561632a0f9b1a5a00090a658820e4122"
+        },
+        "security_module": {
+          "address": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+          "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+          "salt": "0x28b3efa27297a9bb0954d0d9863565cdcca035410d5bb8e208760c5e4619e589",
+          "creation_code_hash": "0x98e1649a344206c5689dc04362f3892d427c36891dcff091b74aa963fde51202",
+          "runtime_code_hash": "0x419956b09a94179f282782910abaacb0d36597378f837c8f29c077a0a89591e1",
+          "abi_sha256": "0x1a37deb1b2d1733bc05c0b79d8b5abd15bc8c0b36cb8bddfe5bfb93490e2dcef",
+          "source_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+          "source_tree_sha256": "0xb9190162101a56316fe29fa3621c1d16cea60a18e0ce801eb82807b18e32e617",
+          "dependency_lock_sha256": "0x864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+          "build_info_sha256": "0x1a876dcfcc0a6526e399b09c573f4cb023f7188c535c1213551965676bc32b52",
+          "compiler": {
+            "version": "0.8.34",
+            "optimizer_runs": 200,
+            "via_ir": true,
+            "evm_version": "cancun"
+          },
+          "deployment_tx": "0xdedf0a1af707bd346bbd3f2cae49a87fdafd5db2a4289d9fc9e556b6fb3d6a1f",
+          "deployed_block": "312936350",
+          "verification_url": "https://sourcify.dev/server/v2/contract/421614/0x5d35d52853f1649eb05beedfce4aa2b33cf37539"
+        },
+        "upgrade_module": {
+          "address": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10",
+          "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+          "salt": "0x1c28eb74ae186fed8517c6920a3dbcd2814313908dc7aae0cb39ec050de26635",
+          "creation_code_hash": "0x9c37fd1b06a7a3e3fab030bb4d57dfcea86b9e93efb30445f79a6930dc6b1ab5",
+          "runtime_code_hash": "0xbe281fc7dcd894adb4265909a7bcf42914ac6ed30f4bf3edf5a1869cb476896c",
+          "abi_sha256": "0x9736959440f621e659c4c44a4300c96abc2d41f4bb4d23555f63f089095e0e15",
+          "source_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+          "source_tree_sha256": "0x6a6ac74d5cf92acb4296db9ad67e8493abe980a90496c074fd9260f6bb3841cb",
+          "dependency_lock_sha256": "0x864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+          "build_info_sha256": "0x5c9174ce54d299f35d0575b8a64c2202a7d4ce3b254927bbcd8d4ee60e0b046f",
+          "compiler": {
+            "version": "0.8.34",
+            "optimizer_runs": 200,
+            "via_ir": true,
+            "evm_version": "cancun"
+          },
+          "deployment_tx": "0xef1d444a18715632f870cdf4927db67ec52aa18867a3dcfc4dfe6bae536abd45",
+          "deployed_block": "312936362",
+          "verification_url": "https://sourcify.dev/server/v2/contract/421614/0xcfa137d56dd8eaa3fd115bfade009bd897092f10"
+        }
+      }
+    },
+    "proxy_creation_code": "0x60806040523461011f57604051601f61029838819003918201601f19168301916001600160401b0383118484101761010b5780849260209460405283398101031261011f57516001600160a01b03811680820361011f5760405190602082016001600160401b0381118382101761010b576040525f8252823b156100f9577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc80546001600160a01b031916821790557fbc7cd75a20ee27fd9adebab32041f755214dbc6bffa90cc0225b39da2e5c2d3b5f80a28051156100f2576100e291610123565b505b60405160e890816101b08239f35b50506100e4565b634c9c8ce360e01b5f5260045260245ffd5b634e487b7160e01b5f52604160045260245ffd5b5f80fd5b905f8091602081519101845af4808061019c575b156101575750506040513d81523d5f602083013e60203d82010160405290565b1561017c57639996b31560e01b5f9081526001600160a01b0391909116600452602490fd5b3d1561018d576040513d5f823e3d90fd5b63d6bda27560e01b5f5260045ffd5b503d1515806101375750813b151561013756fe608060405260043610156015575b36606a57606a565b5f3560e01c630c870f9103600d57346066575f3660031901126066577f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc546001600160a01b03166080908152602090f35b5f80fd5b7f360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc545f9081906001600160a01b0316368280378136915af43d5f803e1560ae573d5ff35b3d5ffdfea264697066735822122071ab09895c9f0087ef25a446bbcfe95a52c3f771eb3f0d7d3ef7a468770ea0ec64736f6c63430008220033",
+    "webauthn_verifier": {
+      "address": "0x33def7fd931a7df910fe7def70327cb15712c71a",
+      "deployer": "0x4e59b44847b379578588920ca78fbf26c0b4956c",
+      "salt": "0x4effbf67747c4469c2b17a954584cdfdcd230ea1831aa4ced9fe5076f54abc98",
+      "creation_code_hash": "0xafaa92e0897930bb12615b002fbc8248d69803f7475e484899e1efda4dc82a49",
+      "runtime_code_hash": "0xf8a1dfb1c354a462144c89eb6037f638d7a7816bc31f84246f491756aa00d0a9",
+      "abi_sha256": "0x621790de05ad0d413b5d8a37898c9ec351a8df19ec09717097af2974c9c6df74",
+      "source_commit": "2257fa673de3b16d1bd2b42348ba0c2c51fc9cfb",
+      "source_tree_sha256": "0xf9efbe7697934405a66a7d1656a3f6403f4c9316f2d42ff511ef7121213a2224",
+      "dependency_lock_sha256": "0x864b07bd5d9bc34d1cb9f87fb2516c36dc9087190df8c646aec8d3b7deafb01a",
+      "build_info_sha256": "0x315f1f40d29656ba9f653cd51a90fa6ea580c808abd7b7a286e56dd7a636d2c1",
+      "compiler": {
+        "version": "0.8.34",
+        "optimizer_runs": 200,
+        "via_ir": true,
+        "evm_version": "cancun"
+      },
+      "deployment_tx": "0x8ae893b7d4313b8d005bac2f2c05e359778a93a5e34d693b32acf264ff4ecfbd",
+      "deployed_block": "312937265",
+      "verification_url": "https://sourcify.dev/server/v2/contract/421614/0x33def7fd931a7df910fe7def70327cb15712c71a"
+    },
+    "entry_point_code_hash": "0x66104e61203e3b9cf29303ececd9367b6329f6caa2bb063361ea75b7b92a7678",
+    "sender_creator": {
+      "address": "0x0a630a99df908a81115a3022927be82f9299987e",
+      "runtime_code_hash": "0xa7d4dd260bca9c96da49f7c0682fdda7f0074694d935815a336d3e60ee3ec6ad"
+    }
+  },
+  "market": {
+    "schema_version": 1,
+    "market_id": "aave-v3-arbitrum-sepolia-usdc",
+    "network_id": "eip155:421614",
+    "asset_id": "eip155:421614/erc20:0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+    "decimals": 6,
+    "provider": "0xB25a5D144626a0D488e52AE717A051a2E9997076",
+    "pool": "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff",
+    "a_token": "0x460b97BD498E1157530AEb3086301d5225b91216",
+    "genesis_hash": "0x77194da4010e549a7028a9c3c51c3e277823be6ac7d138d0bb8a70197b5c004c",
+    "abi_sha256": "0xc47df0a26a47946c83f9a8e9381b42b75869d3d0bda9d14be5007d15bf4fbde4",
+    "admitted_block_number": "314973083",
+    "admitted_block_hash": "0x7a693f61f664ca6847dbe44a6e6310c8746d146887b49d24e313defbcdb247a4",
+    "valid_from": 1790942999,
+    "valid_until": 1793534999,
+    "max_observation_age_seconds": 30,
+    "contracts": [
+      {
+        "name": "a_token",
+        "address": "0x460b97BD498E1157530AEb3086301d5225b91216",
+        "code_hash": "0x9ebf888908796c254c5a569ba4c8bf80aa125b9480a53811b4a27ad43b914a8d",
+        "implementation": "0xc0Bac16A64FbAa7EE6483bD12a759e28cD13dcBe",
+        "implementation_code_hash": "0xa41a5209b9c291887a9a27f2dfa23a0ff670b5f698d2ddfd65cf905b83c377c3"
+      },
+      {
+        "name": "pool",
+        "address": "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff",
+        "code_hash": "0xd75b4365d675956c42b20584bb92e557c2a0cd1b692d8c0c2b4fea848bc9a44e",
+        "implementation": "0x82405D1a189bd6cE4667809C35B37fBE136A4c5B",
+        "implementation_code_hash": "0x7989c6fca512aa7eb3c61d161792c51e550aa1751af35b8f9ad560d4b85f2e0e"
+      },
+      {
+        "name": "provider",
+        "address": "0xB25a5D144626a0D488e52AE717A051a2E9997076",
+        "code_hash": "0xc820c000a4f1c6745d5bf39378793ceedd60468d84dc9f22c455a7f3653dafc2",
+        "implementation": null,
+        "implementation_code_hash": null
+      },
+      {
+        "name": "token",
+        "address": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+        "code_hash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
+        "implementation": null,
+        "implementation_code_hash": null
+      }
+    ]
+  }
+}

@@ -5,6 +5,33 @@ payment rails**. Account V3 holds a user's assets at a personal contract address
 and checks signed instructions before executing transactions or changing security.
 It is not the frontend, the backend, or a shared wallet holding every user's funds.
 
+## Compiled SDK producer
+
+`packages/shared`, `packages/environment` and `packages/test-fixtures` produce
+compiled ESM and declarations. The current local consumer snapshots are 3.2.1.
+Packages remain private; registry publication and licensing are pending.
+
+Run `pnpm sdk:verify` for build and tests. `pnpm sdk:pack` creates a new
+immutable candidate and refuses to overwrite an existing version.
+`pnpm sdk:release:check` compares packed bytes with the compiled producer and
+records source provenance; `pnpm sdk:verify-consumers` installs the archives in
+a standalone temporary consumer and checks exports, Node 24 require and types.
+`pnpm sdk:verify-producer` copies only SDK sources, tooling and test inputs into
+a fresh temporary producer, installs its frozen lockfile, builds, tests and packs,
+then compares every packed file with the immutable snapshots. It does not inherit
+generated files or claim that the source snapshot is a committed Git checkout.
+The SDK CI job is prepared locally; no remote CI run is claimed.
+
+The separate SDK release workflow is also prepared locally. Publication remains
+disabled in `config/sdk-publication.json` until package ownership, license,
+visibility and npm trusted publishers are established. The
+[registry runbook](docs/arbitrum-delivery/sdk-registry-runbook.md) describes the
+exact-ref validation, OIDC publisher, integrity checks and partial-release recovery.
+
+The Arbitrum money programs reuse AccountV3 CALL/SPEND. Production contract
+source and bytecode are unchanged. Their local, fork and public delivery states
+are tracked in [the implementation status](docs/arbitrum-delivery/STATUS.md).
+
 ## Account V3 deployment
 
 **Network:** Arbitrum Sepolia · **Chain ID:** `421614` · **Recorded deployment:** September 26, 2026.

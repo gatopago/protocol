@@ -1,0 +1,264 @@
+{
+  "schema_version": 1,
+  "status": "market_observed",
+  "observed_at": "2026-10-02T12:09:59.708Z",
+  "network_id": "eip155:421614",
+  "market_id": "aave-v3-arbitrum-sepolia-usdc",
+  "addresses": {
+    "provider": "0xB25a5D144626a0D488e52AE717A051a2E9997076",
+    "pool": "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff",
+    "token": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    "a_token": "0x460b97BD498E1157530AEb3086301d5225b91216"
+  },
+  "source": {
+    "url": "https://raw.githubusercontent.com/bgd-labs/aave-address-book/main/src/AaveV3ArbitrumSepolia.sol",
+    "sha256": "d2354e7f8f99b1264ddbcc0fe237f8c0abb7a13fe3e4ba4cad917673e0a07ce7"
+  },
+  "abi_sha256": "f1a3fc368c8240949186c7878054bd7113495015fbce674eb92178da4111dab8",
+  "abi": [
+    {
+      "name": "getPool",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "name": "decimals",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "uint8"
+        }
+      ]
+    },
+    {
+      "name": "UNDERLYING_ASSET_ADDRESS",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "name": "POOL",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [],
+      "outputs": [
+        {
+          "type": "address"
+        }
+      ]
+    },
+    {
+      "name": "balanceOf",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [
+        {
+          "type": "address"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "uint256"
+        }
+      ]
+    },
+    {
+      "name": "getConfiguration",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "asset"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "tuple",
+          "components": [
+            {
+              "type": "uint256",
+              "name": "data"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "getReserveData",
+      "type": "function",
+      "stateMutability": "view",
+      "inputs": [
+        {
+          "type": "address",
+          "name": "asset"
+        }
+      ],
+      "outputs": [
+        {
+          "type": "tuple",
+          "components": [
+            {
+              "type": "tuple",
+              "name": "configuration",
+              "components": [
+                {
+                  "type": "uint256",
+                  "name": "data"
+                }
+              ]
+            },
+            {
+              "type": "uint128",
+              "name": "liquidityIndex"
+            },
+            {
+              "type": "uint128",
+              "name": "currentLiquidityRate"
+            },
+            {
+              "type": "uint128",
+              "name": "variableBorrowIndex"
+            },
+            {
+              "type": "uint128",
+              "name": "currentVariableBorrowRate"
+            },
+            {
+              "type": "uint128",
+              "name": "currentStableBorrowRate"
+            },
+            {
+              "type": "uint40",
+              "name": "lastUpdateTimestamp"
+            },
+            {
+              "type": "uint16",
+              "name": "id"
+            },
+            {
+              "type": "address",
+              "name": "aTokenAddress"
+            },
+            {
+              "type": "address",
+              "name": "stableDebtTokenAddress"
+            },
+            {
+              "type": "address",
+              "name": "variableDebtTokenAddress"
+            },
+            {
+              "type": "address",
+              "name": "interestRateStrategyAddress"
+            },
+            {
+              "type": "uint128",
+              "name": "accruedToTreasury"
+            },
+            {
+              "type": "uint128",
+              "name": "unbacked"
+            },
+            {
+              "type": "uint128",
+              "name": "isolationModeTotalDebt"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "checkpoint": {
+    "block_number": "314973083",
+    "block_hash": "0x7a693f61f664ca6847dbe44a6e6310c8746d146887b49d24e313defbcdb247a4",
+    "timestamp": "1790941892",
+    "genesis_hash": "0x77194da4010e549a7028a9c3c51c3e277823be6ac7d138d0bb8a70197b5c004c"
+  },
+  "operators": [
+    "offchain-labs",
+    "tenderly"
+  ],
+  "observation": {
+    "pool": "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff",
+    "decimals": 6,
+    "underlying": "0x75faf114eafb1BDbe2F0316DF893fd58CE46AA4d",
+    "aPool": "0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff",
+    "reserve": {
+      "configuration": {
+        "data": "5708991643129711767755592046297032562829873389076"
+      },
+      "liquidityIndex": "1117998559672706648208708227",
+      "currentLiquidityRate": "42926281561536363102975376",
+      "variableBorrowIndex": "1162586137390592385844077509",
+      "currentVariableBorrowRate": "56389046455085624849868348",
+      "currentStableBorrowRate": "126389046455085624849868348",
+      "lastUpdateTimestamp": 1790939508,
+      "id": 0,
+      "aTokenAddress": "0x460b97BD498E1157530AEb3086301d5225b91216",
+      "stableDebtTokenAddress": "0x74801168f69fE402da6274F2328fCfA539d3Be1a",
+      "variableDebtTokenAddress": "0x4fBE3A94C60A5085dA6a2D309965DcF34c36711d",
+      "interestRateStrategyAddress": "0x5C0A210C9C0df2Ab147BDE7D9583c07cEb3131CD",
+      "accruedToTreasury": "30858005880",
+      "unbacked": "0",
+      "isolationModeTotalDebt": "0"
+    },
+    "configuration": "5708991643129711767755592046297032562829873389076",
+    "liquidity": "855362134887",
+    "contracts": [
+      {
+        "name": "provider",
+        "address": "0xb25a5d144626a0d488e52ae717a051a2e9997076",
+        "code_hash": "0xc820c000a4f1c6745d5bf39378793ceedd60468d84dc9f22c455a7f3653dafc2",
+        "eip1967_implementation": "0x0000000000000000000000000000000000000000",
+        "implementation_code_hash": null
+      },
+      {
+        "name": "pool",
+        "address": "0xbfc91d59fdaa134a4ed45f7b584caf96d7792eff",
+        "code_hash": "0xd75b4365d675956c42b20584bb92e557c2a0cd1b692d8c0c2b4fea848bc9a44e",
+        "eip1967_implementation": "0x82405d1a189bd6ce4667809c35b37fbe136a4c5b",
+        "implementation_code_hash": "0x7989c6fca512aa7eb3c61d161792c51e550aa1751af35b8f9ad560d4b85f2e0e"
+      },
+      {
+        "name": "token",
+        "address": "0x75faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+        "code_hash": "0x9a736af6aac290d9196883e8686fc1d127ff657ca534fe4b88d6d40dc0bc6750",
+        "eip1967_implementation": "0x0000000000000000000000000000000000000000",
+        "implementation_code_hash": null
+      },
+      {
+        "name": "a_token",
+        "address": "0x460b97bd498e1157530aeb3086301d5225b91216",
+        "code_hash": "0x9ebf888908796c254c5a569ba4c8bf80aa125b9480a53811b4a27ad43b914a8d",
+        "eip1967_implementation": "0xc0bac16a64fbaa7ee6483bd12a759e28cd13dcbe",
+        "implementation_code_hash": "0xa41a5209b9c291887a9a27f2dfa23a0ff670b5f698d2ddfd65cf905b83c377c3"
+      }
+    ],
+    "flags": {
+      "active": true,
+      "frozen": false,
+      "paused": false,
+      "decimals": 6,
+      "supply_cap_tokens": "10500000"
+    }
+  },
+  "limitations": [
+    "Read-only market check; not proof of account debt, execution or gas budget",
+    "EIP1967 identity observation is not a complete proxy audit",
+    "Admission does not enable a feature flag"
+  ]
+}

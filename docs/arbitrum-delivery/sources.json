@@ -1,0 +1,659 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-02T12:07:40.798Z",
+  "repositories": [
+    {
+      "repo": "gatopago",
+      "head": "42b53492e9dc04be6cbcd75c351a4bc6d9f9d06c",
+      "branch": "main",
+      "pending_paths": [
+        "M README.md",
+        " M release.json",
+        " M src/auth/AuthScreen.tsx",
+        " M src/auth/PasskeyAccess.tsx",
+        " M src/auth/auth.css",
+        " M src/marketing/Landing.tsx",
+        " M src/marketing/LandingInteractions.tsx",
+        " M src/marketing/copy.ts",
+        " M src/marketing/landing.css",
+        " M src/wallet/AccountInitialization.tsx",
+        " M src/wallet/CreationOperationPanel.tsx",
+        " M src/wallet/WalletOnboarding.tsx",
+        " M src/wallet/passkeys.ts",
+        " M test/account-setup-copy.test.ts",
+        " M test/consumer-routes.test.ts",
+        " M test/landing.test.ts",
+        " M test/passkey-client.test.ts",
+        " M test/passkeys.test.ts",
+        " M test/serve-enrollment.mjs",
+        "?? src/app/(es)/docs/",
+        "?? src/app/(es)/pay/",
+        "?? test/invitation-input.test.ts"
+      ],
+      "public_files": [
+        {
+          "path": "package.json",
+          "sha256": "49a184327a0f33d3f75a0fe673efa1466c0bc25ea932a683e408202bcf9edc2f"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "c74d9c75bd03f4411a2fd455f84f75235f97ca8147e46fbf41e080b65153c3d4"
+        },
+        {
+          "path": "vendor/manifest.json",
+          "sha256": "edc110428dee8f80b68d679eb125a596e1c1459d0a770b7f61fbab3da403f196"
+        },
+        {
+          "path": "release.json",
+          "sha256": "fa4cb4e8969600a5eb60c3145fcbfd05a5e918e883af39e0efdb334267a35f01"
+        }
+      ]
+    },
+    {
+      "repo": "gatopago-wallet-core",
+      "head": "c59e2f2697864971146eb01464306220055d7f77",
+      "branch": "main",
+      "pending_paths": [
+        "M README.md",
+        " M scripts/check-query-plans.mjs",
+        " M src/auth/invitations.ts",
+        " M src/auth/registration.ts",
+        " M src/auth/retention.ts",
+        " M test-worker/invitations.fixture.ts",
+        " M test-worker/registration.test.ts",
+        "?? migrations/0003_plaintext_invitation_codes.sql",
+        "?? test/invitationMigration.test.ts",
+        "?? test/invitations.test.ts"
+      ],
+      "public_files": [
+        {
+          "path": "package.json",
+          "sha256": "eecb6121b9b5c3b6a10ca7af9b85f044e2bb312559a0dd621f55c27ba3792c29"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "9c3ec8e122a66c7b431d5926d5e7288129510b976a6c8bec9c5b763e7df7ae47"
+        },
+        {
+          "path": "vendor/manifest.json",
+          "sha256": "1c4f57cf600817f254bc7f90647b6e8c23351b18600a2b8dff12264bbf15842d"
+        },
+        {
+          "path": "src/runtime/catalog.ts",
+          "sha256": "406d2755e332ea02f6dbab87668405ef354d601a9e7ca169573213c70ed20718"
+        },
+        {
+          "path": "src/runtime/config.ts",
+          "sha256": "a8a2ecb5a7667f1861f43a92d53d0df0c96918231d60cac602a939a82d18407e"
+        },
+        {
+          "path": "src/index.ts",
+          "sha256": "bbb912cd5844cd4b78c3384c6016b4e6453fec3329d2c0697a63eb05e2f827b7"
+        }
+      ]
+    },
+    {
+      "repo": "gatopago-flow",
+      "head": "c4d359e74258fe49c012e5bad7ed8a7a668a0287",
+      "branch": "main",
+      "pending_paths": [],
+      "public_files": [
+        {
+          "path": "package.json",
+          "sha256": "f7c72d3474e07b6f0b3fda3199a988ab982ee8f4ee374a9843a42826311afc11"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "dd122db223351aecaafb4439cf96a045d7904dd9d7e0678d373116bb92fefd02"
+        },
+        {
+          "path": "vendor/manifest.json",
+          "sha256": "d7ead725652d305e0915e112c3f5869b7396f6717c8ff70065837e842b2bd8d6"
+        },
+        {
+          "path": "src/index.ts",
+          "sha256": "1da1cccbbc320e833c671f5a782d8aa4433ed3d0f29ed114b5cfdb1da22a636b"
+        }
+      ]
+    },
+    {
+      "repo": "gatopago-dashboard",
+      "head": "76798cf10b3a5393e4a22f322687ea07900ba07c",
+      "branch": "main",
+      "pending_paths": [],
+      "public_files": [
+        {
+          "path": "package.json",
+          "sha256": "ea9c9179325bf3c2a383864a62fd5314ec38a916a43fc2b353f80824de28d9fe"
+        },
+        {
+          "path": "pnpm-lock.yaml",
+          "sha256": "04573f1ab654457571c29dd92d373fe259db46f4e2bd9ae79cf3c8ee967b2c8b"
+        }
+      ]
+    },
+    {
+      "repo": "protocol",
+      "head": "e41ed0b0b1573b75ebc600d3d1d4be2bb1194ee1",
+      "branch": "main",
+      "pending_paths": [
+        "?? ARBITRUM_DELIVERY_STATUS.md",
+        "?? docs/",
+        "?? scripts/"
+      ],
+      "public_files": [
+        {
+          "path": "contracts/package.json",
+          "sha256": "d11ec49bdabb50f911373418aa8d7850e36cbcc1712cbf8888eacc21176cf430"
+        },
+        {
+          "path": "contracts/foundry.toml",
+          "sha256": "ca940be659877043f78014757c6357911b6b32a53bf2f768720b2b53648688ae"
+        },
+        {
+          "path": "contracts/src/v3/AccountV3Execution.sol",
+          "sha256": "b2eca8038d1ce42d3fabaededb70d58194ae0c93d066ab6def9352214269b262"
+        }
+      ]
+    }
+  ],
+  "producer": {
+    "location": "sibling parmelia-links/parmelia-links; override with GATOPAGO_SDK_SOURCE",
+    "head": "79a994333dcbd8c6908fadeee76c5f50838064d2",
+    "branch": "feature/v3"
+  },
+  "packages": [
+    {
+      "name": "@gatopago/shared",
+      "version": "3.1.1",
+      "file": "gatopago-shared-3.1.1.tgz",
+      "sha256": "09ab9c0f440947e42853a8c7c1f05af8de9d00d11a6534cd789ae8918687aedf",
+      "producer": "shared",
+      "archive_verified": true,
+      "source_comparison": "verified",
+      "files": [
+        {
+          "path": "v3/arbitrum-sepolia-creation.json",
+          "archive_sha256": "f881fee9665cf5c69a5f86dea6117585ad4a8c1c25569cecd23c9e3d5db97468",
+          "source_sha256": "f881fee9665cf5c69a5f86dea6117585ad4a8c1c25569cecd23c9e3d5db97468",
+          "identical": true
+        },
+        {
+          "path": "v3/deployment-schema.json",
+          "archive_sha256": "6a39886e4fd0913040f0f42c96e9528562f89cc2df9973ac79b7b347b0f963cf",
+          "source_sha256": "6a39886e4fd0913040f0f42c96e9528562f89cc2df9973ac79b7b347b0f963cf",
+          "identical": true
+        },
+        {
+          "path": "abis/GatoPagoCctpPaymentRouter.json",
+          "archive_sha256": "9661430e31e8833ef9f51548baedb7dd672ab946f22bc2362acd68750c79005d",
+          "source_sha256": "9661430e31e8833ef9f51548baedb7dd672ab946f22bc2362acd68750c79005d",
+          "identical": true
+        },
+        {
+          "path": "abis/GatoPagoCrosschainRouter.json",
+          "archive_sha256": "5610d9e3157ef569d73dd669d4b4f1c1669c80a1cd23d9db354b37df4fa4b8e8",
+          "source_sha256": "5610d9e3157ef569d73dd669d4b4f1c1669c80a1cd23d9db354b37df4fa4b8e8",
+          "identical": true
+        },
+        {
+          "path": "abis/GatoPagoPaymentRouter.json",
+          "archive_sha256": "72370f891d6c5906136b5de231972f979b11b58dbb7d131c9ad7d6bb26557f66",
+          "source_sha256": "72370f891d6c5906136b5de231972f979b11b58dbb7d131c9ad7d6bb26557f66",
+          "identical": true
+        },
+        {
+          "path": "package.json",
+          "archive_sha256": "ebd61ea42f10e7c74a5e2aa5dc000469f59b44679eff7270a02e4b2e9003e150",
+          "source_sha256": "07e98c30d132564cdb61b88a90c191e73ffec7fa132d0f14da6aedd3df9dd66e",
+          "identical": false,
+          "transformation": "pnpm-package-json-formatting",
+          "metadata_equivalent": true
+        },
+        {
+          "path": "fixtures/payment-authorizations.json",
+          "archive_sha256": "b9f79427fced1812eb536f93b06a8dd748e3bee39bf018588fbbf91b636f038f",
+          "source_sha256": "b9f79427fced1812eb536f93b06a8dd748e3bee39bf018588fbbf91b636f038f",
+          "identical": true
+        },
+        {
+          "path": "fixtures/v3-protocol.json",
+          "archive_sha256": "df930552b112fed088e93a59a4c9328037d969e62201bce2dfa1adc0d5abe789",
+          "source_sha256": "df930552b112fed088e93a59a4c9328037d969e62201bce2dfa1adc0d5abe789",
+          "identical": true
+        },
+        {
+          "path": "fixtures/v3-storage-layout.json",
+          "archive_sha256": "5ae21f57ac3eed782392f796e4b37a67170cada6de325db1a3cbd845903a6cf3",
+          "source_sha256": "5ae21f57ac3eed782392f796e4b37a67170cada6de325db1a3cbd845903a6cf3",
+          "identical": true
+        },
+        {
+          "path": "fixtures/v3-webauthn-chromium.json",
+          "archive_sha256": "d9409e33453ff0c3167fde11d584a6649f18c166b9713a30406ba549960116e5",
+          "source_sha256": "d9409e33453ff0c3167fde11d584a6649f18c166b9713a30406ba549960116e5",
+          "identical": true
+        },
+        {
+          "path": "fixtures/v3-webauthn-encoding.json",
+          "archive_sha256": "3c206224f4c35e2b3063c7280d1741923aef1735d994bd1837a57e52d8a029c1",
+          "source_sha256": "3c206224f4c35e2b3063c7280d1741923aef1735d994bd1837a57e52d8a029c1",
+          "identical": true
+        },
+        {
+          "path": "v3/wire-schemas.json",
+          "archive_sha256": "c406b59669bcb2d06bb47cb97e7d7b0a868dd87bc57f754a30aa264da1825bf5",
+          "source_sha256": "c406b59669bcb2d06bb47cb97e7d7b0a868dd87bc57f754a30aa264da1825bf5",
+          "identical": true
+        },
+        {
+          "path": "v3/constants.mjs",
+          "archive_sha256": "e6364cd3ef4d1468d8ee3e180dac991a60c450ec9d876bb73a98d4242110ab34",
+          "source_sha256": "e6364cd3ef4d1468d8ee3e180dac991a60c450ec9d876bb73a98d4242110ab34",
+          "identical": true
+        },
+        {
+          "path": "v3/wire-validators.mjs",
+          "archive_sha256": "5ef2c9505a6f5590538424d7679923c2cb0c585933f173dcbde036e3652701ba",
+          "source_sha256": "5ef2c9505a6f5590538424d7679923c2cb0c585933f173dcbde036e3652701ba",
+          "identical": true
+        },
+        {
+          "path": "v3/constants.d.mts",
+          "archive_sha256": "ba73eae59c67ba33722b0b7e811cc27ec2631724ca038adfa32bbf4fc784c27d",
+          "source_sha256": "ba73eae59c67ba33722b0b7e811cc27ec2631724ca038adfa32bbf4fc784c27d",
+          "identical": true
+        },
+        {
+          "path": "v3/wire-validators.d.mts",
+          "archive_sha256": "5911475b1b95ed12aa63f9407c95451bd54cafe0d2d79ac54819320e13b03355",
+          "source_sha256": "5911475b1b95ed12aa63f9407c95451bd54cafe0d2d79ac54819320e13b03355",
+          "identical": true
+        },
+        {
+          "path": "v3/accountInspection.ts",
+          "archive_sha256": "c5b311beadae406f06193354f88dcd91d7236fdf8efa9f0bf998c03a89b98f0d",
+          "source_sha256": "c5b311beadae406f06193354f88dcd91d7236fdf8efa9f0bf998c03a89b98f0d",
+          "identical": true
+        },
+        {
+          "path": "v3/amount.ts",
+          "archive_sha256": "4a018c83218a053d13113090e3c7d84ed5c6f22c3c0931a8f9f23512fdd02d3e",
+          "source_sha256": "4a018c83218a053d13113090e3c7d84ed5c6f22c3c0931a8f9f23512fdd02d3e",
+          "identical": true
+        },
+        {
+          "path": "v3/assertionRecord.ts",
+          "archive_sha256": "b4a72ae3efd2c1bef4fc5a21b69e72ef2d5019fb4f17bb484320cd7823c6e294",
+          "source_sha256": "b4a72ae3efd2c1bef4fc5a21b69e72ef2d5019fb4f17bb484320cd7823c6e294",
+          "identical": true
+        },
+        {
+          "path": "v3/authorizations.ts",
+          "archive_sha256": "ad59d2d8563c452d92d60cbd895756db5cb0e93d5303108a69cda3b18f291cf9",
+          "source_sha256": "ad59d2d8563c452d92d60cbd895756db5cb0e93d5303108a69cda3b18f291cf9",
+          "identical": true
+        },
+        {
+          "path": "v3/backupEnrollment.ts",
+          "archive_sha256": "e6d061391bfccc6dcbb6623f750e61b490f35c86eeb9aeadf7275df8349a081e",
+          "source_sha256": "e6d061391bfccc6dcbb6623f750e61b490f35c86eeb9aeadf7275df8349a081e",
+          "identical": true
+        },
+        {
+          "path": "v3/backupStatus.ts",
+          "archive_sha256": "32af548a75d7712ae6224c0bdedf64357d589d3740eaa401a1f7d814655c44e3",
+          "source_sha256": "32af548a75d7712ae6224c0bdedf64357d589d3740eaa401a1f7d814655c44e3",
+          "identical": true
+        },
+        {
+          "path": "v3/backupWire.ts",
+          "archive_sha256": "77ee9d8b77e3af92fe531ae855aec39ecedbea4f2084d0770fb168a3b833c4f3",
+          "source_sha256": "77ee9d8b77e3af92fe531ae855aec39ecedbea4f2084d0770fb168a3b833c4f3",
+          "identical": true
+        },
+        {
+          "path": "v3/clientRelease.ts",
+          "archive_sha256": "dbacbc5bcb17ca54e632cb408387db84a273dc25fe7614340bfcb9af0121be6b",
+          "source_sha256": "dbacbc5bcb17ca54e632cb408387db84a273dc25fe7614340bfcb9af0121be6b",
+          "identical": true
+        },
+        {
+          "path": "v3/contractSignature.ts",
+          "archive_sha256": "a9f44e466e52d14d494cb6b34a86a799790b945436c861bfd178bbd6d12ecfd7",
+          "source_sha256": "a9f44e466e52d14d494cb6b34a86a799790b945436c861bfd178bbd6d12ecfd7",
+          "identical": true
+        },
+        {
+          "path": "v3/creationInspection.ts",
+          "archive_sha256": "d3cf309a42e8f66a0233913f188d0441704a87064591d9ab6980bc8075b624cc",
+          "source_sha256": "d3cf309a42e8f66a0233913f188d0441704a87064591d9ab6980bc8075b624cc",
+          "identical": true
+        },
+        {
+          "path": "v3/creationLifecycle.ts",
+          "archive_sha256": "b1ab6dc67431179a42643ad9ee5202545219ad1f1b181c0113e28a3a81b27cac",
+          "source_sha256": "b1ab6dc67431179a42643ad9ee5202545219ad1f1b181c0113e28a3a81b27cac",
+          "identical": true
+        },
+        {
+          "path": "v3/creationOperation.ts",
+          "archive_sha256": "8e4869a9583435a78f2bac71a9e53c236c8532f4a64546756a9ad43e6357a7c3",
+          "source_sha256": "8e4869a9583435a78f2bac71a9e53c236c8532f4a64546756a9ad43e6357a7c3",
+          "identical": true
+        },
+        {
+          "path": "v3/creationOperationWire.ts",
+          "archive_sha256": "09c0247ad4ab6c08779d0415b7a69cda5463535bbcb0303f66674b3fcde0a748",
+          "source_sha256": "09c0247ad4ab6c08779d0415b7a69cda5463535bbcb0303f66674b3fcde0a748",
+          "identical": true
+        },
+        {
+          "path": "v3/creationReceipt.ts",
+          "archive_sha256": "c0381a106dcc7aa2c2a2b7b1566a4a306179aff8bdf2a7114e3aa2993025389e",
+          "source_sha256": "c0381a106dcc7aa2c2a2b7b1566a4a306179aff8bdf2a7114e3aa2993025389e",
+          "identical": true
+        },
+        {
+          "path": "v3/credentialDetail.ts",
+          "archive_sha256": "2878eb6c9faddc12f5c8de96db7ec7a428101282f47192cfbeb88b4ca8af2007",
+          "source_sha256": "2878eb6c9faddc12f5c8de96db7ec7a428101282f47192cfbeb88b4ca8af2007",
+          "identical": true
+        },
+        {
+          "path": "v3/credentialInventory.ts",
+          "archive_sha256": "b8616c5775916084617be31cae3acf89abb566ecaf7cb118816a81263ce220c3",
+          "source_sha256": "b8616c5775916084617be31cae3acf89abb566ecaf7cb118816a81263ce220c3",
+          "identical": true
+        },
+        {
+          "path": "v3/deployment.ts",
+          "archive_sha256": "ba1596efae556df426f5ac64684dbcb245b8351660b6fe3eca8f34b6d5ffc135",
+          "source_sha256": "ba1596efae556df426f5ac64684dbcb245b8351660b6fe3eca8f34b6d5ffc135",
+          "identical": true
+        },
+        {
+          "path": "v3/execution.ts",
+          "archive_sha256": "bd1f6adfacca161217b1b94242ee27df81ed8059fa212bcce007f6cc03973cfa",
+          "source_sha256": "bd1f6adfacca161217b1b94242ee27df81ed8059fa212bcce007f6cc03973cfa",
+          "identical": true
+        },
+        {
+          "path": "v3/externalEnrollment.ts",
+          "archive_sha256": "8adc6f6e79e3edbcb3a2b6a3b5ccc2ccf69ead2e2f405b3f62317ce6fd6fc69b",
+          "source_sha256": "8adc6f6e79e3edbcb3a2b6a3b5ccc2ccf69ead2e2f405b3f62317ce6fd6fc69b",
+          "identical": true
+        },
+        {
+          "path": "fees.ts",
+          "archive_sha256": "7672353dbf803ba27e921d60995f33a85d53e1e85cbb47a9effb77f24ea3b335",
+          "source_sha256": "7672353dbf803ba27e921d60995f33a85d53e1e85cbb47a9effb77f24ea3b335",
+          "identical": true
+        },
+        {
+          "path": "v3/finality.ts",
+          "archive_sha256": "c24fb1342ca5437c0890aa88cab8a96ca9f0c1702326ed12e9c140e0c71b8a6e",
+          "source_sha256": "c24fb1342ca5437c0890aa88cab8a96ca9f0c1702326ed12e9c140e0c71b8a6e",
+          "identical": true
+        },
+        {
+          "path": "http.ts",
+          "archive_sha256": "3f072c62c522f6e9d0c7e7ee44b4014e5171b2ef47cdeb46ad8984286a59529e",
+          "source_sha256": "3f072c62c522f6e9d0c7e7ee44b4014e5171b2ef47cdeb46ad8984286a59529e",
+          "identical": true
+        },
+        {
+          "path": "v3/initialization.ts",
+          "archive_sha256": "0b727f79834001c8b519c51c144296a6e7dff8a5c5f9c952526d629261e693b0",
+          "source_sha256": "0b727f79834001c8b519c51c144296a6e7dff8a5c5f9c952526d629261e693b0",
+          "identical": true
+        },
+        {
+          "path": "v3/initializationWire.ts",
+          "archive_sha256": "8eda8bc4c5b81ddb5fb5e764ccca8f57d71243b8c76b7a374b9374ec06158f3c",
+          "source_sha256": "8eda8bc4c5b81ddb5fb5e764ccca8f57d71243b8c76b7a374b9374ec06158f3c",
+          "identical": true
+        },
+        {
+          "path": "v3/paymaster.ts",
+          "archive_sha256": "01187cbf7baed0852af51d37fb71c700c52dbdf12a508bd3551b0690c436c1e4",
+          "source_sha256": "01187cbf7baed0852af51d37fb71c700c52dbdf12a508bd3551b0690c436c1e4",
+          "identical": true
+        },
+        {
+          "path": "paymentAbis.ts",
+          "archive_sha256": "c8f103635b1d07e8834bc815c3375ccde8753fc2f1c1cf7c9eb14949ddf32543",
+          "source_sha256": "c8f103635b1d07e8834bc815c3375ccde8753fc2f1c1cf7c9eb14949ddf32543",
+          "identical": true
+        },
+        {
+          "path": "paymentAuthorizations.ts",
+          "archive_sha256": "2036ed8fb1a634e077b60e60b4e10512bea0b0a06bb239f70e85e89c3115880f",
+          "source_sha256": "2036ed8fb1a634e077b60e60b4e10512bea0b0a06bb239f70e85e89c3115880f",
+          "identical": true
+        },
+        {
+          "path": "paymentContracts.ts",
+          "archive_sha256": "3506716010d578bf4a0dbf05f4babaccea271d3b043385bbc0f3e3d45ca74abe",
+          "source_sha256": "3506716010d578bf4a0dbf05f4babaccea271d3b043385bbc0f3e3d45ca74abe",
+          "identical": true
+        },
+        {
+          "path": "paymentErrors.ts",
+          "archive_sha256": "e72aec365125da37ed57df6c0ff5ad41873877990116a7cedd6e5d29b02c900e",
+          "source_sha256": "e72aec365125da37ed57df6c0ff5ad41873877990116a7cedd6e5d29b02c900e",
+          "identical": true
+        },
+        {
+          "path": "paymentNetworks.ts",
+          "archive_sha256": "6446b81d0bf9602d5395b84793e78cf8eee92fb97a117fb591f438a29838aeec",
+          "source_sha256": "6446b81d0bf9602d5395b84793e78cf8eee92fb97a117fb591f438a29838aeec",
+          "identical": true
+        },
+        {
+          "path": "v3/primitives.ts",
+          "archive_sha256": "296b15a0c5a93a7fd05da4c414299e8da02b369bf00f902e733bac52ff47a196",
+          "source_sha256": "296b15a0c5a93a7fd05da4c414299e8da02b369bf00f902e733bac52ff47a196",
+          "identical": true
+        },
+        {
+          "path": "v3/securityInspection.ts",
+          "archive_sha256": "4c7695ef6499984924ab83d2623aef0b84788d871362652d22d0590c16204df8",
+          "source_sha256": "4c7695ef6499984924ab83d2623aef0b84788d871362652d22d0590c16204df8",
+          "identical": true
+        },
+        {
+          "path": "v3/securityPolicy.ts",
+          "archive_sha256": "1a967ebe5f311e262b3525c7653bb0b5001323aba21a77bc8d0faa0cbf6c3254",
+          "source_sha256": "1a967ebe5f311e262b3525c7653bb0b5001323aba21a77bc8d0faa0cbf6c3254",
+          "identical": true
+        },
+        {
+          "path": "v3/securityPolicyRecord.ts",
+          "archive_sha256": "2d69c9f3d911d8c1c681efee4c16ca7e0af7d4b3eed318c003bdaa388fff7b5a",
+          "source_sha256": "2d69c9f3d911d8c1c681efee4c16ca7e0af7d4b3eed318c003bdaa388fff7b5a",
+          "identical": true
+        },
+        {
+          "path": "v3/transfer.ts",
+          "archive_sha256": "3cd58a64f4830d9fd4b08963f6b325dc66ae70fb20de50a472e204a8e927d4ad",
+          "source_sha256": "3cd58a64f4830d9fd4b08963f6b325dc66ae70fb20de50a472e204a8e927d4ad",
+          "identical": true
+        },
+        {
+          "path": "v3/transferAuthorization.ts",
+          "archive_sha256": "1cd16944fbfbb57345717944e641cff9cef0e035931cf7ba87cba5a1e2d0dd5f",
+          "source_sha256": "1cd16944fbfbb57345717944e641cff9cef0e035931cf7ba87cba5a1e2d0dd5f",
+          "identical": true
+        },
+        {
+          "path": "v3/transferBalance.ts",
+          "archive_sha256": "72c47cedd6ad2891872d8ab727db52740ccb21c5a8a1fbbd12840607fda0f9e2",
+          "source_sha256": "72c47cedd6ad2891872d8ab727db52740ccb21c5a8a1fbbd12840607fda0f9e2",
+          "identical": true
+        },
+        {
+          "path": "v3/transferCalls.ts",
+          "archive_sha256": "9fc1f49188e0e8411963a73ea21122697111475eb8e67906678669ac3b1e559c",
+          "source_sha256": "9fc1f49188e0e8411963a73ea21122697111475eb8e67906678669ac3b1e559c",
+          "identical": true
+        },
+        {
+          "path": "v3/transferOperation.ts",
+          "archive_sha256": "5835b947e490ee3ed1b477946c31efe0a03df7456a95a75ab2aceb656c24dd14",
+          "source_sha256": "5835b947e490ee3ed1b477946c31efe0a03df7456a95a75ab2aceb656c24dd14",
+          "identical": true
+        },
+        {
+          "path": "v3/transferReviewRecord.ts",
+          "archive_sha256": "6810ac4839aa5991c88ac4b00c722760a057645a082b53be7004bbdaf6d50834",
+          "source_sha256": "6810ac4839aa5991c88ac4b00c722760a057645a082b53be7004bbdaf6d50834",
+          "identical": true
+        },
+        {
+          "path": "v3/transferSecurity.ts",
+          "archive_sha256": "b440f2093be91ec0eb476f579350251c2d97e5907ed7dd3649eb283ee46579e5",
+          "source_sha256": "b440f2093be91ec0eb476f579350251c2d97e5907ed7dd3649eb283ee46579e5",
+          "identical": true
+        },
+        {
+          "path": "v3/transferWire.ts",
+          "archive_sha256": "fe461fa662e8994c3b3487b3a1d6a2d2e67c2513c1b7a780a5ad660882695853",
+          "source_sha256": "fe461fa662e8994c3b3487b3a1d6a2d2e67c2513c1b7a780a5ad660882695853",
+          "identical": true
+        },
+        {
+          "path": "v3/upgrade.ts",
+          "archive_sha256": "c020878dc3b38d39fe6ef64ba3e10529d7d5e5d904f7fefaa50cb1c1e3e739c3",
+          "source_sha256": "c020878dc3b38d39fe6ef64ba3e10529d7d5e5d904f7fefaa50cb1c1e3e739c3",
+          "identical": true
+        },
+        {
+          "path": "v3/walletRelease.ts",
+          "archive_sha256": "0183ce20b302b6d56be6416d935414f7ed9f38b71bfc1fe862f8f603eaec5e5d",
+          "source_sha256": "0183ce20b302b6d56be6416d935414f7ed9f38b71bfc1fe862f8f603eaec5e5d",
+          "identical": true
+        },
+        {
+          "path": "v3/webauthn.ts",
+          "archive_sha256": "811e9258b5ab27d000df5552a73ddca04e75c92c745f6a546237638c30289481",
+          "source_sha256": "811e9258b5ab27d000df5552a73ddca04e75c92c745f6a546237638c30289481",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "name": "@gatopago/environment",
+      "version": "3.1.1",
+      "file": "gatopago-environment-3.1.1.tgz",
+      "sha256": "3dbe152741081252cedf5dcfdc266f040602584af96ccaa3ea9739c8928b4cb1",
+      "producer": "packages/environment",
+      "archive_verified": true,
+      "source_comparison": "verified",
+      "files": [
+        {
+          "path": "environments.json",
+          "archive_sha256": "6e9204db851f0a82a4b094d9a74ba97596bc370e6ec8efa91a1392306e404ca3",
+          "source_sha256": "6e9204db851f0a82a4b094d9a74ba97596bc370e6ec8efa91a1392306e404ca3",
+          "identical": true
+        },
+        {
+          "path": "package.json",
+          "archive_sha256": "9985b0a00718969945c402aa3b82173aa0b2e7f914512182845aad01d7500b97",
+          "source_sha256": "e5240027298436253d76ac1fde2eacc986b2589a4dd168644f8ffc746def75be",
+          "identical": false,
+          "transformation": "pnpm-package-json-formatting",
+          "metadata_equivalent": true
+        },
+        {
+          "path": "index.ts",
+          "archive_sha256": "96a32f3b0e45a31efc72f426e4ce746489c62c49ad5f6e9b5dcd4188d6d3f3e1",
+          "source_sha256": "96a32f3b0e45a31efc72f426e4ce746489c62c49ad5f6e9b5dcd4188d6d3f3e1",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "name": "@gatopago/test-fixtures",
+      "version": "3.1.1",
+      "file": "gatopago-test-fixtures-3.1.1.tgz",
+      "sha256": "55ffc8a6c8a298ce6dc0f603c3a88c11d679d7f72d35aa18900b44a78375c217",
+      "producer": "packages/test-fixtures",
+      "archive_verified": true,
+      "source_comparison": "verified",
+      "files": [
+        {
+          "path": "package.json",
+          "archive_sha256": "473c3c88b9aab59625ee1361e98345ae6e99fedfdb45083873d0a2bd39c908c0",
+          "source_sha256": "541acc76c5f2d11136213f9dfb23847ad391360495396fd511a1dcbb0648664c",
+          "identical": false,
+          "transformation": "pnpm-package-json-formatting",
+          "metadata_equivalent": true
+        },
+        {
+          "path": "v3Backup.ts",
+          "archive_sha256": "1c69db90f6019fbe5725c133a34b9f238607f099450e3c325c691fd8e67fbb49",
+          "source_sha256": "1c69db90f6019fbe5725c133a34b9f238607f099450e3c325c691fd8e67fbb49",
+          "identical": true
+        },
+        {
+          "path": "v3CreationInspection.ts",
+          "archive_sha256": "140d51639b7863a2f6a7699c51fd6798580cec524b512a2d0b70b16341d2472a",
+          "source_sha256": "140d51639b7863a2f6a7699c51fd6798580cec524b512a2d0b70b16341d2472a",
+          "identical": true
+        },
+        {
+          "path": "v3CreationReceipt.ts",
+          "archive_sha256": "a2170b8f73113fb4ee3bb102b2a0ae7c8452f1b19b9d51354c0dd4344d61c918",
+          "source_sha256": "a2170b8f73113fb4ee3bb102b2a0ae7c8452f1b19b9d51354c0dd4344d61c918",
+          "identical": true
+        },
+        {
+          "path": "v3DeploymentFixture.ts",
+          "archive_sha256": "5be0a6a2840683512357215492d3afb3b5994813733b50605a68301c5a4d0b10",
+          "source_sha256": "5be0a6a2840683512357215492d3afb3b5994813733b50605a68301c5a4d0b10",
+          "identical": true
+        },
+        {
+          "path": "v3Finality.ts",
+          "archive_sha256": "1142fe50291cb642640f8a4bbd9a91d364cd7f2b80f6bf741285a5d2c567f289",
+          "source_sha256": "1142fe50291cb642640f8a4bbd9a91d364cd7f2b80f6bf741285a5d2c567f289",
+          "identical": true
+        },
+        {
+          "path": "v3Initialization.ts",
+          "archive_sha256": "eba2ea866e3203f78728c3bc4de7c32890d8508f2d148c06750ee74b31acd30e",
+          "source_sha256": "eba2ea866e3203f78728c3bc4de7c32890d8508f2d148c06750ee74b31acd30e",
+          "identical": true
+        },
+        {
+          "path": "v3Inspection.ts",
+          "archive_sha256": "4d7d7e752e8545515be168cfdd7735c541647bb14c331db19441ee3be5e125eb",
+          "source_sha256": "4d7d7e752e8545515be168cfdd7735c541647bb14c331db19441ee3be5e125eb",
+          "identical": true
+        },
+        {
+          "path": "v3SecurityInspection.ts",
+          "archive_sha256": "fb9bc66e85e9de28461ca09ff733250a480c8f825f43e4c66f2f506deb85c40d",
+          "source_sha256": "fb9bc66e85e9de28461ca09ff733250a480c8f825f43e4c66f2f506deb85c40d",
+          "identical": true
+        },
+        {
+          "path": "v3Transfer.ts",
+          "archive_sha256": "76e085c871252c083495c69dc385bf1008d411441dfb442385be76adf9c14496",
+          "source_sha256": "76e085c871252c083495c69dc385bf1008d411441dfb442385be76adf9c14496",
+          "identical": true
+        }
+      ]
+    },
+    {
+      "name": "@gatopago/contract-artifacts",
+      "version": "3.1.0",
+      "file": "gatopago-contract-artifacts-3.1.0.tgz",
+      "sha256": "c9e86c48f8d750696d22a1ce66c01d595613b0c37eab988ed38c49e5301e6abc",
+      "producer": "contracts/release-package",
+      "archive_verified": true,
+      "source_comparison": "separate-artifact-producer"
+    }
+  ]
+}

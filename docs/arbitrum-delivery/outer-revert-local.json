@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-02T17:11:07.743Z",
+  "status": "targeted_local_passed",
+  "public_transactions": false,
+  "environment": "real P256 and EOA signatures; synthetic chain readers; real local workerd D1",
+  "tests": {
+    "node_outer_revert": 31,
+    "worker_outer_revert": 3,
+    "web_outer_receipt": 13
+  },
+  "cases": [
+    "exact one-UserOp EIP-1559 envelope and recovered operator",
+    "unchanged finalized EntryPoint nonce after signed expiry",
+    "deterministic checkpoint and receipt digest after a new finalized head",
+    "separate zero account charge and actual outer operator gas",
+    "atomic receipt, balance floor and reservation close",
+    "restart after immutable journal persistence",
+    "inconsistent proof retains reservation",
+    "strict ES/EN browser receipt"
+  ],
+  "web_release": "web-v3-5c4659ef3485d0e4d465cdadffc1c1839bc71d6a48ea596332ab3ed275f267f7",
+  "sources": [
+    {
+      "path": "gatopago-wallet-core/src/execution/operationTransport.ts",
+      "sha256": "f35cd6fbc46193ef7a730ce7188717023eadf95f3e702734419fb2b618c8d3a2"
+    },
+    {
+      "path": "gatopago-wallet-core/src/money/moneyOuterRevert.ts",
+      "sha256": "502da0c5d06d24cb303ace7cd73f77f4fb4a7c0a87f5a2372e1cf9eaa792637d"
+    },
+    {
+      "path": "gatopago-wallet-core/src/money/moneyObservation.ts",
+      "sha256": "5a30e7df11cb15a6a276a9b0e37779eed009b545eda7555e6f0bc5c8b6135195"
+    },
+    {
+      "path": "gatopago-wallet-core/src/money/moneyReconciliation.ts",
+      "sha256": "2ec7343eb040adc0c82b42f6fd0c6be5f28d7fcbf0696ba8cfb5e0df899d15a8"
+    },
+    {
+      "path": "gatopago-wallet-core/src/money/moneyStatus.ts",
+      "sha256": "c130a910934486847c4c09ff86a0b3b23d98a9fc725f34105caee1003436e359"
+    },
+    {
+      "path": "gatopago-wallet-core/test/moneyOuterRevert.test.ts",
+      "sha256": "a6526415ec65044cf205dacd03364210f27e0ec9b304177b89799716a590016d"
+    },
+    {
+      "path": "gatopago-wallet-core/test-worker/moneyOuterRevert.test.ts",
+      "sha256": "82295a565c5862808f82a84b7f1affa1ea8d531d839d1625ae4e3d928eb313dd"
+    },
+    {
+      "path": "gatopago/src/wallet/money.ts",
+      "sha256": "b8b7263873e051819da03f93de5d5b84514d1051dca4445816483840bed863a7"
+    },
+    {
+      "path": "gatopago/src/wallet/MoneyOperationReceipt.tsx",
+      "sha256": "a9234304f07cf70cc59122f867c26bebfdfdb37b735658ecfd5b86d3c40ed99b"
+    },
+    {
+      "path": "gatopago/test/money-outer-receipt.test.ts",
+      "sha256": "d1dd640a2d03790d6d5dd0daae769fac3af43d3593d704ab09aa20928bf33d83"
+    }
+  ],
+  "full_core_verification": {
+    "status": "passed",
+    "command": "pnpm verify",
+    "completed_at": "2026-10-02T17:16:23Z",
+    "exit_code": 0,
+    "node_passed": 917,
+    "node_skipped": 1,
+    "workerd_passed": 1545,
+    "dry_run_build_kib": 3558.00,
+    "dry_run_gzip_kib": 641.41
+  },
+  "registry_publication": false
+}

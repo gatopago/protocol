@@ -1,0 +1,24 @@
+{
+  "name": "@gatopago/environment",
+  "private": true,
+  "version": "3.2.1",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js",
+      "default": "./dist/index.js"
+    },
+    "./environments.json": "./dist/environments.json"
+  },
+  "dependencies": {
+    "@gatopago/shared": "workspace:3.2.1"
+  },
+  "engines": {
+    "node": ">=24"
+  }
+}

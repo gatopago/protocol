@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-10-02T19:25:55.248Z",
+  "status": "local_auth_clock_fix_verified",
+  "source_hash_policy": "raw_bytes",
+  "source_sha256": "80658493712e3c8fab4ee99f5b375d5e262360ee36369fb346694f55e0a56468",
+  "sources": [
+    {
+      "path": "release.json",
+      "sha256": "f0527e764f34b34a7a802be20238b39c4af40bde039818f1c00ac6eb408fd323"
+    },
+    {
+      "path": "src/auth/passkey-client.ts",
+      "sha256": "540837150858b506f2264bdfe884210573e8dadc3e935fb8780a9cc459739202"
+    },
+    {
+      "path": "test/passkey-client.test.ts",
+      "sha256": "b0983c88432fc0cfea55dd9d06a097ffeb41fa2b8ba050001bcb66bd6b32afd2"
+    }
+  ],
+  "policy": {
+    "admission_challenge_lifetime_ms": 300000,
+    "accepted_server_clock_lead_ms": 5000,
+    "client_deadline_cap_ms": 300000,
+    "shorter_server_expiry_preserved": true,
+    "expired_and_far_future_rejected": true,
+    "financial_authorization_policy_changed": false
+  },
+  "reproduction": {
+    "observed_at": "2026-10-02T19:19:34.333Z",
+    "http_status": 200,
+    "local_time_ms": 1790968774333,
+    "server_date": "Fri, 02 Oct 2026 19:19:36 GMT",
+    "expires_at": 1790969076,
+    "remaining_ms": 301667,
+    "rejected_by_previous_future_limit_ms": 301000,
+    "credential_challenge_request_id_retained": false
+  },
+  "checks": [
+    {
+      "command": "pnpm exec vitest run test/passkey-client.test.ts (regression before fix)",
+      "exit_code": 1,
+      "passed": 27,
+      "failed": 3,
+      "total": 30,
+      "expected_regression_failure": true
+    },
+    {
+      "command": "pnpm exec vitest run test/passkey-client.test.ts test/passkeys.test.ts",
+      "exit_code": 0,
+      "passed": 90,
+      "files": 2
+    },
+    {
+      "command": "compiled current passkeyClient.prepareLogin against public API with pinned client protocol headers",
+      "exit_code": 0,
+      "evidence": {
+        "schema_version": 1,
+        "status": "real_api_challenge_parser_accepted",
+        "observed_at": "2026-10-02T19:23:59.433Z",
+        "http_status": 200,
+        "local_time_ms": 1790969039433,
+        "server_date": "Fri, 02 Oct 2026 19:24:01 GMT",
+        "expires_at": 1790969341,
+        "remaining_ms": 301567,
+        "old_future_guard_would_reject": true,
+        "client_deadline_remaining_ms": 300000,
+        "client_deadline_max_ms": 300000,
+        "parser_bundle_sha256": "001d7068dc48bf3a9aad39420c8f3784703f0f45d8086ab584e741ca87d57437",
+        "assertion_generated": false,
+        "session_created": false,
+        "financial_transaction_sent": false,
+        "challenge_or_request_id_retained": false
+      }
+    },
+    {
+      "command": "pnpm verify",
+      "exit_code": 0,
+      "tests_passed": 967,
+      "test_files": 42,
+      "stages": [
+        "eslint",
+        "Next typegen and TypeScript",
+        "Vitest",
+        "analyze",
+        "analyze:production",
+        "release and vendor guards",
+        "Next production build"
+      ]
+    }
+  ],
+  "web_release": {
+    "schema_version": 1,
+    "client_release_id": "web-v3-7461b67a68397af570a22a9cf5b48e64afbd4eea9808c6b88d4b5a2be36e7a33",
+    "source_sha256": "7461b67a68397af570a22a9cf5b48e64afbd4eea9808c6b88d4b5a2be36e7a33",
+    "input_count": 154
+  },
+  "web_build_id": "wdVH_3x_56O7TanBUcPH7",
+  "public_verification": {
+    "browser_login_complete": false,
+    "browser_generic_error_cause_confirmed": false,
+    "new_web_deployed": false,
+    "session_created": false,
+    "financial_transaction_sent": false
+  },
+  "limits": [
+    "The real API response reproduces a rejection in the previous local parser; this does not establish the sole cause of the public browser error.",
+    "The corrected source was compiled and tested locally, not deployed to gatopago.com.",
+    "No passkey credential, assertion, token, request ID or session is stored in this evidence.",
+    "Public T01/O1/O2 remain pending."
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-02T15:55:40.206Z",
+  "status": "local_ui_passed",
+  "public_transactions": false,
+  "environment": "localhost synthetic account, position and ephemeral real P256; no Firebase, authenticator, RPC or relayer",
+  "web_release": "web-v3-4dee59460fad65ee92cb4a820fad44d14b49c2adcd81e91558a4123049d535ab",
+  "harness_sha256": "dba054d5995462facc5e3897d599e44075023deec48a28a482e5a907d777d38a",
+  "counters": {
+    "prepared": 5,
+    "proofs": 4,
+    "confirmed": 4,
+    "deliveries": 3
+  },
+  "cases": [
+    {
+      "name": "supply 40 USDC",
+      "result": "one proof, one confirmation and one dispatch; plain URL reopened saved IDs and status without another mutation",
+      "viewport": [
+        390,
+        844
+      ]
+    },
+    {
+      "name": "withdraw 10 USDC",
+      "result": "exact review, one proof, one confirmation and one dispatch",
+      "viewport": [
+        1280,
+        720
+      ]
+    },
+    {
+      "name": "withdraw-and-pay 20 USDC",
+      "result": "reviewed recipient; accepted synthetic dispatch followed by truncated response; status-only recovery and reload without resend",
+      "viewport": [
+        320,
+        844
+      ]
+    },
+    {
+      "name": "expired authorized pay",
+      "result": "delivery button disabled; no dispatch"
+    },
+    {
+      "name": "cancel passkey",
+      "result": "confirmation disabled; no proof, confirmation or dispatch"
+    }
+  ],
+  "console": {
+    "success_cases": "no errors or warnings observed",
+    "timeout_case": "expected ERR_INCOMPLETE_CHUNKED_ENCODING on synthetic /deliver?timeout=1"
+  },
+  "screenshots": [
+    {
+      "path": "gatopago/output/playwright/money-position-mobile.png",
+      "sha256": "cbbf4284fbd5de05b09a7e251141c18738c186cc52d987aaed491a3502fcd62a"
+    },
+    {
+      "path": "gatopago/output/playwright/money-supply-mobile.png",
+      "sha256": "11c2d03faf85beaa2c035fa17cec698bfa2ffaca135e806b57c1ae5a32e6a6bc"
+    },
+    {
+      "path": "gatopago/output/playwright/money-pay-timeout-mobile.png",
+      "sha256": "2238cfb51f8124a1a01650a5d51f4992ea832ad8da6fe116e5ae9201fc037f58"
+    },
+    {
+      "path": "gatopago/output/playwright/money-pay-expired-mobile.png",
+      "sha256": "c9d0ffdcc84ecd08b84c2a69dc16a1ea871f0c7a2f11f57db90c91e3a49fdc77"
+    },
+    {
+      "path": "gatopago/output/playwright/money-withdraw-desktop.png",
+      "sha256": "fd2935c7423899740ac6ac5ee6565456e08b2188d80c2c931d3af257c6dbf046"
+    }
+  ]
+}
