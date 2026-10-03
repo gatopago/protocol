@@ -1,6 +1,7 @@
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { copySdkRelease } from './sdk-release.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const parent = resolve(root, '..');
@@ -18,7 +19,9 @@ execFileSync(process.execPath, [join(root, 'scripts/pack-sdk.mjs')], { stdio: 'i
 
 console.log('3. Distributing tarballs to consumer projects...');
 const releaseDir = join(root, 'output/sdk-releases');
-const files = readdirSync(releaseDir).filter(f => f.endsWith('.tgz'));
+const destinations = targets.filter(target => existsSync(resolve(target, '..')));
+const release = copySdkRelease(releaseDir, destinations);
+const files = release.packages.map(pkg => pkg.file);
 
 for (const targetVendor of targets) {
   if (!existsSync(resolve(targetVendor, '..'))) {
@@ -26,9 +29,16 @@ for (const targetVendor of targets) {
     continue;
   }
   mkdirSync(targetVendor, { recursive: true });
+  const consumer = JSON.parse(readFileSync(join(targetVendor, '..', 'package.json'), 'utf8'));
+  const activeDependencies = new Set(Object.values({ ...consumer.dependencies,
+    ...consumer.devDependencies, ...consumer.optionalDependencies }));
   for (const file of files) {
-    copyFileSync(join(releaseDir, file), join(targetVendor, file));
-    console.log(`  ✓ Copied ${file} -> ${targetVendor}`);
+    const prefix = file.replace(/-\d+\.\d+\.\d+\.tgz$/, '');
+    for (const oldFile of readdirSync(targetVendor).filter(f => f.startsWith(prefix) && f.endsWith('.tgz') && f !== file
+      && !activeDependencies.has(`file:vendor/${f}`))) {
+      unlinkSync(join(targetVendor, oldFile));
+    }
+    console.log(`  ✓ Verified ${file} -> ${targetVendor}`);
   }
 }
 
