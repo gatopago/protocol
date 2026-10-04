@@ -9,7 +9,19 @@
   "create2_deployer": "0x4e59b44847b379578588920cA78FbF26c0B4956C",
   "entry_point": "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
   "owner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
-  "sponsor_signer": "0x6BbD85aaa67bFd74fB60Fc035A477d7a0D7bD195",
+  "sponsor_signer": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "initial_sponsor_signer": "0x6BbD85aaa67bFd74fB60Fc035A477d7a0D7bD195",
+  "signer_changes": [
+    {
+      "at": "2026-10-04T08:01:56Z",
+      "transaction": "0x45cd2f54af8f2a30d30b013386677987cdcf3281f4ec2d0bdd925c3f55d1a79c",
+      "previous_signer": "0x6BbD85aaa67bFd74fB60Fc035A477d7a0D7bD195",
+      "signer": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+      "reason": "User selected the existing deployment wallet; no new signing key was created or copied.",
+      "deposit_wei": "10000000000000000",
+      "stake_wei": "1000000000000000"
+    }
+  ],
   "initial_deposit_wei": "10000000000000000",
   "stake_wei": "1000000000000000",
   "unstake_delay_seconds": 86400,
@@ -31,7 +43,9 @@
     "configuration_and_runtime_hash_match": true,
     "compiled_executable_hash": "0x5144cd2b336fb6c00ddca8fe67961a1996902307f44cc4c26f4b8968a7a87e17",
     "compiled_executable_matches_after_entry_point_immutables_and_metadata_exclusion": true,
-    "wallet_core_published_version": "09a2fb7a-921d-4911-b360-1dca382ef479",
+    "wallet_core_published_version": "42f4b9c1-4a0d-4192-befc-096e9964465c",
+    "signer_secret_binding": "PRIVATE_KEY",
+    "old_signer_secret_removed_from_active_worker": true,
     "wallet_core_readiness_http": 200,
     "wallet_core_sponsorship_configured": true,
     "consumer_sponsored_creation_confirmed": false
