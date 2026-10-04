@@ -133,8 +133,9 @@ end-to-end validation is claimed here.
 ### Consumer deployment includes gas sponsorship
 
 `script/DeployV3.s.sol:DeployV3` deploys the account stack **and a funded
-GatoPagoPaymaster**. `GATOPAGO_PAYMASTER_SIGNER` is mandatory and must differ
-from the deployer and owner. The default Arbitrum Sepolia funding is 0.01 ETH
+GatoPagoPaymaster**. On Arbitrum Sepolia, the sponsor signer defaults to the
+selected deployment wallet. `GATOPAGO_PAYMASTER_SIGNER` is an explicit public
+address override, not a request to generate another wallet. The default funding is 0.01 ETH
 in the EntryPoint deposit and 0.001 ETH staked with a one-day unstake delay.
 These are operator funds; new user accounts do not need ETH for sponsored creation.
 
@@ -153,8 +154,8 @@ forge script script/Deploy.s.sol:DeployPaymaster \
   --broadcast --verify --verifier sourcify
 ```
 
-Run from `contracts/`, with `GATOPAGO_PAYMASTER_SIGNER` set to the public
-address of the dedicated backend sponsor key. Without `--broadcast`, this is
+Run from `contracts/`; omit `GATOPAGO_PAYMASTER_SIGNER` to use the deployment
+wallet, or set an existing signer address deliberately. Without `--broadcast`, this is
 a simulation. The script prints the paymaster address, runtime code hash,
 signer, EntryPoint, deposit and cost cap; record the confirmed receipts separately.
 
@@ -164,7 +165,7 @@ its configuration and funding, and sends no deposit, signer-reset or ownership
 transactions. Account upgrades do not require replacing the paymaster.
 
 Wallet Core admits the public policy in `config/paymasters.json` and receives
-the corresponding private key only as `WALLET_PAYMASTER_SIGNER_KEY`. Enable it
+the deployment wallet's existing `PRIVATE_KEY` for relay and sponsorship. Enable it
 after checking the deployed code and getters, not from a predicted address.
 Deployment and passing local tests are not proof of browser onboarding:
 verify a sponsored creation with a zero-ETH account on Arbitrum Sepolia.

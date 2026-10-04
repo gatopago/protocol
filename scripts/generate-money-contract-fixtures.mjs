@@ -36,7 +36,6 @@ writeFileSync(
   JSON.stringify(pins, null, 2) + '\n',
 );
 
-// Fixed unsigned synthetic vectors have no session, secret or reusable proof.
 const syntheticMarket = {
   ...market,
   valid_from: 900,

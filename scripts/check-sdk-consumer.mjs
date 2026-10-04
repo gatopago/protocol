@@ -67,7 +67,7 @@ try {
       2,
     ) + '\n',
   );
-  // Only compiled tarballs are substituted. There are no producer-source aliases.
+
   writeFileSync(
     join(consumer, 'pnpm-workspace.yaml'),
     'packages: []\nignoreScripts: true\nenableGlobalVirtualStore: false\noverrides:\n' +

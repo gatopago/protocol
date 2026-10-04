@@ -45,7 +45,6 @@ export function readSdkRelease(directory) {
   return manifest;
 }
 
-// Check all destinations before copying. A version retains its original bytes.
 export function copySdkRelease(source, destinations) {
   const manifest = readSdkRelease(source);
   for (const destination of destinations) {
@@ -86,13 +85,16 @@ export function archiveUnusedSdk(directory, manifest) {
   const archive = join(vendor, 'archive');
   if (existsSync(archive)) assert(!lstatSync(archive).isSymbolicLink(), 'Archive is a symlink');
   const candidates = readdirSync(vendor, { withFileTypes: true }).flatMap((entry) => {
-    const match = /^gatopago-(shared|environment|test-fixtures)-(\d+\.\d+\.\d+)\.tgz$/.exec(entry.name);
+    const match = /^gatopago-(shared|environment|test-fixtures)-(\d+\.\d+\.\d+)\.tgz$/.exec(
+      entry.name,
+    );
     if (!entry.isFile() || !match || current.has(entry.name) || references.includes(entry.name))
       return [];
     const source = join(vendor, entry.name);
     const destination = join(archive, match[2], entry.name);
     const parent = join(archive, match[2]);
-    if (existsSync(parent)) assert(!lstatSync(parent).isSymbolicLink(), 'Archive version is a symlink');
+    if (existsSync(parent))
+      assert(!lstatSync(parent).isSymbolicLink(), 'Archive version is a symlink');
     const digest = sha256(readFileSync(source));
     if (existsSync(destination)) {
       assert(lstatSync(destination).isFile(), 'Archive destination is not a regular file');
@@ -100,7 +102,7 @@ export function archiveUnusedSdk(directory, manifest) {
     }
     return [{ file: entry.name, version: match[2], sha256: digest, source, destination, parent }];
   });
-  // Validate all historical destinations before retiring any active-path archive.
+
   for (const item of candidates) {
     assert.equal(sha256(readFileSync(item.source)), item.sha256, 'SDK changed during archival');
     mkdirSync(item.parent, { recursive: true });
@@ -113,7 +115,6 @@ export function archiveUnusedSdk(directory, manifest) {
 
 const root = resolve(import.meta.dirname, '..');
 export function sdkPnpm() {
-  // Some script runners omit npm_execpath. Resolve pnpm's installed shim without a shell.
   const cli = [
     process.env.npm_execpath,
     ...(process.env.PATH ?? '')

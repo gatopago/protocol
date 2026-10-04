@@ -28,7 +28,7 @@ for (const name of ['shared', 'environment', 'test-fixtures']) {
     'Build destination outside producer',
   );
   const inputs = files(source);
-  // Only the checked absolute generated dist directory is removed.
+
   rmSync(destination, { recursive: true, force: true });
   mkdirSync(destination, { recursive: true });
   await build({
@@ -58,7 +58,7 @@ for (const name of ['shared', 'environment', 'test-fixtures']) {
     mkdirSync(dirname(target), { recursive: true });
     copyFileSync(input, target);
   }
-  // Declaration specifiers resolve in native NodeNext consumers, too.
+
   const generated = (directory) =>
     readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
       entry.isDirectory() ? generated(join(directory, entry.name)) : [join(directory, entry.name)],

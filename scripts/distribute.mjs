@@ -27,7 +27,6 @@ for (const script of ['build-sdk.mjs', 'pack-sdk.mjs']) {
   });
 }
 
-// Validate every destination before changing any dependency or archive.
 const release = copySdkRelease(
   join(root, 'output/sdk-releases'),
   destinations.map((directory) => join(directory, 'vendor')),
@@ -41,9 +40,7 @@ for (const directory of destinations) {
   const consumer = JSON.parse(originalPackage);
   assert.equal(consumer.private, true, 'SDK consumers must remain private');
   const workspacePath = join(directory, 'pnpm-workspace.yaml');
-  const originalWorkspace = existsSync(workspacePath)
-    ? readFileSync(workspacePath, 'utf8')
-    : null;
+  const originalWorkspace = existsSync(workspacePath) ? readFileSync(workspacePath, 'utf8') : null;
   let workspace = originalWorkspace;
   let changed = false;
 
@@ -55,14 +52,11 @@ for (const directory of destinations) {
         changed = true;
       }
     }
-    // Keep existing transitive overrides local, preserving unrelated YAML and comments.
+
     if (workspace !== null) {
       const name = pkg.name.slice('@gatopago/'.length);
       workspace = workspace
-        .replaceAll(
-          new RegExp(`(@gatopago/${name})@\\d+\\.\\d+\\.\\d+`, 'g'),
-          `$1@${pkg.version}`,
-        )
+        .replaceAll(new RegExp(`(@gatopago/${name})@\\d+\\.\\d+\\.\\d+`, 'g'), `$1@${pkg.version}`)
         .replaceAll(
           new RegExp(`file:vendor/gatopago-${name}-\\d+\\.\\d+\\.\\d+\\.tgz`, 'g'),
           reference,

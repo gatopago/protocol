@@ -5,7 +5,6 @@ import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { isDeepStrictEqual } from 'node:util';
 
-// Public source inventory only. Never loads env files or credentials.
 const protocol = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const root = resolve(protocol, '..');
 const sourceRoot =

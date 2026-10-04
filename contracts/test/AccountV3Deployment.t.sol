@@ -28,7 +28,7 @@ contract AccountV3DeploymentTest is Test {
         p = PaymasterDeployment.Settings({
             deployer: address(this),
             owner: address(this),
-            signer: address(0xBEEF),
+            signer: address(this),
             existing: address(0),
             existingCodeHash: bytes32(0),
             stake: config.paymasterStake,
@@ -40,7 +40,7 @@ contract AccountV3DeploymentTest is Test {
         vm.deal(address(this), 1 ether);
     }
 
-    function test_consumerReleaseFundsDedicatedPaymasterAndKeepsAccountIdentity() public {
+    function test_consumerReleaseFundsDeployerSignedPaymasterAndKeepsAccountIdentity() public {
         EntryPoint ep = new EntryPoint();
         V3Deployment.Stack memory stack = V3Deployment.deploy(address(ep));
         bytes32 identity = stack.factory.proxyInitCodeHash();
@@ -72,7 +72,7 @@ contract AccountV3DeploymentTest is Test {
         this.readSponsorship(config, p);
     }
 
-    function test_releaseRejectsMissingFundingUnlimitedCapOrRelaySignerReuse() public {
+    function test_releaseRejectsMissingFundingOrUnlimitedCapButAllowsDeployerSigner() public {
         EntryPoint ep = new EntryPoint();
         (NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p) = _sponsorship(ep);
         p.maximumCost = 0;
@@ -84,7 +84,6 @@ contract AccountV3DeploymentTest is Test {
         this.readSponsorship(config, p);
         p.deposit = config.paymasterDeposit;
         p.signer = address(this);
-        vm.expectRevert(PaymasterDeployment.InvalidSponsorshipConfiguration.selector);
         this.readSponsorship(config, p);
     }
 

@@ -14,7 +14,7 @@ const fixture = JSON.parse(
 );
 const accountDocument = JSON.stringify(fixture.account),
   account = loadPinnedCreationProfile(accountDocument, deploymentDocumentDigest(accountDocument));
-// Public archive endpoint only. No signer, browser credential or deployment script.
+
 const raw = execFileSync(
   'forge',
   ['test', '--match-contract', 'AccountV3MoneyPrograms(Fork|Golden)?Test', '--json'],

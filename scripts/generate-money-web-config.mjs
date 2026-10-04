@@ -3,7 +3,6 @@ import { resolve } from 'node:path';
 import { deploymentDocumentDigest } from '../packages/shared/dist/v3/deployment.js';
 import { loadAaveMarket } from '../packages/shared/dist/v3/aaveMarket.js';
 
-// Public reviewed artifacts only. No environment files, secrets or RPC reads.
 const root = resolve(import.meta.dirname, '..');
 const marketDocument = JSON.stringify(
   JSON.parse(

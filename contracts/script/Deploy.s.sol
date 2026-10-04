@@ -78,8 +78,8 @@ library PaymasterDeployment {
         NetworkDeploymentConfig.preflightAccounts(config);
         p.deployer = deployer;
         p.owner = vm.envOr("GATOPAGO_CONTRACT_OWNER", deployer);
-        // A dedicated gas-only signer is required, including on testnet.
-        p.signer = vm.envAddress("GATOPAGO_PAYMASTER_SIGNER");
+        // Reuse the selected deployment wallet unless the operator explicitly chooses another signer.
+        p.signer = vm.envOr("GATOPAGO_PAYMASTER_SIGNER", deployer);
         DeploymentRoles.validatePaymaster(block.chainid, deployer, p.owner, p.signer);
         p.stake = vm.envOr("GATOPAGO_PAYMASTER_STAKE", config.paymasterStake);
         uint256 unstakeDelay = vm.envOr("GATOPAGO_PAYMASTER_UNSTAKE_DELAY", uint256(config.paymasterUnstakeDelay));
@@ -94,10 +94,9 @@ library PaymasterDeployment {
 
     function validate(NetworkDeploymentConfig.Config memory config, Settings memory p) internal view {
         DeploymentRoles.validatePaymaster(config.chainId, p.deployer, p.owner, p.signer);
-        if (
-            p.signer == p.deployer || p.signer == p.owner || p.maximumCost == 0 || p.deposit < p.maximumCost
-                || p.stake == 0 || p.unstakeDelay == 0
-        ) revert InvalidSponsorshipConfiguration();
+        if (p.maximumCost == 0 || p.deposit < p.maximumCost || p.stake == 0 || p.unstakeDelay == 0) {
+            revert InvalidSponsorshipConfiguration();
+        }
         if (p.existing != address(0)) {
             if (p.existing.code.length == 0 || p.existing.codehash != p.existingCodeHash) {
                 revert UnreviewedExistingPaymaster();
