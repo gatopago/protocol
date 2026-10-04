@@ -9,8 +9,6 @@ import {
 import { webAuthnKeyFromSpki } from '@gatopago/shared/v3/webauthn';
 import { fixtureAddress, fixtureHash, fixtureManifest } from './v3DeploymentFixture';
 
-/** Synthetic profiles and ephemeral keys ONLY. No actual release, manifest admission,
- * user credential, chain observation, audit or original artifact provenance. */
 export function initializationFixture() {
   const key = generateKeyPairSync('ec', { namedCurve: 'prime256v1' });
   const scope = { rpId: 'gatopago.com', origin: 'https://gatopago.com' };

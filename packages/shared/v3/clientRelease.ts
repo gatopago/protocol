@@ -1,7 +1,5 @@
-/** Public compatibility metadata, NOT authentication, attestation or financial authority. */
 export const CLIENT_COMPATIBILITY_PATH = '/app/v1/client-compatibility';
-// Wire/consent protocol revision, NOT a frontend build. UI-only changes retain
-// this ID; changes to financial semantics require a reviewed new revision.
+
 export const CLIENT_RELEASE_ID = 'wallet-client-v3.1';
 export const WALLET_API_VERSION = 'wallet-core-v3.1';
 export const CLIENT_RELEASE_HEADERS = Object.freeze({
@@ -20,7 +18,7 @@ export type AccountReleaseContext = Readonly<{
 }>;
 export type ReleasePolicy = Readonly<{
   api_version: string;
-  // Oldest to newest protocol revisions, not frontend builds. Explicit allowlist.
+
   releases: readonly Readonly<{ client_release_id: string; accepted_until: number | null }>[];
   account_profiles: readonly AccountReleaseContext[];
 }>;
@@ -30,7 +28,7 @@ export const WALLET_RELEASE_POLICY: ReleasePolicy = Object.freeze({
   releases: Object.freeze([
     Object.freeze({ client_release_id: CLIENT_RELEASE_ID, accepted_until: null }),
   ]),
-  // The Worker supplies account profiles from its enabled runtime catalog.
+
   account_profiles: Object.freeze([]),
 });
 
@@ -69,7 +67,6 @@ export function publicClientCompatibility(
   };
 }
 
-/** Caller chooses scope from a server-owned route definition, never from the request. */
 export function mutationCompatibility(
   headers: Pick<Headers, 'get'>,
   environment: DeploymentEnvironment,
@@ -82,7 +79,7 @@ export function mutationCompatibility(
   const api = headers.get(CLIENT_RELEASE_HEADERS.api);
   const generation = headers.get(CLIENT_RELEASE_HEADERS.generation);
   const manifest = headers.get(CLIENT_RELEASE_HEADERS.manifest);
-  // get() joins duplicate values with commas, which cannot match these exact fields.
+
   if (
     headers.get(CLIENT_RELEASE_HEADERS.environment) !== environment ||
     api !== policy.api_version ||

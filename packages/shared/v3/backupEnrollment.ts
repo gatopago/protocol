@@ -37,8 +37,7 @@ type SecurityObservation = Extract<
 >;
 export interface BackupEnrollmentInput {
   readonly initialization: InitializationInput;
-  /** Trusted, freshly observed current state, NEVER an HTTP caller's asserted authority.
-   * This pure compiler does not establish RPC finality/admission or database ownership. */
+
   readonly observation: SecurityObservation;
   readonly nextPolicy: SecurityPolicy;
   readonly validAfter: number;
@@ -56,8 +55,6 @@ export const accountBackupAbi = parseAbi([
   'function commit(CommitProposal message, Signature[] auth)',
 ]);
 
-/** Reachability only, NOT key provenance/independent storage or a completed portable-exit drill.
- * ERC-1271 may itself depend on the lost domain: never count its address as proof of independence. */
 export function assessPolicyContinuity(policy: SecurityPolicy) {
   hashSecurityPolicy(policy);
   const direct = policy.signers.filter((s) => s.kind === SignerKind.ECDSA);
@@ -125,10 +122,6 @@ function state(
   return nonce;
 }
 
-/** Optional first-backup enrollment through an ADMIN SecurityChange.
- * Prepare consent, not execution. Account identity/factory are preserved, scope is the original
- * single chain, and the original passkey must remain a spending factor. Changed roles require
- * a new EnrollmentProof even for that same key. No nonce, signature or state is persisted here. */
 export function prepareBackupEnrollment(input: BackupEnrollmentInput, now: number) {
   window(input.validAfter, input.validUntil, now);
   if (
@@ -143,7 +136,7 @@ export function prepareBackupEnrollment(input: BackupEnrollmentInput, now: numbe
   const observation = structuredClone(input.observation);
   const nonce = state(initial, observation);
   if (observation.security.pending !== null) throw new Error('BACKUP_PROPOSAL_PENDING');
-  // prepare and commit each consume an admin nonce; reserve room for both in this proposal.
+
   if (nonce >= 2n ** 256n - 2n) throw new Error('BACKUP_NONCE_EXHAUSTED');
   const next: SecurityPolicy = Object.freeze({
     ...input.nextPolicy,
@@ -164,8 +157,7 @@ export function prepareBackupEnrollment(input: BackupEnrollmentInput, now: numbe
   ) {
     throw new Error('BACKUP_MUST_RETAIN_INITIAL_FACTOR');
   }
-  // This local consent adapter supports direct ECDSA and the already pinned WebAuthn verifier.
-  // ERC-1271 enrollment needs bounded live contract-signature validation before enabling its UI.
+
   for (const member of next.signers) {
     if (member.kind === SignerKind.ERC1271) throw new Error('BACKUP_SIGNER_TRANSPORT_UNSUPPORTED');
     if (member.kind === SignerKind.WEBAUTHN) {
@@ -232,8 +224,6 @@ export type BackupSignerEnrollment = { readonly signerIndex: number } & (
   | { readonly kind: 'webauthn'; readonly assertion: WebAuthnAssertionBytes }
 );
 
-/** Verify direct signatures like Solidity's OZ ECDSA profile: exactly 65 bytes, v=27/28, low-S,
- * no personal_sign prefix, no ERC-1271/7702 heuristic. Private keys never enter this module. */
 async function ecdsa(signature: Hex, digest: Hex, expected: Hex) {
   if (
     typeof signature !== 'string' ||
@@ -251,8 +241,6 @@ async function ecdsa(signature: Hex, digest: Hex, expected: Hex) {
   return signature;
 }
 
-/** Import one direct factor's proof without submitting anything or collecting the
- * owner's passkey. Recompilation binds the account, roles, policy, nonce and time. */
 export async function verifyBackupEcdsaEnrollment(
   input: BackupEnrollmentInput,
   signerIndex: number,
@@ -335,9 +323,6 @@ export async function authorizeBackupEnrollment(
   });
 }
 
-/** Separate consent AFTER observing the pending proposal at a fresh canonical checkpoint.
- * The acknowledgement commits that checkpoint, not a claim of cross-chain atomicity/finality.
- * Original preparation is recompiled, not trusted as a mutable cached digest or server string. */
 export function prepareBackupCommit(
   input: BackupEnrollmentInput,
   observation: SecurityObservation,
@@ -346,8 +331,7 @@ export function prepareBackupCommit(
   now: number,
 ) {
   window(validAfter, validUntil, now);
-  // Reconstruct the historical, already accepted prepare without re-authorizing it.
-  // The fresh commit has its own short window; the pending onchain proposal governs liveness.
+
   const prepared = prepareBackupEnrollment(input, input.validAfter),
     nonce = state(prepared.initial, observation),
     pending = observation.security.pending;
@@ -368,8 +352,7 @@ export function prepareBackupCommit(
   ) {
     throw new Error('BACKUP_PENDING_MISMATCH');
   }
-  // The chain-specific proposal digest already binds chain, account, policy and original scope.
-  // A versioned typed hash binds the observed accepted checkpoint too.
+
   const acknowledgementsHash = backupAcknowledgement(prepared.digest, observation.checkpoint);
   const message: AuthorizationMessages['CommitProposal'] = Object.freeze({
     accountId: prepared.message.accountId,

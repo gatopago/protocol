@@ -17,7 +17,6 @@ export interface TransferRequest {
   client_release_id: string;
 }
 
-/** A parsed request is not consent, ownership proof, a quote or an execution plan. */
 export function parseTransferRequest(input: unknown): TransferRequest {
   if (!validateTransferShape(input)) throw new Error('Invalid V3 transfer request');
   const request = input as TransferRequest;
@@ -33,7 +32,6 @@ export function parseTransferRequest(input: unknown): TransferRequest {
   return structuredClone(request);
 }
 
-/** Resolve MAX against an observed block; no float, rounding, or hidden fee subtraction. */
 export function resolveMaxTransfer(
   balance: string,
   nativeAsset: boolean,
@@ -44,17 +42,12 @@ export function resolveMaxTransfer(
   const available = BigInt(parseAtomicAmount(balance));
   const gas = BigInt(parseAtomicAmount(maximumGasCost));
   const fee = BigInt(parseAtomicAmount(platformFee));
-  // platformFee is explicitly in this transfer asset; native gas is another balance for ERC20.
+
   const reserved = fee + (nativeAsset ? gas : 0n);
   if (available <= reserved) throw new Error('Insufficient balance after bounded costs');
   return (available - reserved).toString();
 }
 
-/** Internal funding calculation, NOT a quote, balance reader or authorization.
- * Caller must independently verify ownership, asset metadata, block/finality,
- * reservations and fee policy before supplying this account-specific budget.
- * Gas is the maximum payable by this account (zero only for verified sponsorship).
- */
 export function resolveTransferFunding(
   input: TransferRequest,
   budget: {

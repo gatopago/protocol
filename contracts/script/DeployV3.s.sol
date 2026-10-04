@@ -9,6 +9,8 @@ import {AccountV3Security} from "src/v3/AccountV3Security.sol";
 import {AccountV3Upgrade} from "src/v3/AccountV3Upgrade.sol";
 import {NetworkDeploymentConfig} from "script/NetworkDeploymentConfig.sol";
 import {DeploymentRoles} from "script/DeploymentRoles.sol";
+import {PaymasterDeployment} from "script/Deploy.s.sol";
+import {GatoPagoPaymaster} from "src/GatoPagoPaymaster.sol";
 
 /// @notice Same construction path used by the release script and local tests.
 /// @dev Library addresses are compiler links, never user-supplied delegatecall targets.
@@ -113,8 +115,12 @@ contract DeployV3 is Script {
         ) {
             revert V3Deploy__UnreviewedLibraries();
         }
+        // Sponsorship is part of a consumer release, not an optional follow-up.
+        // Validate all roles/funding or the explicitly pinned existing paymaster before broadcasting.
+        PaymasterDeployment.Settings memory sponsorship = PaymasterDeployment.settings(config, msg.sender);
         vm.startBroadcast();
         V3Deployment.Stack memory stack = V3Deployment.deploy(config.entryPoint);
+        GatoPagoPaymaster paymaster = PaymasterDeployment.deploy(config, sponsorship);
         vm.stopBroadcast();
         address predicted = vm.computeCreate2Address(
             V3Deployment.SALT, keccak256(abi.encodePacked(type(AccountV3).creationCode, abi.encode(config.entryPoint)))
@@ -135,6 +141,10 @@ contract DeployV3 is Script {
         console.log("Factory", address(stack.factory));
         console.log("WebAuthn verifier", address(stack.verifier));
         console.log("EntryPoint", config.entryPoint);
+        console.log("Paymaster", address(paymaster));
+        console.logBytes32(address(paymaster).codehash);
+        console.log("Sponsor signer", paymaster.sponsorSigner());
+        console.log("Paymaster deposit", paymaster.getDeposit());
         // Current implementation is inspected per account; never overwrite initial identity.
         console.logBytes32(stack.factory.proxyInitCodeHash());
     }

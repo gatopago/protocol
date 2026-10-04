@@ -33,11 +33,6 @@ import {
 } from './webauthn';
 import { validateCreationShape } from './wire-validators.mjs';
 
-/** Original creation composition, NOT an existing account's current upgrade profile.
- * Integrity/encoding only. Admission still requires artifact review and fresh independent
- * observations of factory immutables, code, EntryPoint/SenderCreator and verifier.
- * No production profile is admitted here, and an HTTP caller must never choose the pin.
- */
 export interface AccountCreationProfile {
   readonly schema_version: 1;
   readonly purpose: 'account_creation';
@@ -60,7 +55,7 @@ export function loadPinnedCreationProfile(
     throw new Error('Creation profile pin mismatch');
   const value: unknown = JSON.parse(document);
   if (!creationShape(value)) throw new Error('Invalid creation profile schema');
-  // The outer reviewed pin binds ALL nested fields. This internal digest is not an admission.
+
   const nested = JSON.stringify(value.deployment);
   const deployment = loadPinnedDeploymentManifest(nested, deploymentDocumentDigest(nested));
   if (deployment.lifecycle_status !== 'deployed')
@@ -108,11 +103,6 @@ export interface InitializationInput {
   readonly validUntil: number;
 }
 
-/** Recompute this locally on BOTH sides before a user gesture; never sign a server-supplied
- * digest alone. Consumer's first account has one proven key with SPEND and ADMIN authority.
- * The creation window must still be consumed before the account is ready for direct use.
- * Initial scope is exactly the chosen chain; multichain expansion requires its own policy.
- */
 export function prepareInitialization(input: InitializationInput) {
   const profile = loadPinnedCreationProfile(input.document, input.expectedDigest);
   const scope = Object.freeze({ ...input.scope });
@@ -179,11 +169,6 @@ export function prepareInitialization(input: InitializationInput) {
   });
 }
 
-/** Verifies exact InitialApproval possession and produces factoryData for SenderCreator,
- * NOT a transaction to broadcast directly. The factory is callable only through EntryPoint.
- * Separate UserOperation consent/signature, gas sponsorship, simulation and receipt remain
- * required. This function neither sends funds nor marks an account deployed/usable.
- */
 export function authorizeInitialization(
   input: InitializationInput,
   assertion: WebAuthnAssertionBytes,

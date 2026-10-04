@@ -4,7 +4,6 @@ import { hashCalls, type AccountCall } from './authorizations';
 import { aavePoolAbi, loadAaveMarket, marketToken, type AaveMarketPin } from './aaveMarket';
 import { moneyAddress, parseMoneyRequest, type MoneyOperationRequest } from './moneyWire';
 
-/** Pure recipe compiler. It proves neither market admission nor effects. */
 export function compileMoneyCalls(
   input: MoneyOperationRequest,
   context: {

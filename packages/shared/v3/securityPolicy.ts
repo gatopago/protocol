@@ -11,7 +11,7 @@ export interface SignerDescriptor {
   kind: 0 | 1 | 2;
   verifier: Address;
   verifierCodeHash: Hex;
-  /** ECDSA/ERC1271: address (20 bytes). WebAuthn: SHA256(rpId)|SHA256(origin)|qx|qy (128 bytes). */
+
   key: Hex;
   roles: number;
 }
@@ -57,7 +57,6 @@ export function signerId(signer: SignerDescriptor): Hex {
   );
 }
 
-/** Keys, not caller-supplied labels or verifier aliases, determine duplicate factors. */
 function keyFingerprint(signer: SignerDescriptor): Hex {
   return keccak256(signer.kind === SignerKind.WEBAUTHN ? `0x${signer.key.slice(130)}` : signer.key);
 }
@@ -96,7 +95,6 @@ function validateSigner(signer: SignerDescriptor): void {
   }
 }
 
-/** Structure/threshold checks only: proof of possession, codehash and factor provenance are separate gates. */
 export function validateSecurityPolicy(policy: SecurityPolicy): void {
   if (policy.mode !== 'active' || 'recoveryThreshold' in policy || 'recoveryDelaySeconds' in policy)
     throw new Error('Retired or invalid account policy');

@@ -17,16 +17,11 @@ function object(value: unknown, fields: string[]): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-/** Registration observations, NOT current authenticator availability or onchain
- * permissions. No raw credential ID, public key, proof, or identity subject.
- */
 export function parseCredentialInventory(
   input: unknown,
   expected: WebAuthnScope,
   latestCreatedAt = 8_640_000_000_000,
 ) {
-  // Default is the representable Date limit. Clients must not reject historical
-  // metadata because their clock is slow. The repository supplies server time.
   if (
     !Number.isSafeInteger(latestCreatedAt) ||
     latestCreatedAt <= 0 ||

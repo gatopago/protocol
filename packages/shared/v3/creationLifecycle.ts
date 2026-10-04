@@ -28,8 +28,6 @@ function choice<const T extends string>(value: unknown, allowed: readonly T[]): 
   return value as T;
 }
 
-/** A historical read model, never a fresh security assessment or permission to fund
- * the account. No leases, provider URLs, credentials or executable payloads. */
 export function parseCreationLifecycle(
   value: unknown,
   receipt: { state: 'prepared' | 'authorized'; delivery_state: string },

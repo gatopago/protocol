@@ -12,7 +12,6 @@ import { Role, signerId, type SecurityPolicy } from '@gatopago/shared/v3/securit
 import { initializationFixture } from './v3Initialization';
 import { fixtureHash } from './v3DeploymentFixture';
 
-/** Ephemeral local cryptographic factors. Labels/provider names are intentionally NOT independence evidence. */
 export function backupFixture() {
   const f = initializationFixture(),
     initial = prepareInitialization(f.input);

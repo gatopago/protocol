@@ -10,7 +10,6 @@ import {
   type Hex,
 } from 'viem';
 
-/** This scope comes from the approved environment/enrolled signer, never clientDataJSON. */
 export interface WebAuthnScope {
   rpId: string;
   origin: string;
@@ -40,7 +39,6 @@ const ASSERTION_ABI = [
   { type: 'string' },
 ] as const;
 
-/** Shape/domain relationship only. The caller must also enforce its exact origin/RP allowlist. */
 export function assertWebAuthnScope(scope: WebAuthnScope): void {
   if (
     !scope ||
@@ -77,7 +75,6 @@ export function assertWebAuthnScope(scope: WebAuthnScope): void {
     fail('Origin does not match RP ID');
 }
 
-/** ES256 SPKI profile returned by getPublicKey(); no ASN.1 guessing or arbitrary last-65-byte extraction. */
 export function webAuthnKeyFromSpki(scope: WebAuthnScope, spki: Uint8Array): Hex {
   assertWebAuthnScope(scope);
   if (
@@ -120,7 +117,6 @@ export function assertWebAuthnKey(scope: WebAuthnScope, key: Hex): void {
   }
 }
 
-/** Strict DER parsing/range checks and low-S normalization belong to the P-256 library. */
 export function normalizeWebAuthnSignature(der: Uint8Array): { r: Hex; s: Hex } {
   if (!(der instanceof Uint8Array) || der.length < 8 || der.length > 72)
     fail('Invalid ES256 DER length');
@@ -132,13 +128,6 @@ export function normalizeWebAuthnSignature(der: Uint8Array): { r: Hex; s: Hex } 
   }
 }
 
-/**
- * Verify and encode EXACTLY AccountV3WebAuthnVerifier's six ABI fields (no enclosing tuple offset).
- * No JSON reserialization, challenge replacement, raw-P256 fallback or network access.
- * This proves one signature, NOT enrollment, quorum, freshness or permission to spend.
- * The caller derives challenge locally from the reviewed V3 typed authorization; the account
- * remains responsible for domain/nonce/version/deadline and current signer authorization.
- */
 export function encodeWebAuthnAssertion(input: {
   scope: WebAuthnScope;
   key: Hex;
@@ -176,7 +165,7 @@ export function encodeWebAuthnAssertion(input: {
   const prefix = `{"type":"webauthn.get","challenge":"${challenge64}","origin":"${scope.origin}","crossOrigin":false`;
   if (!json.startsWith(prefix) || !['}', ','].includes(json[prefix.length]))
     fail('Client data does not match the V3 assertion profile');
-  // Additional fields may follow the W3C prefix. Reject malformed JSON or shadowed security fields.
+
   try {
     const parsed = JSON.parse(json) as Record<string, unknown>;
     if (

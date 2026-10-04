@@ -48,11 +48,7 @@
     "accountId": "0x77f0fc2f278b61529a05b92f2c525a054070fa5d2693364e0d719aaee30d51a2",
     "accountAddress": "0x63B42D6689BE302A7EFE6E153C2B131556567fCF"
   },
-  "chains": [
-    "43113",
-    "84532",
-    "421614"
-  ],
+  "chains": ["43113", "84532", "421614"],
   "chainScopeHash": "0x447c99cb00989790aab455cdda69697d3bada69b867a6a53fde65bbe0b95300f",
   "calls": [
     {

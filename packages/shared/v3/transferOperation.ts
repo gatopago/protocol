@@ -24,11 +24,6 @@ type GasTerms = {
   maxPriorityFeePerGas: bigint;
 };
 
-/** Internal unsigned candidate for an activated, deployed Account V3 and the
- * admitted EntryPoint v0.9 profile. This compiler does not establish admission,
- * ownership, active policy, nonce availability, funding or token semantics.
- * Rebuild independently on client/server before consent. No provider or signer.
- */
 export function prepareTransferOperation(
   request: TransferRequest,
   context: Parameters<typeof compileTransferCalls>[1] & {
@@ -107,7 +102,7 @@ export function prepareTransferOperation(
   const maximumAccountGas = BigInt(context.budget.maximum_native_gas_atomic);
   if (context.sponsorship ? maximumAccountGas !== 0n : maximumEntryPointCharge > maximumAccountGas)
     throw new Error('Transfer exceeds reserved gas budget');
-  // Sponsorship is part of the exact operation before user consent.
+
   const operation: UserOperation<'0.9'> = Object.freeze({
     sender: compiled.account,
     nonce: context.nonce,

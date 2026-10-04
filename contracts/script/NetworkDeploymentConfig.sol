@@ -114,9 +114,8 @@ library NetworkDeploymentConfig {
                 usdcCodehash: 0x7140a935aa3bb55d334d6d325fea277e47674770b10823feefa6f8b2c58af5fc,
                 tokenMessengerCodehash: TOKEN_MESSENGER_CODEHASH,
                 create2DeployerCodehash: CREATE2_DEPLOYER_CODEHASH,
-                // Phase 4A wallet rail. These are deliberately modest testnet
-                // limits; deploying the paymaster still requires the explicit
-                // GATOPAGO_DEPLOY_PAYMASTER=true opt-in in DeployV2.
+                // Modest testnet wallet-rail limits. DeployPaymaster uses the
+                // same mandatory signer/funding validation as the V3 release.
                 paymasterStake: 0.001 ether,
                 paymasterUnstakeDelay: 1 days,
                 paymasterDeposit: 0.05 ether,

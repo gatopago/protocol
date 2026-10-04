@@ -8,11 +8,6 @@ import {
 import { assertFinalityAssessment, type FinalityAssessment } from './finality';
 import type { prepareTransferOperation } from './transferOperation';
 
-/** Checks an internal balance/reservation snapshot, not visitor-supplied funds.
- * Reservations must be read atomically by the coordinator and rechecked/claimed
- * before delivery. This function neither creates holds nor prevents concurrent
- * transactions outside GatoPago. Simulation and settlement remain mandatory.
- */
 export function assertTransferBalance(
   candidate: ReturnType<typeof prepareTransferOperation>,
   context: Parameters<typeof prepareTransferOperation>[1],
@@ -37,8 +32,6 @@ export function assertTransferBalance(
     evidence.checkpoint.block_hash !== candidate.checkpoint.block_hash ||
     evidence.checkpoint.block_number !== candidate.checkpoint.block_number ||
     evidence.checkpoint.block_timestamp !== securityFinality.target.block_timestamp ||
-    // Confirmation may re-read the exact reviewed block later. Preserve the
-    // signed checkpoint/window; never relabel a new read with the old timestamp.
     !Number.isSafeInteger(evidence.observed_at) ||
     evidence.observed_at < candidate.checkpoint.observed_at
   )

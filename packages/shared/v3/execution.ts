@@ -15,7 +15,6 @@ import {
   type ExecutionPlan,
 } from './authorizations';
 
-/** Internal candidate ABI; not a declaration that an Account V3 deployment/API is available. */
 export const executionAbi = parseAbi([
   'struct Call { address target; uint256 value; bytes data; }',
   'struct Signature { uint8 signerIndex; bytes signature; }',
@@ -30,7 +29,7 @@ export const executionAbi = parseAbi([
 export type ExecutionSignature = { signerIndex: number; signature: Hex };
 
 function checkCalls(account: Address, calls: readonly AccountCall[]): void {
-  hashCalls(calls); // Canonical encoding and 1..32 batch bound.
+  hashCalls(calls);
   if (
     calls.some(
       (call) => isAddressEqual(call.target, zeroAddress) || isAddressEqual(call.target, account),
@@ -82,7 +81,6 @@ export function encodeDirectExecution(
   });
 }
 
-/** UserOp hash excludes this envelope. Never embed the signed plan into UserOp.callData. */
 export function encodeExecutionSignature(
   plan: ExecutionPlan,
   signatures: readonly ExecutionSignature[],

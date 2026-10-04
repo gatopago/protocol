@@ -41,7 +41,7 @@ export function parseEnvironment(input: unknown): Environment {
     throw new Error('Environment origins and RP do not match');
   }
   assertWebAuthnScope({ rpId: config.webauthn_rp_id, origin: config.web_origin });
-  // E0-E4 is explicitly testnet-only, including the production deployment environment.
+
   if (
     config.payment_live_enabled ||
     config.api_modes.some((mode) => mode !== 'test') ||
@@ -62,7 +62,6 @@ export function parseEnvironment(input: unknown): Environment {
   return structuredClone(config);
 }
 
-/** Public deployment inputs only; credentials never enter the browser configuration. */
 export interface EnvironmentVariables {
   GATOPAGO_ENVIRONMENT?: string;
   GATOPAGO_WEB_ORIGIN?: string;
@@ -129,7 +128,6 @@ const flowCollections = new Set([
 ]);
 const walletCollections = new Set(['wallets', 'transfers']);
 
-/** Collection and descendants share an owner. Unknown paths never fall through to a writer. */
 export function apiRouteOwner(path: string): 'wallet-core' | 'flow-core' | null {
   if (
     !path.startsWith('/') ||

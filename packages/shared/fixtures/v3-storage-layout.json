@@ -3,11 +3,7 @@
   "namespace": "gatopago.account.v3",
   "namespaceRoot": "0xf7d3d237b2c0508303945fc9697caadd1c97ac71f8ac5d69804370418184b000",
   "compiler": "0.8.34",
-  "proposalKinds": [
-    "None",
-    "Security",
-    "Upgrade"
-  ],
+  "proposalKinds": ["None", "Security", "Upgrade"],
   "layout": {
     "label": "struct AccountV3Storage.Layout",
     "encoding": "inplace",

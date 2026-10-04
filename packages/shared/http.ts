@@ -7,7 +7,6 @@ export class ResponseBodyTooLargeError extends Error {
   }
 }
 
-/** Parse upstream JSON without allowing an untrusted response to fill Worker memory. */
 export async function readJsonBounded<T>(
   response: Response,
   maxBytes = DEFAULT_MAX_JSON_BYTES,
@@ -55,7 +54,6 @@ export async function readJsonBounded<T>(
   return JSON.parse(text) as T;
 }
 
-/** Release an upstream connection when its body is intentionally ignored. */
 export async function discardResponseBody(response: Response): Promise<void> {
   if (response.body) await response.body.cancel().catch(() => undefined);
 }

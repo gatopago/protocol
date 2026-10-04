@@ -1,25 +1,18 @@
-// Flow network and rail capabilities. Wallet Core uses pinned V3 manifests.
-
 export type CctpChain = {
   chainId: number;
   name: string;
-  /** Circle CCTP domain (distinct from chainId). */
+
   domain: number;
-  /** CCTP v2 TokenMessenger (depositForBurn). */
+
   tokenMessenger: `0x${string}`;
-  /** CCTP v2 MessageTransmitter (receiveMessage). */
+
   messageTransmitter: `0x${string}`;
-  /** Native USDC on this chain. */
+
   usdc: `0x${string}`;
 };
 
 export type PaymentPermitMode = 'eip2612' | 'approve';
 
-/**
- * Universal Checkout is deliberately separate from the wallet's home-chain
- * configuration. `paymentSource` is the fail-closed rollout flag; protocol
- * capabilities alone never make a payment route visible.
- */
 export type PaymentNetworkCapabilities = {
   chainId: number;
   name: string;
@@ -32,21 +25,18 @@ export type PaymentNetworkCapabilities = {
   cctpFast: boolean;
   localPaymentRouter: `0x${string}` | null;
   cctpPaymentRouter: `0x${string}` | null;
-  /** Immutable on-chain ceiling. This is capability, never a fee policy. */
+
   localPaymentMaxPlatformFeeBps: number | null;
-  /** Immutable on-chain ceiling. This is capability, never a fee policy. */
+
   cctpPaymentMaxPlatformFeeBps: number | null;
   permitMode: PaymentPermitMode;
   usdc: `0x${string}`;
   tokenMessenger: `0x${string}`;
 };
 
-// CCTP v2 contracts are deterministic (identical address on every chain). Verified
-// against developers.circle.com/cctp (testnet). TokenMessengerV2 / MessageTransmitterV2.
 const CCTP_V2_TOKEN_MESSENGER = '0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA' as const;
 const CCTP_V2_MESSAGE_TRANSMITTER = '0xE737e5cEBEEBa77EFE34D4aa090756590b1CE275' as const;
 
-/** Circle protocol registry, independent of Account generation. */
 export const CCTP_CHAINS: Record<number, CctpChain> = {
   421614: {
     chainId: 421614,
@@ -64,8 +54,7 @@ export const CCTP_CHAINS: Record<number, CctpChain> = {
     messageTransmitter: CCTP_V2_MESSAGE_TRANSMITTER,
     usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
   },
-  // Inbound sources (cobros hacia Arbitrum). Ethereum Sepolia: instant Fast
-  // (~20s, fee) or free Standard (~15-19 min).
+
   11155111: {
     chainId: 11155111,
     name: 'Ethereum Sepolia',
@@ -74,8 +63,7 @@ export const CCTP_CHAINS: Record<number, CctpChain> = {
     messageTransmitter: CCTP_V2_MESSAGE_TRANSMITTER,
     usdc: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238',
   },
-  // Avalanche Fuji: instant finality → Standard is already ~8s AND free
-  // (Avalanche doesn't even need Fast as a source).
+
   43113: {
     chainId: 43113,
     name: 'Avalanche Fuji',
@@ -86,19 +74,12 @@ export const CCTP_CHAINS: Record<number, CctpChain> = {
   },
 };
 
-/** CCTP info for an EVM chainId, or null if the chain isn't CCTP-enabled here. */
 export function getCctpChainByChainId(chainId: number): CctpChain | null {
   return CCTP_CHAINS[chainId] ?? null;
 }
 
 const CCTP_V2_MAINNET_TOKEN_MESSENGER = '0x28b5a0e9C621a5BadaA536219b3a228C8168cf5d' as const;
 
-/**
- * Frozen Universal Checkout v1 capability/address manifest. The three testnet
- * sources were activated only after successful broadcasts, exact-match source
- * verification, deployment manifests and real end-to-end smokes. Mainnet stays
- * fail-closed until the production fork, audit and operational gates pass.
- */
 export const PAYMENT_NETWORKS: Readonly<Record<number, PaymentNetworkCapabilities>> = {
   421614: {
     chainId: 421614,
@@ -131,7 +112,7 @@ export const PAYMENT_NETWORKS: Readonly<Record<number, PaymentNetworkCapabilitie
     localPaymentRouter: null,
     cctpPaymentRouter: '0x961C08Bd5a11EFB7264B06d7f14a44FB4d9958Ba',
     localPaymentMaxPlatformFeeBps: null,
-    // Current deployment is immutable at zero. Raise only after a verified redeploy.
+
     cctpPaymentMaxPlatformFeeBps: 0,
     permitMode: 'eip2612',
     usdc: '0x036CbD53842c5426634e7929541eC2318f3dCF7e',
@@ -150,7 +131,7 @@ export const PAYMENT_NETWORKS: Readonly<Record<number, PaymentNetworkCapabilitie
     localPaymentRouter: null,
     cctpPaymentRouter: '0xd8289B87b155e8691Da192b12E12E2b592fE7D1E',
     localPaymentMaxPlatformFeeBps: null,
-    // Current deployment is immutable at zero. Raise only after a verified redeploy.
+
     cctpPaymentMaxPlatformFeeBps: 0,
     permitMode: 'eip2612',
     usdc: '0x5425890298aed601595a70AB815c96711a31Bc65',

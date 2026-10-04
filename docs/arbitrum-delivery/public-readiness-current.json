@@ -1,0 +1,251 @@
+{
+  "schema_version": 1,
+  "observed_at": "2026-10-04T01:05:19.050Z",
+  "network_id": "eip155:421614",
+  "providers": [
+    "arbitrum-offchain",
+    "tenderly-public"
+  ],
+  "checkpoint": {
+    "block_number": "315508848",
+    "block_hash": "0x1cc520f5af47486311e2d180f068d0e8b51e996d9d03c26406d52f82bc2daaf9"
+  },
+  "contract_code_checks": [
+    {
+      "name": "AccountV3Security",
+      "address": "0x5d35d52853f1649eb05beedfce4aa2b33cf37539",
+      "code_hash": "0x419956b09a94179f282782910abaacb0d36597378f837c8f29c077a0a89591e1",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "AccountV3Upgrade",
+      "address": "0xcfa137d56dd8eaa3fd115bfade009bd897092f10",
+      "code_hash": "0xbe281fc7dcd894adb4265909a7bcf42914ac6ed30f4bf3edf5a1869cb476896c",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "AccountV3WebAuthnVerifier",
+      "address": "0x33def7fd931a7df910fe7def70327cb15712c71a",
+      "code_hash": "0xf8a1dfb1c354a462144c89eb6037f638d7a7816bc31f84246f491756aa00d0a9",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "AccountV3",
+      "address": "0xfe909a09561632a0f9b1a5a00090a658820e4122",
+      "code_hash": "0x61e2c0a98de282ebf0ea5aa798234935bf58d72751cbba57560a2e4ef79bd7c0",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "AccountFactoryV3",
+      "address": "0x61c74d8f0834791db732fba9ac022224bf3bbb5f",
+      "code_hash": "0x83beb3526e01dd5be9f005de8e039a057b1a937688b52ad771b1d247f7d59604",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "EntryPoint",
+      "address": "0x433709009b8330fda32311df1c2afa402ed8d009",
+      "code_hash": "0x66104e61203e3b9cf29303ececd9367b6329f6caa2bb063361ea75b7b92a7678",
+      "result": "passed_on_two_providers"
+    },
+    {
+      "name": "GatoPagoPaymaster",
+      "address": "0x702bae7BDda0cB9caA40B97D082CcF8BA17c0cCD",
+      "code_hash": "0xb31d78b41bf9d7c25cce6c92d230142bfb8c0b049ab2e6bf2c9502f38b20e587",
+      "result": "passed_on_two_providers"
+    }
+  ],
+  "readiness": {
+    "http_status": 200,
+    "service": "gatopago-wallet-core",
+    "configured": true,
+    "capabilities": {
+      "creation": true,
+      "transfers": true,
+      "backup": false
+    },
+    "networks": [
+      {
+        "network_id": "eip155:421614",
+        "transport": "self",
+        "relayer_address": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+        "sponsorship_configured": true
+      }
+    ]
+  },
+  "worker": {
+    "version_id": "09a2fb7a-921d-4911-b360-1dca382ef479",
+    "version_number": 60,
+    "deployment_id": "28bb4e8d-38a7-41c9-8849-dac1ee5a0c34",
+    "published_at": "2026-10-04T00:41:43.463Z",
+    "script_etag": "d7b9c1cbea7027b8aef8c3b49d0cc9801d1fa01814186042d5497b507f859d6b",
+    "source_tree_and_sdk_version": "not_linked"
+  },
+  "authenticated_session_observed": false,
+  "sponsored_creation_executed": false,
+  "money_operations_executed": false,
+  "transaction_sent": false,
+  "submission_sent": false,
+  "finality": "not_assessed",
+  "d1": {
+    "observed_at": "2026-10-04T01:10:20.628Z",
+    "database_id": "48996f36-0c69-4b0c-af75-b73e88b4f09b",
+    "migrations": [
+      "0001_initial.sql",
+      "0002_production_namespace.sql",
+      "0003_plaintext_invitation_codes.sql",
+      "0004_money_operations.sql",
+      "0005_three_character_usernames.sql"
+    ],
+    "money_migration_sha256": "109b733f89e7c7e217c60c574446c9c21002c11c33d44a94e4b6e363cb460786",
+    "required_money_objects": [
+      {
+        "type": "table",
+        "name": "wallet_spend_locks"
+      },
+      {
+        "type": "index",
+        "name": "wallet_spend_one_new_active"
+      },
+      {
+        "type": "index",
+        "name": "wallet_spend_active_account"
+      },
+      {
+        "type": "table",
+        "name": "money_preparations"
+      },
+      {
+        "type": "table",
+        "name": "money_operations"
+      },
+      {
+        "type": "index",
+        "name": "money_operations_account_state"
+      },
+      {
+        "type": "index",
+        "name": "money_operations_unsubmitted_expiry"
+      },
+      {
+        "type": "table",
+        "name": "money_jobs"
+      },
+      {
+        "type": "index",
+        "name": "money_jobs_due"
+      },
+      {
+        "type": "table",
+        "name": "money_finality_journal"
+      },
+      {
+        "type": "table",
+        "name": "money_reconciliations"
+      },
+      {
+        "type": "table",
+        "name": "money_finality_conflicts"
+      },
+      {
+        "type": "table",
+        "name": "money_expirations"
+      },
+      {
+        "type": "trigger",
+        "name": "money_preparation_immutable"
+      },
+      {
+        "type": "trigger",
+        "name": "money_operation_identity"
+      },
+      {
+        "type": "trigger",
+        "name": "money_operation_transition"
+      },
+      {
+        "type": "trigger",
+        "name": "money_expiry_no_dispatch"
+      },
+      {
+        "type": "trigger",
+        "name": "money_expiration_immutable"
+      },
+      {
+        "type": "trigger",
+        "name": "money_finality_immutable"
+      },
+      {
+        "type": "trigger",
+        "name": "money_finality_conflict_immutable"
+      },
+      {
+        "type": "trigger",
+        "name": "money_reconciliation_immutable"
+      },
+      {
+        "type": "trigger",
+        "name": "money_reconciled_evidence"
+      },
+      {
+        "type": "trigger",
+        "name": "transfer_spend_exclusion"
+      },
+      {
+        "type": "trigger",
+        "name": "transfer_spend_acquire"
+      },
+      {
+        "type": "trigger",
+        "name": "transfer_spend_dispatch"
+      },
+      {
+        "type": "trigger",
+        "name": "transfer_spend_release"
+      },
+      {
+        "type": "trigger",
+        "name": "money_spend_exclusion"
+      },
+      {
+        "type": "trigger",
+        "name": "money_spend_acquire"
+      },
+      {
+        "type": "trigger",
+        "name": "money_spend_dispatch"
+      },
+      {
+        "type": "trigger",
+        "name": "money_spend_release"
+      },
+      {
+        "type": "trigger",
+        "name": "money_job_attention"
+      },
+      {
+        "type": "trigger",
+        "name": "money_reconciliation_commit"
+      },
+      {
+        "type": "trigger",
+        "name": "wallet_spend_identity"
+      },
+      {
+        "type": "trigger",
+        "name": "wallet_spend_release_evidence"
+      },
+      {
+        "type": "trigger",
+        "name": "transfer_spend_dispatch_requires_lock"
+      },
+      {
+        "type": "trigger",
+        "name": "money_spend_dispatch_requires_lock"
+      }
+    ],
+    "required_money_object_names_and_types_match": true,
+    "sql_constraints_equivalence": "not_revalidated",
+    "rows_written": 0,
+    "user_data_read": false
+  }
+}

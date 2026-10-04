@@ -17,10 +17,6 @@ function object(value: unknown, fields: string[]): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
-/** Owner-only public material for selecting a registered authenticator. This
- * does not prove current possession, device availability, or onchain authority.
- * Deliberately separate from the metadata-only inventory and its lighter bundle.
- */
 export function parseCredentialDetail(
   input: unknown,
   expected: WebAuthnScope,
@@ -61,7 +57,7 @@ export function parseCredentialDetail(
   } catch {
     return invalid();
   }
-  const publicKey = value.public_key as Hex; // Canonical hex checked above; curve and scope checked below.
+  const publicKey = value.public_key as Hex;
   assertWebAuthnKey(expected, publicKey);
   return Object.freeze({
     scope: Object.freeze({ ...expected }),

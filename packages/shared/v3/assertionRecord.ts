@@ -8,8 +8,6 @@ const bounds = {
   signatureDER: [8, 72],
 } as const;
 
-/** Bounded internal storage codec, NOT cryptographic verification. Copies mutable input
- * before I/O. Consumers must verify the restored proof against its original typed digest. */
 export function writeAssertionRecord(proof: WebAuthnAssertionBytes): string {
   return JSON.stringify(
     Object.fromEntries(

@@ -63,20 +63,13 @@
         "destination": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "address",
-            "address_type"
-          ],
+          "required": ["address", "address_type"],
           "properties": {
             "address": {
               "$ref": "#/definitions/address"
             },
             "address_type": {
-              "enum": [
-                "evm_eoa",
-                "evm_contract",
-                "evm_unknown"
-              ]
+              "enum": ["evm_eoa", "evm_contract", "evm_unknown"]
             }
           }
         },
@@ -85,10 +78,7 @@
             {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "kind",
-                "amount_atomic"
-              ],
+              "required": ["kind", "amount_atomic"],
               "properties": {
                 "kind": {
                   "const": "exact"
@@ -101,9 +91,7 @@
             {
               "type": "object",
               "additionalProperties": false,
-              "required": [
-                "kind"
-              ],
+              "required": ["kind"],
               "properties": {
                 "kind": {
                   "const": "max"
@@ -143,16 +131,11 @@
         },
         "environment": {
           "type": "string",
-          "enum": [
-            "production"
-          ]
+          "enum": ["production"]
         },
         "status": {
           "type": "string",
-          "enum": [
-            "unprovisioned",
-            "provisioned"
-          ]
+          "enum": ["unprovisioned", "provisioned"]
         },
         "web_origin": {
           "type": "string",
@@ -187,10 +170,7 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "enum": [
-              "test",
-              "live"
-            ]
+            "enum": ["test", "live"]
           }
         },
         "blockchain_tiers": {
@@ -200,10 +180,7 @@
           "uniqueItems": true,
           "items": {
             "type": "string",
-            "enum": [
-              "testnet",
-              "mainnet"
-            ]
+            "enum": ["testnet", "mainnet"]
           }
         },
         "wallet_candidates": {
@@ -229,10 +206,7 @@
           "type": "boolean"
         },
         "firebase_project_id": {
-          "type": [
-            "string",
-            "null"
-          ],
+          "type": ["string", "null"],
           "pattern": "^[a-z][a-z0-9-]{4,28}[a-z0-9]$(?![\\s\\S])"
         }
       }

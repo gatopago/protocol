@@ -15,8 +15,6 @@ import { ACCOUNT_DOMAIN as accountDomain } from './constants.mjs';
 export { ACCOUNT_DOMAIN as accountDomain } from './constants.mjs';
 export { ACCOUNT_GENERATION, MIN_UPGRADE_DELAY_SECONDS } from './constants.mjs';
 
-/** E0 candidate protocol: policy proposals bind acceptance and completion deadlines separately.
- * Account V3 deployment is blocked until Gate A closes. */
 export const ACCOUNT_ID_TYPE =
   'AccountIdentity(uint32 generation,bytes32 initialSecurityCommitment,bytes32 userSaltCommitment)';
 export const ACCOUNT_ID_TYPEHASH = keccak256(stringToHex(ACCOUNT_ID_TYPE));
@@ -136,7 +134,6 @@ export type AuthorizationMessages = {
 };
 export type ExecutionPlan = AuthorizationMessages['ExecutionPlan'];
 
-/** Chain-neutral policy state; per-chain consent digests and receipts are separate evidence. */
 export interface SecurityManifest {
   accountId: Hex;
   generation: number;
@@ -215,7 +212,6 @@ export function predictAccountAddress(
   });
 }
 
-/** Sorted, unique scope prevents alternate encodings of the same set of chains. */
 export function hashChainScope(chainIds: readonly bigint[]): Hex {
   if (chainIds.length === 0 || chainIds.length > 32) throw new Error('Invalid chain scope size');
   for (let i = 0; i < chainIds.length; i++) {
@@ -256,8 +252,7 @@ export function authorizationDigest<K extends AuthorizationKind>(
   if (chainId <= 0n || message.generation !== ACCOUNT_GENERATION)
     throw new Error('Invalid authorization domain');
   if (message.validUntil <= message.validAfter) throw new Error('Invalid authorization window');
-  // The v0.9 EntryPoint reserves the high bits for block ranges. V3 signs a
-  // half-open timestamp range; Solidity subtracts one from each bound.
+
   if (
     (kind === 'InitializationApproval' || kind === 'ExecutionPlan') &&
     (message.validAfter < 1 || message.validUntil > 0x7fffffffffff)

@@ -32,8 +32,6 @@ function choice<const T extends string>(value: unknown, allowed: readonly T[]): 
   return value as T;
 }
 
-/** Historical, owner-scoped progress. Never a spend permission or fresh proof that
- * the user possesses a key. Explicit expected IDs prevent cross-request mixups. */
 export function parseBackupStatus(
   value: unknown,
   expected: {

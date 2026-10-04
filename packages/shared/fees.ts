@@ -1,10 +1,3 @@
-/**
- * Data-only economic contracts shared by GatoPago surfaces.
- *
- * A platform fee is always opt-in and payer-borne in the current router
- * contracts. Network fees are separate because they are paid to the selected
- * rail (for example Circle CCTP), not revenue for GatoPago.
- */
 export type FeeBearer = 'none' | 'payer';
 
 export type PaymentFeeSnapshot = {

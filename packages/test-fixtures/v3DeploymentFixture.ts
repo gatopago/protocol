@@ -1,8 +1,6 @@
 import { keccak256, type Address, type Hex } from 'viem';
 import type { AccountDeploymentManifest } from '@gatopago/shared/v3/deployment';
 
-// Synthetic protocol data. No actual deployment, source provenance or admission.
-// Kept free of test-runner imports for the local browser verification harness.
 export const fixtureHash = (digit: string) => `0x${digit.repeat(64)}` as Hex;
 export const fixtureAddress = (digit: string) => `0x${digit.repeat(40)}` as Address;
 const runtimes = {

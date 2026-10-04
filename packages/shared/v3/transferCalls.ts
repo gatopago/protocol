@@ -12,12 +12,6 @@ import { encodeAccountExecution } from './execution';
 import { assertAssetNetwork } from './primitives';
 import { parseTransferRequest, resolveTransferFunding, type TransferRequest } from './transfer';
 
-/** Pure call compiler for an already verified account-specific funding budget.
- * Not a quote or authorization. The caller must admit assets/providers, verify
- * ownership/security/finality/reservations and simulate the complete batch.
- * ERC20 return values/events and actual settlement still require verification:
- * a successful low-level CALL alone does not prove the recipient was paid.
- */
 export function compileTransferCalls(
   input: TransferRequest,
   context: {
@@ -68,8 +62,7 @@ export function compileTransferCalls(
       : { target: recipient, value: amount, data: '0x' };
   const calls = [call(destination, BigInt(funding.amount_atomic))];
   if (feeRecipient) calls.push(call(feeRecipient, fee));
-  // Reuses the account execution encoder: CALL only, no approvals/delegatecall
-  // and no user-controlled calldata. Gas is reserved, never paid as a batch call.
+
   const calldata = encodeAccountExecution(account, calls, context.security_version);
   return { request, account, funding, calls, calls_hash: hashCalls(calls), calldata };
 }

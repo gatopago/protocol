@@ -18,7 +18,6 @@ import { deploymentDocumentDigest } from '@gatopago/shared/v3/deployment';
 import { fixtureHash, fixtureManifest } from './v3DeploymentFixture';
 export { fixtureHash, fixtureAddress, fixtureManifest } from './v3DeploymentFixture';
 
-// Synthetic protocol fixture only. No actual deployment, audit, source commit or admission.
 export const checkpoint = { block_hash: fixtureHash('b'), block_number: '100' };
 const commitment = fixtureHash('a');
 const salt = fixtureHash('c');

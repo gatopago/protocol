@@ -1,5 +1,6 @@
 {
   "name": "@gatopago/protocol-workspace",
+  "version": "3.2.3",
   "private": true,
   "type": "module",
   "engines": { "node": "24.x" },

@@ -47,8 +47,6 @@ export interface MoneyOperationContext {
   valid_until: number;
 }
 
-/** Independent, unsigned reconstruction. Observations and authority must be
- * freshly admitted by the coordinator; none of these inputs are send grants. */
 export function prepareMoneyOperation(
   input: MoneyOperationRequest,
   contextInput: MoneyOperationContext,

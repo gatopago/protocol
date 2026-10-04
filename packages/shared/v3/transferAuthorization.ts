@@ -15,12 +15,6 @@ type Proof = { signerIndex: number } & (
   { kind: 'ecdsa'; signature: Hex } | { kind: 'webauthn'; assertion: WebAuthnAssertionBytes }
 );
 
-/** Verify consent against a reconstructed operation and active, previously
- * inspected policy. No private key, WebAuthn prompt, RPC, reservation or send.
- * The integrator MUST independently bind policy/version to this account and
- * checkpoint and revalidate ownership/state before delivery. ERC1271 transport
- * is deliberately not inferred from an address or a caller-provided boolean.
- */
 export async function authorizeTransferOperation(
   request: Parameters<typeof prepareTransferOperation>[0],
   context: Parameters<typeof prepareTransferOperation>[1],
@@ -43,7 +37,6 @@ export async function authorizeTransferOperation(
   proofs: readonly Proof[],
   clock: () => number = () => Math.floor(Date.now() / 1000),
 ) {
-  // Detach everything before asynchronous verification.
   const snapshot = structuredClone({ request, context, approval, proofs });
   const candidate = prepareTransferOperation(
     snapshot.request,
@@ -100,8 +93,7 @@ export async function authorizeTransferOperation(
   const signature = encodeExecutionSignature(candidate.plan, signatures);
   if (size(signature) > 70_000) throw new Error('TRANSFER_SIGNATURE_TOO_LARGE');
   const operation = Object.freeze({ ...candidate.operation, signature });
-  // This snapshot is produced only after balance/budget and consent checks.
-  // Persistence must compare its prior reservations atomically with current holds.
+
   const fundingReservation = [
     ...new Set([candidate.request.asset_id, snapshot.context.native_asset_id]),
   ]
@@ -143,8 +135,6 @@ export async function authorizeTransferOperation(
   });
 }
 
-/** Cryptographic quorum only. Neither policy provenance nor live authority is
- * implied. Used for initial verification and exact historical reconstruction. */
 export async function verifyTransferQuorum(
   digest: Hex,
   inputPolicy: SecurityPolicy,
@@ -179,7 +169,6 @@ export async function verifyTransferQuorum(
   return signatures;
 }
 
-/** One factor against the actual reviewed policy, NOT a quorum or send grant. */
 export async function verifyTransferProof(
   digest: Hex,
   inputPolicy: SecurityPolicy,

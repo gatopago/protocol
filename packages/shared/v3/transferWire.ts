@@ -15,8 +15,6 @@ function object(value: unknown, fields: readonly string[]): Record<string, unkno
   return value as Record<string, unknown>;
 }
 
-/** Public-key proof transport only. No policy, budget, network/provider override
- * or possession claim. Actual signature verification remains in Wallet Core. */
 export function parseTransferConfirmation(value: unknown) {
   const root = object(value, ['consent_digest', 'proofs']);
   requireHash(root.consent_digest);
@@ -68,7 +66,6 @@ export function parseTransferDelivery(value: unknown) {
   return { consent_digest: row.consent_digest };
 }
 
-/** Encode public proofs from an explicit signing ceremony. Never triggers one. */
 export function serializeTransferConfirmation(
   consentDigest: Hex,
   input: Parameters<typeof authorizeTransferOperation>[3],

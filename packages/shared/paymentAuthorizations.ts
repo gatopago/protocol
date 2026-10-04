@@ -1,11 +1,3 @@
-/**
- * Frozen EIP-712 schemas for Universal Checkout v1.
- *
- * Field names, order and Solidity widths are consensus-critical: changing any
- * value invalidates existing authorizations. The JSON vectors in
- * `shared/fixtures/payment-authorizations.json` are exercised from both
- * Solidity and TypeScript.
- */
 export const paymentAuthorizationTypes = {
   PaymentAuthorization: [
     { name: 'intentId', type: 'bytes32' },

@@ -33,9 +33,9 @@ export const creationInspectionAbi = parseAbi([
 
 export interface CreationInspectionInput {
   readonly document: string;
-  /** Independently reviewed original-composition pin, never supplied by the payer. */
+
   readonly expectedDigest: Hex;
-  /** Chain/finality policy chooses this checkpoint, not arbitrary HTTP parameters. */
+
   readonly checkpoint: InspectionCheckpoint;
 }
 
@@ -82,19 +82,11 @@ function block(value: unknown, number: bigint, hash: Hex) {
     error('CHECKPOINT_MISMATCH');
 }
 
-// Drain every sibling before leaving a stage, including on a failed check.
-// Independent reads can share an HTTP batch without orphaning Worker I/O.
 async function complete(operations: readonly Promise<void>[]) {
   const results = await Promise.allSettled(operations);
   for (const result of results) if (result.status === 'rejected') throw result.reason;
 }
 
-/** Consistency observation of ORIGINAL creation composition. Every state read is pinned
- * with EIP-1898, and unknown code is never interrogated for its own identity first.
- * A successful result is NOT source provenance, an audit, an honest-RPC proof, freshness,
- * finality, bundler conformance, network admission, sponsorship or account readiness.
- * No fallback to current-upgrade manifests, latest, another chain, or a previous success.
- */
 export async function inspectCreationDeployment(
   client: PublicClient,
   input: CreationInspectionInput,
@@ -151,7 +143,7 @@ export async function inspectCreationDeployment(
       ),
       32,
     );
-    // Comparing the complete ABI word also rejects padding, trailing bytes and noncanonical results.
+
     const encoded =
       type === 'address'
         ? encodeAbiParameters([{ type: 'address' }], [expected])
@@ -221,9 +213,9 @@ export async function inspectCreationDeployment(
       [implementation, 'storageLayoutHash', 'bytes32', manifest.storage_layout_hash],
       [implementation, 'proxiableUUID', 'bytes32', slot],
     ];
-    // Do not interrogate getters until ALL runtime code hashes match.
+
     await complete(expectations.map((expectation) => expectGetter(...expectation)));
-    // This closing read remains a separate, uncached observation.
+
     block(
       await client.request(
         { method: 'eth_getBlockByNumber', params: [toHex(height), false] },

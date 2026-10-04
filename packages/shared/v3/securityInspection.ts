@@ -36,17 +36,12 @@ function bytes(value: unknown, maxBytes: number): Hex {
   return value.toLowerCase() as Hex;
 }
 
-/** Observes CURRENT policy at an explicit checkpoint, not the original initialization receipt.
- * Shared by Wallet Core and portable readers. No login, storage writes, signing or implicit
- * expiry/activation. Recognized policy is NOT factor possession, finality or spend permission.
- * The caller supplies a bounded transport, independent observations and a fresh admitted pin.
- */
 export async function inspectAccountSecurity(client: PublicClient, input: AccountInspectionInput) {
   const snapshotInput = Object.freeze({
     ...input,
     checkpoint: Object.freeze({ ...input.checkpoint }),
   });
-  // Verify the nondelegated proxy target and every current module BEFORE calling its getters.
+
   const deployment = await inspectAccountDeployment(client, snapshotInput);
   if (deployment.status === 'not_deployed') return deployment;
   const block = { blockHash: snapshotInput.checkpoint.block_hash, requireCanonical: true } as const;
@@ -86,7 +81,7 @@ export async function inspectAccountSecurity(client: PublicClient, input: Accoun
     ) {
       throw new AccountInspectionError('INVALID_RPC_DATA');
     }
-    // Fixed public wire schema, not a dependency on Solidity's packed storage offsets.
+
     const state = {
       flags: words[0],
       securityVersion: words[1],
@@ -149,7 +144,7 @@ export async function inspectAccountSecurity(client: PublicClient, input: Accoun
     ) {
       throw new AccountInspectionError('IDENTITY_MISMATCH');
     }
-    // Top-level offset + policy header + array length + <=16 offsets/signers/128-byte keys.
+
     const encodedPolicy = await call('securityPolicy', 6432);
     const raw = decodeFunctionResult({
       abi: accountSecurityInspectionAbi,
@@ -192,7 +187,7 @@ export async function inspectAccountSecurity(client: PublicClient, input: Accoun
     ) {
       throw new AccountInspectionError('IDENTITY_MISMATCH');
     }
-    // Policy claims alone cannot establish that its contract validators still have pinned code.
+
     const checked = new Map<Address, Hex>();
     for (const signer of policy.signers) {
       if (signer.kind === SignerKind.ECDSA) continue;
@@ -227,7 +222,7 @@ export async function inspectAccountSecurity(client: PublicClient, input: Accoun
     ) {
       throw new AccountInspectionError('CHECKPOINT_MISMATCH');
     }
-    // Expired proposals remain pending until explicitly cleared onchain. Never infer cancellation.
+
     const phase = state.creationValidUntil !== 0n ? 'creation_pending' : 'active_policy';
     return {
       ...deployment,
@@ -257,7 +252,7 @@ export async function inspectAccountSecurity(client: PublicClient, input: Accoun
     };
   } catch (error) {
     if (error instanceof AccountInspectionError) throw error;
-    // Canonical shape errors and RPC errors both fail closed; never leak provider diagnostics.
+
     throw new AccountInspectionError('RPC_UNAVAILABLE');
   }
 }

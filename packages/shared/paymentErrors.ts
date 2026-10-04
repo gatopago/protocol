@@ -1,4 +1,3 @@
-// Stable error identifiers for the current Flow HTTP API.
 export const ERR = {
   ATTEMPT_ACTIVE: 'ATTEMPT_ACTIVE',
   ATTEMPT_NOT_FOUND: 'ATTEMPT_NOT_FOUND',

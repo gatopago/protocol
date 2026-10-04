@@ -19,12 +19,16 @@ promoting them. An existing version retains its original bytes; changed contents
 require a new version. `output/sdk-releases/manifest.json` records archive hashes,
 the producer commit, working-tree status and individual source hashes.
 
-`pnpm distribute` builds, packs and copies only the release selected by that
-manifest. It verifies integrity and all consumer destinations before copying,
-and preserves older archives still referenced by a consumer's package.json.
+`pnpm distribute` builds, packs and verifies the release before updating Wallet
+Core, Web and Flow. It updates existing SDK dependencies and local overrides,
+generates lockfiles with pnpm, installs with `--frozen-lockfile --ignore-scripts`
+and saves provenance in each consumer's `vendor/sdk-manifest.json`. Unreferenced
+SDK snapshots move to `vendor/archive/<version>/` after the frozen installation;
+their bytes remain available for rollback. Use `--consumer gatopago-wallet-core`,
+`--consumer gatopago` or `--consumer gatopago-flow` to update one repository.
 The root SDK CI is configured for build, tests, pack and the independent consumer
-check. Its command references still need reconciliation with package.json;
-a workflow file is not evidence of a successful remote run.
+check, using commands defined in package.json. A workflow file is not evidence
+of a successful remote run.
 
 `node scripts/check-sdk-consumer.mjs` installs the selected archives in a fresh temporary
 consumer using a frozen lockfile. It checks every exported subpath through
@@ -126,18 +130,57 @@ end-to-end validation is claimed here.
 
 ## Development
 
+### Consumer deployment includes gas sponsorship
+
+`script/DeployV3.s.sol:DeployV3` deploys the account stack **and a funded
+GatoPagoPaymaster**. `GATOPAGO_PAYMASTER_SIGNER` is mandatory and must differ
+from the deployer and owner. The default Arbitrum Sepolia funding is 0.01 ETH
+in the EntryPoint deposit and 0.001 ETH staked with a one-day unstake delay.
+These are operator funds; new user accounts do not need ETH for sponsored creation.
+
+Arbitrum Sepolia paymaster:
+[`0x702bae7BDda0cB9caA40B97D082CcF8BA17c0cCD`](https://sepolia.arbiscan.io/address/0x702bae7BDda0cB9caA40B97D082CcF8BA17c0cCD).
+Its [deployment record](contracts/deployments/421614/paymaster/deployment.json)
+contains the confirmed transactions, signer, runtime hash and initial funding.
+This adds sponsorship without replacing the September Account V3 deployment.
+
+For the existing September account deployment, add only its paymaster:
+
+```sh
+forge script script/Deploy.s.sol:DeployPaymaster \
+  --rpc-url https://sepolia-rollup.arbitrum.io/rpc \
+  --account wallet-0x75 --sender 0x75464f762bc50d0A0B127ab5a085504BF102Bb88 \
+  --broadcast --verify --verifier sourcify
+```
+
+Run from `contracts/`, with `GATOPAGO_PAYMASTER_SIGNER` set to the public
+address of the dedicated backend sponsor key. Without `--broadcast`, this is
+a simulation. The script prints the paymaster address, runtime code hash,
+signer, EntryPoint, deposit and cost cap; record the confirmed receipts separately.
+
+For a later full account release, set `GATOPAGO_PAYMASTER_ADDRESS` and
+`GATOPAGO_PAYMASTER_CODEHASH` to reuse the existing paymaster. Reuse verifies
+its configuration and funding, and sends no deposit, signer-reset or ownership
+transactions. Account upgrades do not require replacing the paymaster.
+
+Wallet Core admits the public policy in `config/paymasters.json` and receives
+the corresponding private key only as `WALLET_PAYMASTER_SIGNER_KEY`. Enable it
+after checking the deployed code and getters, not from a predicted address.
+Deployment and passing local tests are not proof of browser onboarding:
+verify a sponsored creation with a zero-ETH account on Arbitrum Sepolia.
+
 Requirements: **Node.js 24**, **pnpm 11.23.0**, **Foundry 1.7.1**.
 Compiler: **Solidity 0.8.34**, via-IR, Cancun, optimizer 200.
 
 ```sh
 cd contracts
 pnpm install --frozen-lockfile
-pnpm install:solidity
-pnpm verify
+pnpm build
+pnpm test
 ```
 
-`verify` checks pinned dependencies, builds, runs Foundry tests, checks sizes and
-lints. It does not broadcast transactions. Fork tests require RPC configuration;
+`build` compiles the contracts; `test` runs the Foundry tests. Neither broadcasts
+transactions. Fork tests require RPC configuration;
 skipped forks are not network evidence.
 
 Reproduce the September deployment with its [archived sources and build artifacts](contracts/deployments/421614/account-v3/):

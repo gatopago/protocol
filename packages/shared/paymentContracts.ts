@@ -1,11 +1,5 @@
 import { parseResourceId } from './v3/primitives';
 
-/**
- * Current contracts crossing the Wallet Core/Flow boundary.
- *
- * Keep this module data-only: no bindings, handlers, storage, clocks or secrets.
- * Only the current wire formats are accepted. No conversion of retired messages.
- */
 export const PAYMENTS_CONTRACT_VERSION = 3 as const;
 export const PAYMENT_JOB_MESSAGE_VERSION = 2 as const;
 
@@ -32,7 +26,7 @@ export type ReserveWalletPaymentAttemptCommand = {
   payerAddress: string;
   sourceChainId: number;
   requestedRoute: 'local';
-  /** Required only when the checkout link lets the payer choose the amount. */
+
   amount?: string;
 };
 
@@ -97,11 +91,6 @@ export type RegisteredWalletPaymentExecution = {
   idempotentReplay: boolean;
 };
 
-/**
- * Typed RPC surface exposed by Flow to Wallet Core. It deliberately contains methods and serializable values only, so
- * both Workers compile against one contract without importing either
- * implementation or any Cloudflare binding type.
- */
 export interface PaymentsRpcService {
   contractVersion(): number | Promise<number>;
   upsertSettlementAccount(

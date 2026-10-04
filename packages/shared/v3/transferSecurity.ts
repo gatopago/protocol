@@ -13,10 +13,6 @@ import { parseAtomicAmount } from './primitives';
 
 type SecurityObservation = Awaited<ReturnType<typeof inspectAccountSecurity>>;
 
-/** Links existing portable inspection/finality output to the reviewed transfer.
- * Inputs must come from the authenticated, bounded readers, NOT an HTTP claim.
- * This consistency check cannot establish honest RPCs, ownership or nonce/holds.
- */
 export interface TransferSecurityEvidence {
   document: string;
   digest: Parameters<typeof loadPinnedDeploymentManifest>[1];
@@ -34,8 +30,6 @@ export function assertTransferSecurity(
   return checkSecurity(candidate, evidence, now, candidate.checkpoint);
 }
 
-/** Current-state comparison only: does NOT rewrite or rehash the signed review.
- * Caller must separately acknowledge that the original reviewed block is canonical. */
 export function assertCurrentTransferSecurity(
   candidate: ReturnType<typeof prepareTransferOperation>,
   evidence: TransferSecurityEvidence,

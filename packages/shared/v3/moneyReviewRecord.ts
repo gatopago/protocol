@@ -246,8 +246,7 @@ export function readMoneyDraft(json: unknown, digest: unknown) {
     candidate,
   });
 }
-/** Historical verification only. Current ownership, version, nonce, market and
- * funding require independent preflight; expiry never grants another send. */
+
 export async function readMoneyReview(json: unknown, digest: unknown) {
   const { review, candidate } = decodeReview(json, digest);
   const signatures = await verifyTransferQuorum(

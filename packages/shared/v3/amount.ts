@@ -6,10 +6,6 @@ function checkedDecimals(value: unknown): number {
   return value;
 }
 
-/** Decimals must come from admitted metadata, not an untrusted token response.
- * Comma is accepted as a decimal separator, never as a thousands separator.
- * No trimming, exponent notation, floating point, rounding or precision loss.
- */
 export function decimalToAtomic(value: unknown, decimals: number): string {
   const precision = checkedDecimals(decimals);
   if (
@@ -24,7 +20,6 @@ export function decimalToAtomic(value: unknown, decimals: number): string {
   return parseAtomicAmount((whole + fraction.padEnd(precision, '0')).replace(/^0+(?=[0-9])/, ''));
 }
 
-/** Exact, ungrouped display: formatting never hides spendable dust. */
 export function atomicToDecimal(value: unknown, decimals: number): string {
   const precision = checkedDecimals(decimals);
   const atomic = parseAtomicAmount(value);

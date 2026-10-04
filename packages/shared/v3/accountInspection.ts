@@ -30,11 +30,11 @@ export interface InspectionCheckpoint {
 
 export interface AccountInspectionInput {
   readonly document: string;
-  /** Out-of-band admitted pin, not supplied by an untrusted account visitor. */
+
   readonly expectedDigest: Hex;
   readonly initialSecurityCommitment: Hex;
   readonly userSaltCommitment: Hex;
-  /** Chosen by the caller's chain/finality policy. This helper does not choose "latest". */
+
   readonly checkpoint: InspectionCheckpoint;
 }
 
@@ -79,17 +79,10 @@ function checkBlock(value: unknown, number: bigint, hash: Hex): void {
     throw new AccountInspectionError('CHECKPOINT_MISMATCH');
 }
 
-/** Read-only revision inspection, usable by Wallet Core and an independent portable client.
- * EIP-1898 hashes pin EVERY state read. No latest/height fallback when a provider does not
- * support them. No multicall contract, global cache, polling, mutation or creation attempt.
- * The returned observation is NOT proof of finality, spend-readiness or honest RPC execution.
- * Callers must use bounded request-scoped transports and independent network observations.
- */
 export async function inspectAccountDeployment(
   client: PublicClient,
   input: AccountInspectionInput,
 ) {
-  // Validate and detach all inputs before the first asynchronous boundary (no TOCTOU mutation).
   const manifest = loadPinnedDeploymentManifest(input.document, input.expectedDigest);
   if (manifest.lifecycle_status !== 'deployed')
     throw new Error('Deployment profile is not deployed');
@@ -134,7 +127,6 @@ export async function inspectAccountDeployment(
       throw new AccountInspectionError('UNEXPECTED_CODE');
   }
   async function call(to: Address, data: Hex, resultBytes: number) {
-    // Explicit bound on eth_call gas too: unknown RPC failure must not become an activation flow.
     const result = bytes(
       await client.request(
         { method: 'eth_call', params: [{ to, data, gas: toHex(1_000_000) }, block] },
@@ -201,7 +193,7 @@ export async function inspectAccountDeployment(
     }
     if (keccak256(proxyRuntime) !== manifest.proxy.runtime_code_hash)
       throw new AccountInspectionError('UNEXPECTED_CODE');
-    // This selector is NONDELEGATED in the pinned proxy. Never interrogate an unknown target.
+
     const targetData = await call(
       account,
       encodeFunctionData({ abi: accountInspectionAbi, functionName: 'proxyImplementation' }),
@@ -222,7 +214,7 @@ export async function inspectAccountDeployment(
       throw new AccountInspectionError('INVALID_RPC_DATA');
     if (!isAddressEqual(target, components.implementation.address))
       throw new AccountInspectionError('UNEXPECTED_IMPLEMENTATION');
-    // Await each operation: no orphaned sibling I/O if a dependency fails inside a Worker.
+
     for (const component of [
       components.implementation,
       components.security_module,
@@ -276,7 +268,7 @@ export async function inspectAccountDeployment(
     };
   } catch (error) {
     if (error instanceof AccountInspectionError) throw error;
-    // Do not expose upstream URLs, credentials, revert payloads or viem request diagnostics.
+
     throw new AccountInspectionError('RPC_UNAVAILABLE');
   }
 }

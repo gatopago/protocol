@@ -9,8 +9,92 @@ import {AccountV3WebAuthnVerifier} from "src/v3/AccountV3WebAuthnVerifier.sol";
 import {AccountV3Security} from "src/v3/AccountV3Security.sol";
 import {AccountV3Upgrade} from "src/v3/AccountV3Upgrade.sol";
 import {V3Deployment, DeployV3, DeployV3Libraries} from "script/DeployV3.s.sol";
+import {PaymasterDeployment} from "script/Deploy.s.sol";
+import {GatoPagoPaymaster} from "src/GatoPagoPaymaster.sol";
+import {NetworkDeploymentConfig} from "script/NetworkDeploymentConfig.sol";
+import {IStakeManager} from "@entrypoint/interfaces/IStakeManager.sol";
 
 contract AccountV3DeploymentTest is Test {
+    function _sponsorship(EntryPoint ep)
+        private
+        returns (NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p)
+    {
+        config = NetworkDeploymentConfig.get(421614);
+        config.entryPoint = address(ep);
+        config.entryPointCodehash = address(ep).codehash;
+        address create2Deployer = 0x4e59b44847b379578588920cA78FbF26c0B4956C;
+        vm.etch(create2Deployer, hex"00");
+        config.create2DeployerCodehash = create2Deployer.codehash;
+        p = PaymasterDeployment.Settings({
+            deployer: address(this),
+            owner: address(this),
+            signer: address(0xBEEF),
+            existing: address(0),
+            existingCodeHash: bytes32(0),
+            stake: config.paymasterStake,
+            unstakeDelay: config.paymasterUnstakeDelay,
+            deposit: config.paymasterDeposit,
+            maximumCost: config.maxSponsoredGasCost
+        });
+        PaymasterDeployment.validate(config, p);
+        vm.deal(address(this), 1 ether);
+    }
+
+    function test_consumerReleaseFundsDedicatedPaymasterAndKeepsAccountIdentity() public {
+        EntryPoint ep = new EntryPoint();
+        V3Deployment.Stack memory stack = V3Deployment.deploy(address(ep));
+        bytes32 identity = stack.factory.proxyInitCodeHash();
+        (NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p) = _sponsorship(ep);
+        GatoPagoPaymaster paymaster = PaymasterDeployment.deploy(config, p);
+        assertEq(address(paymaster.ENTRY_POINT()), address(ep));
+        assertEq(paymaster.sponsorSigner(), p.signer);
+        assertEq(paymaster.getDeposit(), p.deposit);
+        assertEq(paymaster.maxSponsoredGasCost(), p.maximumCost);
+        IStakeManager.DepositInfo memory info = ep.getDepositInfo(address(paymaster));
+        assertTrue(info.staked);
+        assertEq(info.stake, p.stake);
+        assertEq(stack.factory.proxyInitCodeHash(), identity);
+    }
+
+    function test_releaseReusesOnlyReviewedPaymasterWithoutFundingOrResettingIt() public {
+        EntryPoint ep = new EntryPoint();
+        (NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p) = _sponsorship(ep);
+        GatoPagoPaymaster paymaster = PaymasterDeployment.deploy(config, p);
+        p.existing = address(paymaster);
+        p.existingCodeHash = address(paymaster).codehash;
+        PaymasterDeployment.validate(config, p);
+        uint256 balance = address(this).balance;
+        assertEq(address(PaymasterDeployment.deploy(config, p)), address(paymaster));
+        assertEq(address(this).balance, balance);
+        assertEq(paymaster.getDeposit(), p.deposit);
+        p.existingCodeHash = bytes32(0);
+        vm.expectRevert(PaymasterDeployment.UnreviewedExistingPaymaster.selector);
+        this.readSponsorship(config, p);
+    }
+
+    function test_releaseRejectsMissingFundingUnlimitedCapOrRelaySignerReuse() public {
+        EntryPoint ep = new EntryPoint();
+        (NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p) = _sponsorship(ep);
+        p.maximumCost = 0;
+        vm.expectRevert(PaymasterDeployment.InvalidSponsorshipConfiguration.selector);
+        this.readSponsorship(config, p);
+        p.maximumCost = config.maxSponsoredGasCost;
+        p.deposit = 0;
+        vm.expectRevert(PaymasterDeployment.InvalidSponsorshipConfiguration.selector);
+        this.readSponsorship(config, p);
+        p.deposit = config.paymasterDeposit;
+        p.signer = address(this);
+        vm.expectRevert(PaymasterDeployment.InvalidSponsorshipConfiguration.selector);
+        this.readSponsorship(config, p);
+    }
+
+    function readSponsorship(NetworkDeploymentConfig.Config memory config, PaymasterDeployment.Settings memory p)
+        external
+        view
+    {
+        PaymasterDeployment.validate(config, p);
+    }
+
     function test_releaseConstructionPinsBothLibrariesAndInitialIdentity() public {
         EntryPoint ep = new EntryPoint();
         V3Deployment.Stack memory stack = V3Deployment.deploy(address(ep));

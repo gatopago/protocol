@@ -5,12 +5,15 @@ import {
   constants,
   copyFileSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
   readdirSync,
   realpathSync,
+  renameSync,
   rmSync,
+  unlinkSync,
   writeFileSync,
 } from 'node:fs';
 import { delimiter, join, relative, resolve, sep } from 'node:path';
@@ -69,6 +72,43 @@ export function promoteSdkRelease(source, destination) {
   const manifest = copySdkRelease(source, [destination]);
   writeFileSync(join(destination, 'manifest.json'), JSON.stringify(manifest, null, 2) + '\n');
   return manifest;
+}
+
+export function archiveUnusedSdk(directory, manifest) {
+  const consumer = realpathSync(directory);
+  const vendor = realpathSync(join(consumer, 'vendor'));
+  assert(vendor.startsWith(consumer + sep), 'Vendor outside the consumer repository');
+  const references = ['package.json', 'pnpm-lock.yaml', 'pnpm-workspace.yaml']
+    .filter((file) => existsSync(join(consumer, file)))
+    .map((file) => readFileSync(join(consumer, file), 'utf8'))
+    .join('\n');
+  const current = new Set(manifest.packages.map((pkg) => pkg.file));
+  const archive = join(vendor, 'archive');
+  if (existsSync(archive)) assert(!lstatSync(archive).isSymbolicLink(), 'Archive is a symlink');
+  const candidates = readdirSync(vendor, { withFileTypes: true }).flatMap((entry) => {
+    const match = /^gatopago-(shared|environment|test-fixtures)-(\d+\.\d+\.\d+)\.tgz$/.exec(entry.name);
+    if (!entry.isFile() || !match || current.has(entry.name) || references.includes(entry.name))
+      return [];
+    const source = join(vendor, entry.name);
+    const destination = join(archive, match[2], entry.name);
+    const parent = join(archive, match[2]);
+    if (existsSync(parent)) assert(!lstatSync(parent).isSymbolicLink(), 'Archive version is a symlink');
+    const digest = sha256(readFileSync(source));
+    if (existsSync(destination)) {
+      assert(lstatSync(destination).isFile(), 'Archive destination is not a regular file');
+      assert.equal(sha256(readFileSync(destination)), digest, 'Historical SDK version collision');
+    }
+    return [{ file: entry.name, version: match[2], sha256: digest, source, destination, parent }];
+  });
+  // Validate all historical destinations before retiring any active-path archive.
+  for (const item of candidates) {
+    assert.equal(sha256(readFileSync(item.source)), item.sha256, 'SDK changed during archival');
+    mkdirSync(item.parent, { recursive: true });
+    if (existsSync(item.destination)) unlinkSync(item.source);
+    else renameSync(item.source, item.destination);
+    assert.equal(sha256(readFileSync(item.destination)), item.sha256, 'Archived SDK integrity');
+  }
+  return candidates.map(({ file, version, sha256: digest }) => ({ file, version, sha256: digest }));
 }
 
 const root = resolve(import.meta.dirname, '..');
@@ -150,6 +190,7 @@ function packSdk() {
     for (const directory of sdkPackages) {
       const source = join(root, 'packages', directory),
         pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
+      assert.equal(pkg.private, true, 'SDK packages must remain private');
       for (const exported of Object.values(pkg.exports).flatMap((value) =>
         typeof value === 'string' ? [value] : Object.values(value),
       )) {

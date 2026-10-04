@@ -5,7 +5,6 @@ import { signerId, type SecurityPolicy } from '@gatopago/shared/v3/security-poli
 import { fixtureAddress, fixtureHash, inspectionScenario } from './v3Inspection';
 import { finalityPin, finalityPolicyFixture } from './v3Finality';
 
-/** Synthetic current revision, no provider, deployment or network admission. */
 export function securityInspectionScenario() {
   const base = inspectionScenario();
   const policy: SecurityPolicy = {
@@ -71,9 +70,7 @@ export function securityInspectionScenario() {
           abi: accountSecurityInspectionAbi,
           data: call.data,
         }).functionName;
-      } catch {
-        /* An original deployment inspection call. */
-      }
+      } catch {}
       if (method === 'securitySnapshot')
         return encodeFunctionResult({
           abi: accountSecurityInspectionAbi,
@@ -92,7 +89,6 @@ export function securityInspectionScenario() {
   return { ...base, security, wirePolicy, policy, words };
 }
 
-/** Recent finalized checkpoint deliberately differs from the older receipt target. */
 export function finalizedSecurityScenario(now = Math.floor(Date.now() / 1000)) {
   const base = securityInspectionScenario(),
     pin = finalityPin(finalityPolicyFixture(base.manifest, now));

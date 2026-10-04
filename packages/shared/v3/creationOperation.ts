@@ -27,17 +27,11 @@ export interface CreationGasTerms {
   readonly preVerificationGas: bigint;
   readonly maxFeePerGas: bigint;
   readonly maxPriorityFeePerGas: bigint;
-  /** Explicit user-approved upper bound for EntryPoint charges, in native atomic units.
-   * Not a fee quote, a commercial GatoPago fee, or a guarantee covering every L2 surcharge. */
+
   readonly maximumGasCharge: bigint;
   readonly sponsorship?: PaymasterTerms;
 }
 
-/** Internal creation path for the pinned ERC4337/domain-version-1
- * EntryPoint profile. Compiles admitted sponsorship terms; no provider I/O or funding decision.
- * The only call is completeCreation(); no asset transfer, approval or arbitrary calldata.
- * Recompute on BOTH client and server before the separate operation-signing gesture.
- */
 export function prepareCreationOperation(
   input: InitializationInput,
   initialProof: WebAuthnAssertionBytes,
@@ -47,7 +41,7 @@ export function prepareCreationOperation(
   const prepared = prepareInitialization(input);
   const initial = authorizeInitialization(input, initialProof, now);
   const gas = Object.freeze({ ...terms });
-  // EntryPoint rejects gas values over 120 bits; do not silently truncate or coerce numbers.
+
   for (const field of [
     'verificationGasLimit',
     'callGasLimit',
@@ -140,8 +134,6 @@ export function prepareCreationOperation(
   return Object.freeze({ prepared, operation, userOpHash, plan, digest, maximumEntryPointCharge });
 }
 
-/** Verifies both distinct authorizations. Acceptance is not broadcast, creation, recovery
- * activation or spend readiness. Never mutate/reprice the returned operation after signing. */
 export function authorizeCreationOperation(
   input: InitializationInput,
   initialProof: WebAuthnAssertionBytes,

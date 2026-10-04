@@ -2,7 +2,6 @@ import type { Hex } from 'viem';
 import { deploymentDocumentDigest } from '@gatopago/shared/v3/deployment';
 import type { NetworkId } from '@gatopago/shared/v3/primitives';
 
-/** Test configuration, not admission of a real network or a production SLA. */
 export function finalityPolicyFixture(
   network: { network_id: NetworkId; genesis_hash: Hex },
   now: number,

@@ -10,7 +10,6 @@ import {
 import { toPackedUserOperation, type UserOperation } from 'viem/account-abstraction';
 import { parseAtomicAmount } from './primitives';
 
-/** JSON-safe terms, bound by the account's UserOperation hash before user consent. */
 export interface PaymasterTerms {
   readonly address: Hex;
   readonly verificationGasLimit: string;
@@ -92,7 +91,6 @@ export function maximumOperationGasCost(
   );
 }
 
-/** Exact GatoPagoPaymaster._sponsorDigest; excludes both signatures to avoid a signing cycle. */
 export function paymasterSponsorDigest(chainId: bigint, operation: UserOperation<'0.9'>) {
   if (!operation.paymaster || !operation.paymasterData) throw new Error('PAYMASTER_REQUIRED');
   const packed = toPackedUserOperation(operation),

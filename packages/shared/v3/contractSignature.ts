@@ -12,7 +12,6 @@ import {
 import { ACCOUNT_DOMAIN as accountDomain } from './constants.mjs';
 import type { ExecutionSignature } from './execution';
 
-/** ERC-1271 profile, deliberately separate from nonce-consuming execution/security authorizations. */
 const accountSignatureTypes = {
   AccountSignature: [
     { name: 'accountId', type: 'bytes32' },
@@ -68,10 +67,6 @@ export function accountSignatureStructHash(message: AccountSignature): Hex {
   });
 }
 
-/** applicationHash MUST commit the application's domain, intended action, nonce and expiry as needed.
- * ERC-1271 does not consume nonces; never present this as a harmless login if it authorizes assets.
- * Do not personal_sign a raw hash or reuse an ExecutionPlan signature here. No ERC-7739 claim.
- */
 export function accountSignatureDigest(
   chainId: bigint,
   account: Address,

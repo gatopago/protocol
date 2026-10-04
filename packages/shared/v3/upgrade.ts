@@ -15,7 +15,6 @@ import type { ExecutionSignature } from './execution';
 export type UpgradeManifest = AuthorizationMessages['UpgradeManifest'];
 export type UpgradeCommit = AuthorizationMessages['CommitProposal'];
 
-/** Internal candidate transport, not a registry of reviewed or deployed implementations. */
 export const accountUpgradeAbi = parseAbi([
   'struct Signature { uint8 signerIndex; bytes signature; }',
   'struct UpgradeManifest { bytes32 accountId; uint32 generation; uint64 securityVersion; bytes32 previousManifestHash; address implementation; bytes32 runtimeCodeHash; bytes32 storageLayoutHash; bytes32 chainScopeHash; bytes32 migrationCallHash; uint256 nonce; uint48 validAfter; uint48 validUntil; }',
@@ -29,7 +28,6 @@ export const accountUpgradeAbi = parseAbi([
 ]);
 
 function checkVotes(signatures: readonly ExecutionSignature[]): void {
-  // Structural minimum only: distinct indices are not proof of independent factors or valid roles.
   if (signatures.length < 2 || signatures.length > 16)
     throw new Error('Upgrade requires administrative quorum');
   const seen = new Set<number>();
@@ -57,7 +55,6 @@ function checkVersion(message: UpgradeManifest | UpgradeCommit): void {
     throw new Error('Invalid upgrade identity/version');
 }
 
-/** The wait starts when the proposal is accepted ONCHAIN, not at message.validAfter. */
 export function encodeUpgradeProposal(
   account: Address,
   chainId: bigint,
@@ -84,10 +81,6 @@ export function encodeUpgradeProposal(
   });
 }
 
-/** Exact migration and a different typed signature. Never route this through executeSigned,
- * nor treat a successful metadata read as an audit of new code. The Worker/signer must verify
- * the admitted artifact, onchain proposal, current policy, readiness and simulation separately.
- */
 export function encodeUpgradeCommit(
   account: Address,
   chainId: bigint,

@@ -5,7 +5,6 @@ import {
   type SignerDescriptor,
 } from './securityPolicy';
 
-/** Public policy decoding only. Does not establish ownership or signing authority. */
 export function parseSecurityPolicyRecord(value: unknown): SecurityPolicy {
   function row(input: unknown): Record<string, unknown> {
     if (!input || typeof input !== 'object' || Array.isArray(input))

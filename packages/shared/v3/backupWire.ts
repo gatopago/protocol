@@ -31,7 +31,7 @@ function fields(value: unknown, keys: readonly string[]) {
     throw new Error('Invalid backup fields');
   return r;
 }
-/** Bounded by the known shape, not recursion over attacker-chosen object graphs. */
+
 function equal(value: unknown, expected: unknown): void {
   if (Array.isArray(expected)) {
     if (!Array.isArray(value) || value.length !== expected.length)
@@ -76,8 +76,6 @@ function policy(value: SecurityPolicy): SecurityPolicy {
   return Object.freeze(p);
 }
 
-/** Detached choice from the UI and its independently pinned, already verified initial consent.
- * The response may neither choose policy/identity nor supply its own trusted deployment pin. */
 export function parseBackupSelection(value: BackupSelection) {
   const expected = Object.freeze({
     ...value.consent.expected,
@@ -107,8 +105,6 @@ function initialization(selected: ReturnType<typeof parseBackupSelection>): Init
   });
 }
 
-/** Decode only variable onchain observation fields. Everything else is derived from the
- * release/initial consent. This does NOT establish RPC finality, ownership or readiness. */
 function observation(
   value: unknown,
   input: InitializationInput,
@@ -221,7 +217,6 @@ function backupTerms(
   };
 }
 
-/** Historical previews stay readable after expiration; recompilation is NOT fresh consent. */
 export function parseBackupPreview(value: unknown, choice: BackupSelection) {
   const selected = parseBackupSelection(choice),
     raw = object(value),

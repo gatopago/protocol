@@ -4,7 +4,13 @@ Actualización: 2026-10-03. Este documento distingue implementación local, fork
 
 **Alcance corregido por Daniel:** el SDK es interno y nunca se publicará en un registro. O4/T11/T12 se cierran con distribución automatizada de archives privados, versiones exactas, integridad e instalación independiente en los consumidores. No requieren licencia pública, ownership de `@gatopago`, sesión npm ni publisher. Las comprobaciones registradas más abajo pertenecen a sus capturas y no prueban cambios posteriores del árbol.
 
+**Avance local del 3 de octubre:** las tres recetas están habilitadas en `gatopago-wallet-core/config/application.json`, con los controles de mercado, gas y autorización conservados. [La lectura real del mercado](market-admission-current.json) verifica código, proxies y composición con dos proveedores al bloque 315503178. [La distribución interna 3.2.3](internal-sdk-3.2.3.json) registra actualización automática de dependencias, overrides y lockfiles, tipos/builds aprobados en WalletCore, Web y Flow y compilación de las tres aplicaciones en carpetas nuevas, sin node_modules heredado ni aliases al productor. El consumidor SDK aislado aprobó sus 67 exports ESM/require y tipos NodeNext. No se desplegaron estos cambios ni se ejecutó una operación financiera pública en este avance.
+
 El checkout y los despliegues cambiaron después de esa entrega. El 3 de octubre se observó WalletCore `d1a38798-0605-4c8b-9727-318395a6ccd6` al 100 %, despliegue `f4afae79-cced-4275-9c26-96d4dcb299fb`, publicado a las 12:33:02 UTC. Salud, readiness, compatibilidad y `/login` devolvieron 200. No se vincula esa versión nueva con las fuentes o pruebas de la versión 52. La pestaña de prueba seguía en registro sin sesión y mostraba «La comprobación falló o venció»; no se identifica la causa ni se atribuye exclusivamente a la passkey.
+
+La [lectura pública más reciente](public-readiness-current.json) identifica WalletCore versión 60 (`09a2fb7a-921d-4911-b360-1dca382ef479`) al 100 %, publicado a las 00:41:43 UTC del 4 de octubre. Readiness devuelve HTTP 200 y `sponsorship_configured=true`. Dos RPC concuerdan en el código de los cinco componentes Account V3, EntryPoint y el paymaster. D1 conserva 0001–0005 y los nombres/tipos de los 36 objetos monetarios esperados, sin leer usuarios ni escribir filas. La fuente y versión SDK de esa publicación no están vinculadas al snapshot local 3.2.3; esos resultados tampoco prueban una creación patrocinada o un envío real. La pestaña pública nueva abre «Iniciar sesión» sin sesión autenticada.
+
+La candidatura cuenta con un [borrador de campos técnicos](submission-draft.json), todos dentro de 300 caracteres, elaborado desde el formulario abierto. El proyecto seleccionado allí es «Parmelia copy»; GatoPago no aparece entre los proyectos existentes observados. No se modificó ni envió esa candidatura. El [checklist](submission-checklist.md) registra la revisión de selección y los pasos de demo que faltan.
 
 La simplificación del productor conservó los paquetes 3.2.1 y cambió los comandos a `pnpm build`, `pnpm test`, `pnpm run pack` y `pnpm distribute`. Ya no están la política ni el workflow de publicación npm preparados anteriormente. Se corrigieron el pack y su distribución para comprobar integridad, conservar versiones existentes, seleccionar sólo el manifest vigente y registrar procedencia. Se repararon referencias a un helper eliminado durante cambios concurrentes. La CI de WalletCore ahora usa sus comandos existentes de lint, tipos, pruebas Node/workerd y build; falta demostrar esa CI en un runner remoto.
 
@@ -21,10 +27,10 @@ La comprobación posterior del consumidor está en [sdk-consumer-current.json](s
 | O1 Recorrido básico | PENDIENTE PÚBLICO | Login/passkey real, activación, recepción, envío y comprobante de una cuenta de prueba |
 | O2 Operaciones compuestas | IMPLEMENTADO LOCAL / FORK | Las tres recetas y sus efectos en la release pública autenticada |
 | O3 Configuración | CONFIGURADO / PUBLICADO | Parámetros públicos provisionados y comprobaciones anónimas aprobadas; faltan las comprobaciones autenticadas y de gas de cada operación |
-| O4 Paquetes internos | PARCIAL / SIN BLOQUEO DE PUBLICACIÓN | Build/pack y consumidor aislado registrados. Falta reconciliar comandos de CI con el checkout actual y verificar instalación/build de cada consumidor con su archive y lockfile exactos |
+| O4 Paquetes internos | IMPLEMENTADO / VALIDADO LOCAL | SDK 3.2.3 distribuido automáticamente; tres consumidores instalados y compilados en carpetas nuevas con lockfiles congelados. CI configurada con comandos existentes; ejecución remota no observada |
 | O5 Permisos persistentes | FUERA DE R1 | Decisión explícita de producto y entrega contractual R3 |
 
-Las tres flags monetarias del checkout local permanecen deshabilitadas. La entrega del 2 de octubre aplicó y verificó la migración remota 0004 y publicó WalletCore versión 52 y Web en `gatopago.com` con esas flags cerradas. [Core y D1](r1-core-deployed.json) y [Web](r1-web-deployed.json) registran sus copias Git limpias, fuentes, IDs de proveedor y comprobaciones públicas. La revisión actual no vincula las fuentes de la nueva versión remota con ese manifest anterior. No se envió una transacción financiera pública ni se completó la demo.
+Las tres flags monetarias del checkout local están habilitadas; ese cambio local no acredita un despliegue ni la demo pública. La entrega del 2 de octubre aplicó y verificó la migración remota 0004 y publicó WalletCore versión 52 y Web en `gatopago.com` con esas flags cerradas. [Core y D1](r1-core-deployed.json) y [Web](r1-web-deployed.json) registran sus copias Git limpias, fuentes, IDs de proveedor y comprobaciones públicas. La revisión actual no vincula las fuentes de la nueva versión remota con ese manifest anterior. No se envió una transacción financiera pública ni se completó la demo.
 
 ## Tareas
 
@@ -32,17 +38,17 @@ Las tres flags monetarias del checkout local permanecen deshabilitadas. La entre
 | --- | --- |
 | T00 | DONE: integridad y procedencia de los archives iniciales registradas en sources.json |
 | T01 | PENDIENTE PÚBLICO: corrección de reloj y parser registrados en la entrega histórica. La página actual se renderiza; la última observación permanecía en registro sin sesión y mostraba fallo/vencimiento de la comprobación. Causa, passkey, sesión y recorrido completo sin demostrar |
-| T02 | PASS READONLY: mercado y posición verificados con dos RPC en market-admission.json y position-readonly.json; ownership de la dirección consultada no demostrado |
-| T03 | IMPLEMENTADO LOCAL: SDK compilado 3.2.1, reconstructores estrictos de revisión, P256, tres recetas y vectores Solidity/TypeScript |
+| T02 | PASS READONLY: mercado y posición verificados con dos RPC; nueva comprobación en market-admission-current.json. Ownership de la dirección consultada no demostrado |
+| T03 | IMPLEMENTADO LOCAL: SDK compilado 3.2.3, reconstructores estrictos de revisión, P256, tres recetas y vectores Solidity/TypeScript; 39 pruebas dirigidas del productor aprobadas |
 | T04 | PASS LOCAL: application JSON, pins de mercado/despliegue, lector bilateral de posición, políticas de gas acotadas y configuración pública Web generada; coordinador de posición y rutas probados directamente |
 | T05 | PUBLICADO: migración aditiva 0004 aplicada; D1 conserva 0001–0004 y el guard remoto verifica los 36 objetos esperados, incluidas ocho tablas. Se corrigió el parseo remoto de CASE mediante paréntesis; locks compartidos y backfill legacy_drain conservan sus restricciones |
 | T06 | PASS LOCAL: prepare/confirm/deliver/status privados, idempotencia, dispatch duradero único, simulación exacta, jobs, conciliación, historial tras renovar sesión, expiración sin envío y revert exterior con prueba finalizada de no ejecución |
 | T07 | PASS LOCAL / FORK: diecisiete pruebas de composición, incluidas nueve sobre contratos reales en un fork fijado, allowance previo no cero, pago mínimo tras interés y rechazo por pausa/posición/liquidez insuficiente; vectores hash UserOp/plan. No demuestra ejecución pública ni gas exterior Nitro |
 | T08 | IMPLEMENTADO LOCAL: posición, depósito, retiro y pago; revisión independiente, passkeys, recuperación por IDs y seguimiento sólo de lectura. Comprobación real de usuario pendiente |
-| T09 | API/WEB PUBLICADAS CON FLAGS CERRADAS: Core 52 al 100 %, Web READY y promovida al dominio; salud/compatibilidad/HTTP y un Cron real aprobados. Faltan T01, admisión de gas de cada envío, demo pública y candidatura |
-| T10 | PASS LOCAL: productor protocol/packages, build ESM/declaraciones, procedencia y snapshots inmutables; Web/Core consumen 3.2.1; consumidor aislado aprobado y CI de validación preparada localmente |
-| T11 | REDEFINIDA COMO DISTRIBUCIÓN INTERNA: integridad y consumo aislado aprobados en las capturas locales; faltan referencias de CI válidas en el árbol actual y evidencia de ejecución remota. Publicación excluida |
-| T12 | PENDIENTE DE VERIFICACIÓN INTERNA: comprobar los consumidores en orden con archives privados y lockfiles exactos. Se conserva vendor mientras tenga dependencias activas |
+| T09 | INFRAESTRUCTURA PUBLICADA: captura histórica Core 52/Web y lectura actual Core 60 con patrocinio configurado. Falta vincular la release pública a sus fuentes/SDK y demostrar sesión, gas, demo y candidatura; las flags actuales no se verificaron mediante una sesión autenticada |
+| T10 | PASS LOCAL: productor protocol/packages, ESM/declaraciones, procedencia y snapshots inmutables; private:true obligatorio al empaquetar; consumidor SDK 3.2.3 aislado aprobado |
+| T11 | PASS LOCAL: distribución interna automatizada, integridad verificada, 67 exports ESM/require y tipos NodeNext aprobados; CI usa comandos existentes. Ejecución remota no observada; publicación excluida |
+| T12 | PASS LOCAL: WalletCore, Web y Flow instalan SDK 3.2.3 con lockfile congelado y compilan en carpetas nuevas. Dependencias/overrides automáticos; 14 snapshots sin referencias archivados en vendor/archive por versión, con bytes conservados y archivado idempotente |
 | T13–T16 | FUERA DE R1: no se habilitaron permisos persistentes ni un nuevo spender |
 
 ## Verificación histórica registrada el 2 de octubre
@@ -85,7 +91,7 @@ Las tres flags monetarias del checkout local permanecen deshabilitadas. La entre
 ## Trabajo pendiente prioritario
 
 1. Demostrar T01 en una cuenta de prueba real, incluida passkey física, activación y transferencia conciliada. Esta interacción requiere al titular; el harness no la sustituye.
-2. Cerrar la validación autenticada de la release ya publicada y comprobar funding/gas Nitro de cada operación; ejecutar después la demo O2 conservando referencias y comprobantes reales. 0004, Worker y Web ya están publicados. Las flags continúan cerradas hasta pasar los gates.
-3. Completar R2 interno: reconciliar CI y comandos actuales, comprobar distribución automatizada e instalación/build independientes de los consumidores con sus archives y lockfiles exactos. Conservar snapshots activos y evidencia de procedencia; no implementar publicación ni solicitar datos de npm.
+2. Cerrar la validación autenticada de la release pública y comprobar funding/gas Nitro de cada operación; ejecutar después la demo O2 conservando referencias y comprobantes reales. 0004, Worker y Web ya están publicados; el avance local de flags y SDK 3.2.3 todavía no está desplegado.
+3. Conservar la distribución interna 3.2.3 verificada y registrar CI remota cuando se ejecute. La configuración y los comandos están preparados; la publicación del SDK queda excluida.
 
 No se marca R1, O1 u O2 como completado mientras falte el recorrido público y sus efectos conciliados.

@@ -1,4 +1,3 @@
-/** V3 wire primitives. Never use a Firebase subject or an address as a resource ID. */
 export const resourcePrefixes = {
   user: 'usr',
   party: 'pty',
@@ -48,7 +47,6 @@ export function parseAtomicAmount(value: unknown): AtomicAmount {
   return value as AtomicAmount;
 }
 
-/** Representation is rail-neutral; accepting an ID does not enable that rail. */
 export function parseNetworkId(value: unknown): NetworkId {
   if (
     typeof value !== 'string' ||
@@ -69,7 +67,6 @@ export function evmChainId(value: unknown): bigint {
   return BigInt(id.slice(7));
 }
 
-/** Case-normalized wire identity, not unverified token metadata or a ticker. */
 export function parseEvmAssetId(value: unknown): string {
   if (typeof value !== 'string' || value.trim() !== value) throw new Error('Invalid asset ID');
   const parts = value.split('/');

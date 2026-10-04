@@ -58,7 +58,7 @@ export function creationGasWire(terms: CreationGasTerms) {
   parseCreationGas(wire);
   return Object.freeze(wire);
 }
-/** Client approves a cap, not arbitrary gas values, calldata, a provider or a network. */
+
 export function parseCreationCapRequest(value: unknown): bigint {
   const cap = decimal(object(value, ['maximum_gas_charge']).maximum_gas_charge);
   if (cap === 0n) throw new Error('Invalid creation cap');
@@ -122,11 +122,6 @@ export type CreationConsent = Readonly<{
   expected: Parameters<typeof parseInitializationPreparation>[1];
 }>;
 
-/** Owner-only operation preview. The initial assertion is needed to reconstruct the
- * exact factory bytes. It is never a substitute for the separate operation signature.
- * Document, scope, key, salt and validity come from previously verified consent, not
- * this response. Expired previews remain inspectable; reading never authorizes them.
- */
 export function parseCreationPreview(value: unknown, consent: CreationConsent) {
   const r = object(value, [
     'receipt',

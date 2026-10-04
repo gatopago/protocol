@@ -32,8 +32,6 @@ function hash(value: unknown) {
   return value;
 }
 
-/** Public-key proofs and the exact reviewed economic context, never private keys,
- * JWTs or a fresh send grant. This representation is private durable-job data. */
 export function writeTransferReview(review: Review) {
   const c = review.context;
   const context = {
@@ -92,9 +90,6 @@ export function writeTransferReview(review: Review) {
   return Object.freeze({ json, digest: deploymentDocumentDigest(json) });
 }
 
-/** Historical signature verification. It deliberately does not use today's time
- * to reauthorize yesterday's consent. Current policy, admission, ownership,
- * balance, nonce and simulation must be independently checked before dispatch. */
 function decodeTransferReview(json: unknown, digest: unknown) {
   requireHash(digest);
   if (
@@ -186,9 +181,6 @@ function decodeTransferReview(json: unknown, digest: unknown) {
   return { review, candidate };
 }
 
-/** Unsigned durable preparation. A draft is NOT historical consent and cannot
- * pass readTransferReview: its proofs must be empty. The caller still validates
- * ownership, admission, expiry and fresh observations before authorization. */
 export function writeTransferDraft(input: Omit<Review, 'approved_at' | 'proofs'>) {
   const record = writeTransferReview({ ...input, approved_at: input.prepared_at, proofs: [] });
   readTransferDraft(record.json, record.digest);

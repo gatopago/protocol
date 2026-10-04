@@ -23,7 +23,6 @@ import { creationInspectionScenario } from './v3CreationInspection';
 import { initializationFixture } from './v3Initialization';
 import { fixtureHash } from './v3Inspection';
 
-/** Synthetic chain evidence and ephemeral real signatures, never an admitted network. */
 function creationReceiptData(
   prettyProfile = false,
   restored?: ReturnType<typeof authorizeCreationOperation>,

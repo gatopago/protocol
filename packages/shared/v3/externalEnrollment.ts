@@ -26,10 +26,6 @@ function review(choice: BackupSelection, wire: unknown, signerIndex: number, now
   return { preview, proof, signer };
 }
 
-/** Portable *public signing request*, NOT a recovery kit, wallet connection, secret
- * export or custody service. EIP-712 schema is the same one used by Account V3.
- * A signer must inspect the full policy and independently trust the account/release;
- * these public bytes alone do not prove provenance or onchain authority. */
 export function externalEnrollmentRequest(
   choice: BackupSelection,
   wire: unknown,
@@ -80,9 +76,6 @@ export function externalEnrollmentRequest(
   return Object.freeze({ summary, typedData, json });
 }
 
-/** Bounded response import. Context comes from the current locally reviewed choice,
- * never from an imported digest, URL, key, role or wallet address. Verification is
- * direct low-S ECDSA; personal_sign and contract-wallet heuristics are not accepted. */
 export async function importExternalEnrollment(
   choice: BackupSelection,
   wire: unknown,

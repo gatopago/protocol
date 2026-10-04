@@ -74,11 +74,6 @@ function topic(value: unknown): Hex {
   return result;
 }
 
-/** Strict economic/event evidence for ONE immutable creation grant. Accept raw execution
- * RPC receipts, never a bundler's summary. This alone proves neither RPC honesty nor
- * canonicality/finality, current security policy, activation or spend readiness.
- * The caller must restore/verify the signed grant before passing it here.
- */
 export function verifyCreationReceipt(
   signed: SignedCreation,
   transactionHash: Hex,
@@ -155,7 +150,7 @@ export function verifyCreationReceipt(
     const deployed = event('AccountDeployed', ep, signed.userOpHash)!;
     const operation = event('UserOperationEvent', ep, signed.userOpHash)!;
     const completed = event('CreationCompleted', account, undefined, true);
-    // Explicit event narrowing also protects the typed decoder against future ABI changes.
+
     if (
       initialized.decoded.eventName !== 'AccountInitialized' ||
       created.decoded.eventName !== 'AccountCreated' ||
@@ -200,8 +195,7 @@ export function verifyCreationReceipt(
       (completed && (completed.index <= deployed.index || completed.index >= operation.index))
     )
       throw new ReceiptError('CREATION_EVENT_MISMATCH');
-    // decodeEventLog accepts trailing ABI bytes in some cases. Require exact canonical
-    // data for the events that establish authority or an economic outcome.
+
     if (
       initialized.data !==
         encodeAbiParameters(
@@ -253,10 +247,6 @@ export function verifyCreationReceipt(
   }
 }
 
-/** Independent execution-RPC observation at the receipt's canonical block. A missing or
- * orphaned receipt NEVER permits rebroadcast. The caller supplies a bounded transport,
- * must compare independent providers, and apply chain-specific finality before promotion.
- */
 export async function observeCreationReceipt(
   client: PublicClient,
   signed: SignedCreation,
@@ -314,7 +304,7 @@ export async function observeCreationReceipt(
     );
     if (keccak256(code) !== signed.prepared.profile.deployment.proxy.runtime_code_hash)
       throw new ReceiptError('CREATION_EVENT_MISMATCH');
-    // End by checking the receipt's block again, rather than trusting a cached height.
+
     const end = row(
       await client.request(
         {

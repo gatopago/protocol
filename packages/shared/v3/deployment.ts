@@ -15,10 +15,10 @@ import { validateDeploymentShape } from './wire-validators.mjs';
 export interface DeploymentComponent {
   readonly address: Address;
   readonly deployer: Address;
-  /** CREATE2 salt, or null for CREATE. creation_code_hash includes constructor arguments. */
+
   readonly salt: Hex | null;
   readonly creation_code_hash: Hex;
-  /** Fully linked deployed runtime including immutables; never hash the unlinked template. */
+
   readonly runtime_code_hash: Hex;
   readonly abi_sha256: Hex;
   readonly source_commit: string;
@@ -36,11 +36,6 @@ export interface DeploymentComponent {
   readonly verification_url: string | null;
 }
 
-/** Inspection profile for an existing account revision, NOT a network enablement manifest.
- * The factory/proxy recipe is the original creation recipe. Implementation and libraries
- * describe the CURRENT revision; they need not be the original factory's dependencies.
- * EntryPoint identity is bound, but its availability is not required for this read-only path.
- */
 export interface AccountDeploymentManifest {
   readonly schema_version: 1;
   readonly generation: 3;
@@ -71,8 +66,6 @@ export function requireDeploymentAddress(value: Address): void {
     throw new Error('Invalid deployment address');
 }
 
-/** Structural/provenance fields only. The enclosing independently pinned document
- * is the trust boundary; this does not observe code or admit a deployment. */
 export function validateDeploymentComponent(component: DeploymentComponent): void {
   requireDeploymentAddress(component.address);
   requireDeploymentAddress(component.deployer);
@@ -116,7 +109,6 @@ function isManifest(value: unknown): value is AccountDeploymentManifest {
   return validateDeploymentShape(value);
 }
 
-/** Exact UTF-8 file digest, NOT JSON canonicalization. Reformatting requires a new pin. */
 export function deploymentDocumentDigest(document: string): Hex {
   if (
     typeof document !== 'string' ||
@@ -128,11 +120,6 @@ export function deploymentDocumentDigest(document: string): Hex {
   return sha256(stringToHex(document));
 }
 
-/** Integrity is not provenance. expectedDigest MUST come from an independently reviewed
- * release/configuration (or the user's portable package), never the document, request body
- * or the same RPC. This function does not audit source, verify deployment receipts, enable
- * a network, attest a safe migration, or authorize an upgrade. No built-in production pin.
- */
 export function loadPinnedDeploymentManifest(
   document: string,
   expectedDigest: Hex,

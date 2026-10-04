@@ -96,10 +96,6 @@ export function parseInitializationReceipt(
   });
 }
 
-/** Rebuild typed consent using the separately pinned client release profile. The HTTP
- * response cannot supply its own deployment document, expected digest, scope or salt.
- * A valid receipt is not a deployed account, transaction, or permission to receive/spend.
- */
 export function parseInitializationPreparation(
   value: unknown,
   expected: {
@@ -245,10 +241,6 @@ export type InitializationHistoryItem = ReturnType<
   typeof parseInitializationHistory
 >['data'][number];
 
-/** Restores public consent inputs, NEVER the saved assertion. The history row is
- * only discovery metadata. Rebuild the selected digest against the Web release pin.
- * A creation-operation record is not a receipt or current onchain readiness.
- */
 export function parseInitializationRestoration(
   value: unknown,
   selected: InitializationHistoryItem,

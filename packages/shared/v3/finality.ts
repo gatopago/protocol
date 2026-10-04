@@ -101,10 +101,6 @@ const time = (b: Block) => BigInt(b.block_timestamp);
 const same = (a: Block, b: Block) =>
   a.block_hash === b.block_hash && height(a) === height(b) && time(a) === time(b);
 
-/** Exact-byte pin from reviewed server configuration, never from the RPC/request.
- * The mechanism is a documented admission decision, not inferred from chainId or
- * a provider label. There are no built-in admitted networks or default policies.
- */
 export function loadPinnedFinalityPolicy(
   pin: FinalityPolicyPin,
   network: Pick<Target, 'network_id' | 'genesis_hash'>,
@@ -155,10 +151,6 @@ export function loadPinnedFinalityPolicy(
   });
 }
 
-/** Storage validation only. A checksum/valid shape does not prove honest RPCs,
- * current admission or a live security policy. Consumers must also match the
- * current policy pin and reject evidence at/after expires_at before promotion.
- */
 export function assertFinalityAssessment(
   value: unknown,
   target: Target,
@@ -223,13 +215,6 @@ async function readBlock(client: PublicClient, tag: Hex | 'latest' | 'finalized'
   );
 }
 
-/** Bounded two-provider finalized-tag evidence, NOT a light-client proof.
- * Requires honest, independently operated, admitted execution RPCs and their
- * documented consensus semantics. Rollup data finality is NOT withdrawal release.
- * Avalanche Coreth maps finalized to accepted even when latest can be unfinalized.
- * No latest/safe/depth fallback, ancestor scan, implicit retry or account activation.
- * Each client MUST use a bounded read-only transport and share the caller's signal.
- */
 export async function assessCheckpointFinality(
   clients: readonly PublicClient[],
   targetInput: Target,
@@ -286,8 +271,7 @@ export async function assessCheckpointFinality(
           readBlock(client, '0x0'),
           readBlock(client, 'finalized'),
         ]);
-        // Read latest AFTER finalized so normal head advancement cannot look like
-        // finalized > latest merely because the two requests raced each other.
+
         const genesis = values[1],
           finalized = values[2],
           latest = await readBlock(client, 'latest');
