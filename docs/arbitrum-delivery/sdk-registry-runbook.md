@@ -1,4 +1,6 @@
-# Publicación del SDK R2
+# Propuesta histórica de publicación del SDK — fuera de alcance
+
+**Archivada el 3 de octubre de 2026:** Daniel confirmó que el SDK es interno y nunca se publicará. El contenido siguiente conserva la propuesta anterior y no debe ejecutarse ni convertirse en pendientes. npm, OIDC, ownership, licencia pública y visibilidad de paquetes no son requisitos del plan. El documento vigente es [Distribución interna del SDK R2](sdk-internal-distribution.md).
 
 Estado actual (2026-10-03): publicación pendiente. El checkout simplificado ya
 no contiene `config/sdk-publication.json` ni `.github/workflows/sdk-release.yml`.

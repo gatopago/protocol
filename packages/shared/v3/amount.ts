@@ -1,7 +1,8 @@
 import { parseAtomicAmount } from './primitives';
 
 function checkedDecimals(value: unknown): number {
-  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 255) throw new Error('Invalid asset decimals');
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0 || value > 255)
+    throw new Error('Invalid asset decimals');
   return value;
 }
 
@@ -11,7 +12,11 @@ function checkedDecimals(value: unknown): number {
  */
 export function decimalToAtomic(value: unknown, decimals: number): string {
   const precision = checkedDecimals(decimals);
-  if (typeof value !== 'string' || value.length > 335 || !/^(?:0|[1-9][0-9]*)(?:[.,][0-9]+)?$(?![\s\S])/.test(value)) {
+  if (
+    typeof value !== 'string' ||
+    value.length > 335 ||
+    !/^(?:0|[1-9][0-9]*)(?:[.,][0-9]+)?$(?![\s\S])/.test(value)
+  ) {
     throw new Error('Invalid decimal amount');
   }
   const [whole, fraction = ''] = value.replace(',', '.').split('.');

@@ -2,6 +2,8 @@
 
 Actualización: 2026-10-03. Los resultados se separan por alcance. Los tests sintéticos no demuestran login físico, disponibilidad pública ni efectos financieros públicos.
 
+Corrección de alcance de Daniel: el SDK es interno y nunca se publicará. Las observaciones npm y las pruebas del publisher se conservan como historia; no son requisitos ni bloqueos actuales. O4 exige distribución privada e instalación independiente de los consumidores, según [el runbook interno](sdk-internal-distribution.md). Los resultados siguientes acreditan sus capturas, no los cambios posteriores del checkout.
+
 ## Comprobaciones del 3 de octubre
 
 [Registro actual](current-state-2026-10-03.json): `pnpm build`, `pnpm test` (39 casos en tres archivos), `pnpm run pack` y `pnpm money:web-config:check` aprobaron en el productor local. Los 94 hashes de fuentes del manifest se comprobaron y los tres archives 3.2.1 conservan sus bytes anteriores. Siete pruebas nuevas cubren manipulación, rutas, paquetes incompletos/duplicados, colisiones antes de copiar y repetición idempotente. El consumidor de esas pruebas es temporal y sintético; no es una instalación desde npm.
@@ -47,7 +49,7 @@ La ampliación posterior añadió `pnpm check:consumer` a la CI. [sdk-consumer-c
 | Wrangler 4.136.0: `whoami`, `deployments status`, `versions view`, consultas SELECT de metadata D1 y `queues info` | PASS de lectura: sesión Cloudflare válida, versión 51 al 100 %, 0001–0003 aplicadas, cero de ocho tablas money, ambas colas existentes | [Preflight remoto](remote-preflight-readonly.json); cero escrituras D1, sin datos de usuario ni secretos. No identifica la candidata local como desplegada |
 | Login público en Brave | NO COMPLETADO: error genérico; causa desconocida | Sin una assertion real completada observable; no atribuir el fallo al gas de creación |
 | D01–D06 públicos | PENDIENTES | [demo-transactions.json](demo-transactions.json) no contiene transacciones ni saldos observados |
-| Publicación npm e instalación desde registry | BLOQUEADA POR DEPENDENCIAS EXTERNAS | `whoami` devolvió `ENEEDAUTH`; ownership/licencia/visibilidad pendientes |
+| Publicación npm e instalación desde registry | FUERA DE ALCANCE | SDK exclusivamente interno por decisión de Daniel; la ausencia de sesión npm no bloquea el plan |
 
 Los conteos de suites dirigidas son subconjuntos, no pruebas adicionales que se deban sumar al resultado completo. La prueba omitida Node se conserva como omitida.
 

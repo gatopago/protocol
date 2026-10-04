@@ -8,11 +8,12 @@ It is not the frontend, the backend, or a shared wallet holding every user's fun
 ## Compiled SDK producer
 
 `packages/shared`, `packages/environment` and `packages/test-fixtures` produce
-compiled ESM and declarations. The current local consumer snapshots are 3.2.1.
-Packages remain private; registry publication and licensing are pending.
+compiled ESM and declarations for internal use across GatoPago repositories.
+Packages remain `private: true` and will not be published to a registry.
+Consumer package.json files and lockfiles identify their installed snapshots.
 
-Run `pnpm build`, `pnpm test` and `pnpm run pack` from this repository root.
-Use `pnpm run pack` explicitly: `pnpm pack` is the package manager's own command.
+Run `pnpm build` and `pnpm test` from this repository root.
+For packaging alone, use `node scripts/pack-sdk.mjs`.
 The pack script validates all three archives in a temporary directory before
 promoting them. An existing version retains its original bytes; changed contents
 require a new version. `output/sdk-releases/manifest.json` records archive hashes,
@@ -21,22 +22,21 @@ the producer commit, working-tree status and individual source hashes.
 `pnpm distribute` builds, packs and copies only the release selected by that
 manifest. It verifies integrity and all consumer destinations before copying,
 and preserves older archives still referenced by a consumer's package.json.
-The root SDK CI runs build, tests, pack and the independent consumer check;
+The root SDK CI is configured for build, tests, pack and the independent consumer
+check. Its command references still need reconciliation with package.json;
 a workflow file is not evidence of a successful remote run.
 
-`pnpm check:consumer` installs the current archives in a fresh temporary
+`node scripts/check-sdk-consumer.mjs` installs the selected archives in a fresh temporary
 consumer using a frozen lockfile. It checks every exported subpath through
 native ESM, Node 24 `require` and strict TypeScript NodeNext resolution, with
 no aliases to producer sources. Its report is
-`output/sdk-releases/consumer-local.json`. This validates local archives;
-publication and SDK installation from npm remain separate requirements.
+`output/sdk-releases/consumer-local.json`. This validates internal archives.
+Check CI command references against package.json before claiming a remote run.
 
-Registry publication is pending. The earlier release workflow and
-`config/sdk-publication.json` are absent from the current checkout; their
-historical local verification does not prove current publication tooling.
-Ownership, licenses, visibility and npm authentication still need to be
-established. The [registry runbook](docs/arbitrum-delivery/sdk-registry-runbook.md)
-records the intended OIDC release process and the remaining prerequisites.
+The [internal distribution runbook](docs/arbitrum-delivery/sdk-internal-distribution.md)
+defines versioned archives, automated copying, integrity, consumer upgrades and
+rollback. Local `file:vendor/*.tgz` dependencies are supported. SDK publication,
+npm scope ownership and publisher authentication are outside the project scope.
 
 The Arbitrum money programs reuse AccountV3 CALL/SPEND. Production contract
 source and bytecode are unchanged. Their local, fork and public delivery states

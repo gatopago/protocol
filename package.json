@@ -9,6 +9,7 @@
     "pack": "node scripts/pack-sdk.mjs",
     "check:consumer": "node scripts/check-sdk-consumer.mjs",
     "distribute": "node scripts/distribute.mjs",
+    "format": "prettier --write packages scripts",
     "test": "vitest run"
   },
   "devDependencies": {

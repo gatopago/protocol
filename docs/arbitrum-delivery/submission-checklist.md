@@ -2,11 +2,13 @@
 
 Fecha: 2026-10-02. Estado: API/Web publicadas con flags money cerradas; candidatura y demo pública pendientes. Este checklist no es evidencia de envío a HackQuest.
 
+Alcance corregido el 3 de octubre por Daniel: el SDK es interno y nunca se publicará en un registro. La aceptación de R2 utiliza archives privados verificados y consumidores independientes.
+
 - [x] Identificar Arbitrum Sepolia, `chainId=421614`, y distinguir testnet de mainnet.
 - [x] Mantener direcciones, código, mercado y despliegue fijados; registrar comprobaciones RPC y fork.
 - [x] Implementar localmente depósito, retiro y retiro seguido de pago con una autorización SPEND por operación.
 - [x] Compilar y consumir SDK 3.2.1 con tipos y archives inmutables; registrar el consumidor/productor aislados.
-- [x] Preparar CI de publicación manual/OIDC, política deshabilitada, guards de ref/integridad y runbook R2; 18 pruebas locales y listas npm de 139 archivos aprobadas.
+- [x] Conservar la evidencia histórica de preparación del publisher; esa propuesta queda fuera del alcance y no forma parte de los requisitos de candidatura.
 - [x] Preparar [compatibility-matrix.md](compatibility-matrix.md) y el estado de pruebas, sin convertir validación local en aceptación pública.
 - [x] Registrar el fallo de creación con 496.000 y la simulación bilateral aprobada con 750.000; conservar la captura anterior.
 - [x] Registrar 17 pruebas de composición, incluidos rechazo por pausa, posición y liquidez insuficiente en el fork fijado, sin efectos financieros parciales.
@@ -24,7 +26,7 @@ Fecha: 2026-10-02. Estado: API/Web publicadas con flags money cerradas; candidat
 - [ ] Identificar el trabajo previo y el delta de la buildathon mediante fuentes y commits reales; los HEAD iniciales no describen el árbol modificado.
 - [ ] Completar los campos y materiales requeridos por el dashboard autenticado de participación y registrar el envío efectivo.
 - [ ] Confirmar la zona horaria del cierre en el dashboard; la página pública muestra 4 de octubre de 2026, 15:59, sin zona explícita en el texto leído.
-- [ ] Cerrar R2: ownership/licencia/visibilidad, bootstrap/trusted publishers npm, ejecución real de la CI preparada e instalación limpia desde registry. Los paquetes permanecen privados y no hay sesión npm utilizable demostrada.
+- [ ] Cerrar R2 interno: distribución automatizada desde Protocol, versiones e integridad verificadas, comandos de CI válidos y ejecución registrada, instalación/build independientes de los consumidores con sus archives privados y lockfiles exactos. [Runbook](sdk-internal-distribution.md).
 
 La [página oficial de la buildathon en HackQuest](https://www.hackquest.io/es/hackathons/Arbitrum-Open-House-Singapore-Online-Buildathon), consultada el 2 de octubre de 2026, admite proyectos desplegados en una cadena Arbitrum e incluye Arbitrum Sepolia entre sus ejemplos. Sus criterios incluyen calidad contractual, producto, innovación y problema resuelto. La publicación de esta lista no acredita haber presentado la candidatura ni satisfacer cada campo del formulario autenticado.
 
