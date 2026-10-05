@@ -5,300 +5,162 @@ import {Ownable2Step, Ownable} from "@openzeppelin/contracts/access/Ownable2Step
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
-import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
+import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
 
 /**
  * @title GatoPagoPaymentRouter
- * @notice Non-custodial USDC checkout rail for external wallets paying a merchant
- *         on the same chain. The signed authorization describes the economic
- *         result: the merchant receives `settlementAmount` and the payer pays the
- *         separately disclosed `platformFee` on top.
- * @dev The contract is intentionally non-upgradeable and USDC-only. Deploy a new
- *      version instead of adding arbitrary token or route logic here.
- * @custom:security-contact https://github.com/danelerr/parmelia-links/security/advisories/new
+ * @notice Pays a GatoPago Flow payment intent in USDC, as authorized by Flow's signer. The merchant
+ *         receives `amount` on this network, or on another one through Circle CCTP V2, whose
+ *         Forwarding Service mints on the destination. The payer also pays the platform `fee` and,
+ *         when crossing networks, at most `maxCctpFee` (what Circle does not charge reaches the
+ *         merchant). Non-custodial: funds only pass through within the payment transaction.
  */
-contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable, ReentrancyGuard {
+contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
     using SafeERC20 for IERC20;
 
-    struct PaymentAuthorization {
+    struct Payment {
         bytes32 intentId;
-        bytes32 attemptId;
         address payer;
         address merchant;
-        uint256 settlementAmount;
-        uint256 platformFee;
-        uint48 validAfter;
+        uint256 amount;
+        uint256 fee;
+        /// @dev Circle domain where the merchant receives; `LOCAL_DOMAIN` pays on this network.
+        uint32 destinationDomain;
+        uint256 maxCctpFee;
+        uint32 minFinalityThreshold;
         uint48 validUntil;
-        bytes32 metadataHash;
     }
 
-    uint256 public constant MAX_PLATFORM_FEE_BPS = 100;
-    uint256 private constant BPS_DENOMINATOR = 10_000;
-
-    bytes32 public constant PAYMENT_AUTHORIZATION_TYPEHASH = keccak256(
-        "PaymentAuthorization(bytes32 intentId,bytes32 attemptId,address payer,address merchant,uint256 settlementAmount,uint256 platformFee,uint48 validAfter,uint48 validUntil,bytes32 metadataHash)"
+    bytes32 public constant PAYMENT_TYPEHASH = keccak256(
+        "Payment(bytes32 intentId,address payer,address merchant,uint256 amount,uint256 fee,uint32 destinationDomain,uint256 maxCctpFee,uint32 minFinalityThreshold,uint48 validUntil)"
     );
+    /// @dev Circle's Forwarding Service request: "cctp-forward" as bytes24, version 0, no extra data.
+    bytes private constant FORWARD_HOOK = hex"636374702d666f72776172640000000000000000000000000000000000000000";
 
     IERC20 public immutable USDC;
+    ITokenMessengerV2 public immutable TOKEN_MESSENGER;
+    uint32 public immutable LOCAL_DOMAIN;
 
+    address public signer;
     address public treasury;
-    address public authorizationSigner;
-    address public pauseGuardian;
+    mapping(bytes32 intentId => bool) public paid;
 
-    mapping(bytes32 attemptId => bool used) public usedAttempt;
-    mapping(bytes32 intentId => bool paid) public paidIntent;
-
-    event TreasuryUpdated(address indexed previousTreasury, address indexed newTreasury);
-    event AuthorizationSignerUpdated(address indexed previousSigner, address indexed newSigner);
-    event PauseGuardianUpdated(address indexed previousGuardian, address indexed newGuardian);
-    event PaymentSettled(
+    event PaymentSent(
         bytes32 indexed intentId,
-        bytes32 indexed attemptId,
         address indexed payer,
-        address merchant,
-        uint256 settlementAmount,
-        uint256 platformFee,
-        bytes32 metadataHash
+        address indexed merchant,
+        uint256 amount,
+        uint256 fee,
+        uint32 destinationDomain
     );
-    event TokenRescued(address indexed token, address indexed recipient, uint256 amount);
+    event SignerUpdated(address indexed signer);
+    event TreasuryUpdated(address indexed treasury);
 
-    error GatoPagoPaymentRouter__InvalidToken();
-    error GatoPagoPaymentRouter__InvalidTreasury();
-    error GatoPagoPaymentRouter__InvalidAuthorizationSigner();
-    error GatoPagoPaymentRouter__InvalidPauseGuardian();
-    error GatoPagoPaymentRouter__InvalidIntentId();
-    error GatoPagoPaymentRouter__InvalidAttemptId();
-    error GatoPagoPaymentRouter__InvalidPayer();
-    error GatoPagoPaymentRouter__InvalidMerchant();
-    error GatoPagoPaymentRouter__InvalidAmount();
-    error GatoPagoPaymentRouter__InvalidAuthorizationWindow();
-    error GatoPagoPaymentRouter__AuthorizationNotActive(uint48 validAfter);
-    error GatoPagoPaymentRouter__AuthorizationExpired(uint48 validUntil);
-    error GatoPagoPaymentRouter__UnauthorizedPayer(address caller, address payer);
-    error GatoPagoPaymentRouter__PlatformFeeTooHigh(uint256 fee, uint256 maximum);
-    error GatoPagoPaymentRouter__AttemptAlreadyUsed(bytes32 attemptId);
-    error GatoPagoPaymentRouter__IntentAlreadyPaid(bytes32 intentId);
-    error GatoPagoPaymentRouter__InvalidAuthorization();
-    error GatoPagoPaymentRouter__UnauthorizedPause(address caller);
-    error GatoPagoPaymentRouter__InvalidRescueRecipient();
+    error GatoPagoPaymentRouter__InvalidAddress();
+    error GatoPagoPaymentRouter__NotPayer();
+    error GatoPagoPaymentRouter__Expired();
+    error GatoPagoPaymentRouter__AlreadyPaid();
+    error GatoPagoPaymentRouter__InvalidSignature();
 
     constructor(
-        address initialOwner,
+        address owner_,
+        address signer_,
+        address treasury_,
         IERC20 usdc,
-        address initialTreasury,
-        address initialAuthorizationSigner,
-        address initialPauseGuardian
-    ) EIP712("GatoPago Payment Router", "2") Ownable(initialOwner) {
-        if (address(usdc).code.length == 0) revert GatoPagoPaymentRouter__InvalidToken();
-        if (initialTreasury == address(0)) revert GatoPagoPaymentRouter__InvalidTreasury();
-        if (initialAuthorizationSigner == address(0)) {
-            revert GatoPagoPaymentRouter__InvalidAuthorizationSigner();
+        ITokenMessengerV2 tokenMessenger,
+        uint32 localDomain
+    ) EIP712("GatoPago Payment Router", "3") Ownable(owner_) {
+        if (signer_ == address(0) || treasury_ == address(0) || address(usdc) == address(0)) {
+            revert GatoPagoPaymentRouter__InvalidAddress();
         }
-        if (initialPauseGuardian == address(0)) revert GatoPagoPaymentRouter__InvalidPauseGuardian();
-
+        signer = signer_;
+        treasury = treasury_;
         USDC = usdc;
-        treasury = initialTreasury;
-        authorizationSigner = initialAuthorizationSigner;
-        pauseGuardian = initialPauseGuardian;
-
-        emit TreasuryUpdated(address(0), initialTreasury);
-        emit AuthorizationSignerUpdated(address(0), initialAuthorizationSigner);
-        emit PauseGuardianUpdated(address(0), initialPauseGuardian);
+        TOKEN_MESSENGER = tokenMessenger;
+        LOCAL_DOMAIN = localDomain;
     }
 
-    /*//////////////////////////////////////////////////////////////
-                         USER-FACING FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Pays an authorized checkout attempt using an existing USDC allowance.
-    function pay(PaymentAuthorization calldata authorization, bytes calldata signature)
-        external
-        nonReentrant
-        whenNotPaused
-    {
-        _settle(authorization, signature);
+    /// @notice Pays with an existing USDC allowance (a smart account approves in the same batch).
+    function pay(Payment calldata payment, bytes calldata signature) external whenNotPaused {
+        _pay(payment, signature);
     }
 
-    /// @notice Attempts an EIP-2612 permit before settling the checkout attempt.
-    /// @dev A failed permit is tolerated to remain safe when its nonce was consumed
-    ///      by a third party; settlement still requires sufficient allowance.
+    /// @notice Pays in one transaction from a wallet that signs an EIP-2612 permit. A permit whose
+    /// nonce a third party already used is ignored; the payment then needs the allowance.
     function payWithPermit(
-        PaymentAuthorization calldata authorization,
+        Payment calldata payment,
         bytes calldata signature,
-        uint256 permitDeadline,
+        uint256 deadline,
         uint8 v,
         bytes32 r,
         bytes32 s
-    ) external nonReentrant whenNotPaused {
-        uint256 totalPayerAmount = authorization.settlementAmount + authorization.platformFee;
-        try IERC20Permit(address(USDC)).permit(msg.sender, address(this), totalPayerAmount, permitDeadline, v, r, s) {}
-            catch {}
-        _settle(authorization, signature);
+    ) external whenNotPaused {
+        try IERC20Permit(address(USDC)).permit(msg.sender, address(this), total(payment), deadline, v, r, s) {} catch {}
+        _pay(payment, signature);
     }
 
-    /*//////////////////////////////////////////////////////////////
-                         ADMINISTRATION
-    //////////////////////////////////////////////////////////////*/
-
-    function setTreasury(address newTreasury) external onlyOwner {
-        if (newTreasury == address(0)) revert GatoPagoPaymentRouter__InvalidTreasury();
-        emit TreasuryUpdated(treasury, newTreasury);
-        treasury = newTreasury;
+    /// @notice USDC the payer spends: amount, fee and, when crossing networks, the CCTP fee ceiling.
+    function total(Payment calldata payment) public view returns (uint256) {
+        return payment.amount + payment.fee + (payment.destinationDomain == LOCAL_DOMAIN ? 0 : payment.maxCctpFee);
     }
 
-    function setAuthorizationSigner(address newSigner) external onlyOwner {
-        if (newSigner == address(0)) revert GatoPagoPaymentRouter__InvalidAuthorizationSigner();
-        emit AuthorizationSignerUpdated(authorizationSigner, newSigner);
-        authorizationSigner = newSigner;
+    function paymentDigest(Payment calldata payment) public view returns (bytes32) {
+        return _hashTypedDataV4(keccak256(abi.encode(PAYMENT_TYPEHASH, payment)));
     }
 
-    function setPauseGuardian(address newGuardian) external onlyOwner {
-        if (newGuardian == address(0)) revert GatoPagoPaymentRouter__InvalidPauseGuardian();
-        emit PauseGuardianUpdated(pauseGuardian, newGuardian);
-        pauseGuardian = newGuardian;
+    function setSigner(address signer_) external onlyOwner {
+        if (signer_ == address(0)) revert GatoPagoPaymentRouter__InvalidAddress();
+        signer = signer_;
+        emit SignerUpdated(signer_);
     }
 
-    /// @notice Owner or operational guardian may stop new payments.
-    function pause() external {
-        if (msg.sender != owner() && msg.sender != pauseGuardian) {
-            revert GatoPagoPaymentRouter__UnauthorizedPause(msg.sender);
-        }
+    function setTreasury(address treasury_) external onlyOwner {
+        if (treasury_ == address(0)) revert GatoPagoPaymentRouter__InvalidAddress();
+        treasury = treasury_;
+        emit TreasuryUpdated(treasury_);
+    }
+
+    function pause() external onlyOwner {
         _pause();
     }
 
-    /// @notice Only the cold owner may resume payments.
     function unpause() external onlyOwner {
         _unpause();
     }
 
-    /// @notice Recovers tokens transferred directly to the router by mistake.
-    function rescueToken(IERC20 token, address recipient, uint256 amount) external onlyOwner {
-        if (address(token).code.length == 0) revert GatoPagoPaymentRouter__InvalidToken();
-        if (recipient == address(0)) revert GatoPagoPaymentRouter__InvalidRescueRecipient();
-        token.safeTransfer(recipient, amount);
-        emit TokenRescued(address(token), recipient, amount);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                         READ-ONLY FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    /// @notice Returns the EIP-712 digest that the authorization signer approves.
-    function authorizationDigest(PaymentAuthorization calldata authorization) external view returns (bytes32 digest) {
-        digest = _authorizationDigest(authorization);
-    }
-
-    /// @notice Returns the chain-independent struct hash used by EIP-712.
-    /// @dev Exposed so backend/client fixtures can detect any encoding drift
-    ///      before an authorization capable of moving funds is issued.
-    function authorizationStructHash(PaymentAuthorization calldata authorization)
-        external
-        pure
-        returns (bytes32 structHash)
-    {
-        structHash = _authorizationStructHash(authorization);
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                    INTERNAL STATE-CHANGING FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    function _settle(PaymentAuthorization calldata authorization, bytes calldata signature) private {
-        _validateAuthorization(authorization, signature);
-
-        usedAttempt[authorization.attemptId] = true;
-        paidIntent[authorization.intentId] = true;
-
-        USDC.safeTransferFrom(msg.sender, authorization.merchant, authorization.settlementAmount);
-        if (authorization.platformFee > 0) {
-            USDC.safeTransferFrom(msg.sender, treasury, authorization.platformFee);
-        }
-
-        emit PaymentSettled(
-            authorization.intentId,
-            authorization.attemptId,
-            authorization.payer,
-            authorization.merchant,
-            authorization.settlementAmount,
-            authorization.platformFee,
-            authorization.metadataHash
-        );
-    }
-
-    /*//////////////////////////////////////////////////////////////
-                    INTERNAL READ-ONLY FUNCTIONS
-    //////////////////////////////////////////////////////////////*/
-
-    function _validateAuthorization(PaymentAuthorization calldata authorization, bytes calldata signature)
-        private
-        view
-    {
-        if (authorization.intentId == bytes32(0)) revert GatoPagoPaymentRouter__InvalidIntentId();
-        if (authorization.attemptId == bytes32(0)) revert GatoPagoPaymentRouter__InvalidAttemptId();
-        if (authorization.payer == address(0)) revert GatoPagoPaymentRouter__InvalidPayer();
-        if (authorization.merchant == address(0)) revert GatoPagoPaymentRouter__InvalidMerchant();
-        if (authorization.settlementAmount == 0) revert GatoPagoPaymentRouter__InvalidAmount();
-        if (authorization.validUntil == 0 || authorization.validAfter > authorization.validUntil) {
-            revert GatoPagoPaymentRouter__InvalidAuthorizationWindow();
-        }
-        if (msg.sender != authorization.payer) {
-            revert GatoPagoPaymentRouter__UnauthorizedPayer(msg.sender, authorization.payer);
-        }
-        // Signed authorization windows are deliberately enforced against chain time.
+    function _pay(Payment calldata payment, bytes calldata signature) private {
+        if (msg.sender != payment.payer) revert GatoPagoPaymentRouter__NotPayer();
         // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp < authorization.validAfter) {
-            revert GatoPagoPaymentRouter__AuthorizationNotActive(authorization.validAfter);
+        if (block.timestamp > payment.validUntil) revert GatoPagoPaymentRouter__Expired();
+        if (paid[payment.intentId]) revert GatoPagoPaymentRouter__AlreadyPaid();
+        if (ECDSA.recoverCalldata(paymentDigest(payment), signature) != signer) {
+            revert GatoPagoPaymentRouter__InvalidSignature();
         }
-        // forge-lint: disable-next-line(block-timestamp)
-        if (block.timestamp > authorization.validUntil) {
-            revert GatoPagoPaymentRouter__AuthorizationExpired(authorization.validUntil);
-        }
-
-        uint256 maximumPlatformFee = Math.mulDiv(authorization.settlementAmount, MAX_PLATFORM_FEE_BPS, BPS_DENOMINATOR);
-        if (authorization.platformFee > maximumPlatformFee) {
-            revert GatoPagoPaymentRouter__PlatformFeeTooHigh(authorization.platformFee, maximumPlatformFee);
-        }
-        if (usedAttempt[authorization.attemptId]) {
-            revert GatoPagoPaymentRouter__AttemptAlreadyUsed(authorization.attemptId);
-        }
-        if (paidIntent[authorization.intentId]) {
-            revert GatoPagoPaymentRouter__IntentAlreadyPaid(authorization.intentId);
-        }
-
-        (address recovered, ECDSA.RecoverError error, bytes32 errorArgument) =
-            ECDSA.tryRecoverCalldata(_authorizationDigest(authorization), signature);
-        if (error != ECDSA.RecoverError.NoError || errorArgument != bytes32(0) || recovered != authorizationSigner) {
-            revert GatoPagoPaymentRouter__InvalidAuthorization();
-        }
-    }
-
-    function _authorizationDigest(PaymentAuthorization calldata authorization) private view returns (bytes32 digest) {
-        digest = _hashTypedDataV4(_authorizationStructHash(authorization));
-    }
-
-    function _authorizationStructHash(PaymentAuthorization calldata authorization)
-        private
-        pure
-        returns (bytes32 structHash)
-    {
-        // forge-lint: disable-next-line(asm-keccak256)
-        structHash = keccak256(
-            abi.encode(
-                PAYMENT_AUTHORIZATION_TYPEHASH,
-                authorization.intentId,
-                authorization.attemptId,
-                authorization.payer,
-                authorization.merchant,
-                authorization.settlementAmount,
-                authorization.platformFee,
-                authorization.validAfter,
-                authorization.validUntil,
-                authorization.metadataHash
-            )
+        paid[payment.intentId] = true;
+        emit PaymentSent(
+            payment.intentId, payment.payer, payment.merchant, payment.amount, payment.fee, payment.destinationDomain
         );
+
+        if (payment.fee != 0) USDC.safeTransferFrom(msg.sender, treasury, payment.fee);
+        if (payment.destinationDomain == LOCAL_DOMAIN) {
+            USDC.safeTransferFrom(msg.sender, payment.merchant, payment.amount);
+        } else {
+            uint256 burn = payment.amount + payment.maxCctpFee;
+            USDC.safeTransferFrom(msg.sender, address(this), burn);
+            USDC.forceApprove(address(TOKEN_MESSENGER), burn);
+            TOKEN_MESSENGER.depositForBurnWithHook(
+                burn,
+                payment.destinationDomain,
+                bytes32(uint256(uint160(payment.merchant))),
+                address(USDC),
+                bytes32(0),
+                payment.maxCctpFee,
+                payment.minFinalityThreshold,
+                FORWARD_HOOK
+            );
+        }
     }
 }

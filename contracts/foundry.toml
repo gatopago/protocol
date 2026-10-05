@@ -2,7 +2,6 @@
 src = "src"
 out = "out"
 libs = ["lib"]
-fs_permissions = [{ access = "read", path = "test/fixtures" }]
 
 # Every CREATE2 address derives from this bytecode: changing the compiler or its
 # settings changes the addresses of future deployments.
