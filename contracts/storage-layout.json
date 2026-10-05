@@ -1,0 +1,28 @@
+{
+  "src/wallet/GatoPagoAccount.sol:GatoPagoAccount": [
+    {
+      "label": "_nameFallback",
+      "slot": "0",
+      "offset": 0,
+      "type": "string"
+    },
+    {
+      "label": "_versionFallback",
+      "slot": "1",
+      "offset": 0,
+      "type": "string"
+    },
+    {
+      "label": "_signers",
+      "slot": "2",
+      "offset": 0,
+      "type": "struct EnumerableSet.BytesSet"
+    },
+    {
+      "label": "_threshold",
+      "slot": "4",
+      "offset": 0,
+      "type": "uint64"
+    }
+  ]
+}

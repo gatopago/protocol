@@ -10,7 +10,7 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {ECDSA} from "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
-import {ITokenMessengerV2} from "src/interfaces/ITokenMessengerV2.sol";
+import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
 
 /**
  * @title GatoPagoCctpPaymentRouter

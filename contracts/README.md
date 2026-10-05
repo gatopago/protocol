@@ -1,29 +1,21 @@
 # GatoPago Contracts
 
-Account V3 y contratos GatoPago de pagos. Node 24, pnpm 11.23.0, Foundry 1.7.1
-y solc 0.8.34. No requiere Web, Wallet Core, Flow ni el workspace raíz.
+Foundry project (solc 0.8.34, Foundry 1.7.1). See the [repository README](../README.md) and
+[SECURITY.md](../SECURITY.md).
 
 ```sh
-pnpm install --frozen-lockfile
-pnpm install:solidity
-pnpm verify
+pnpm contracts:install   # from the repository root: forge-std, OpenZeppelin 5.7.0, EntryPoint v0.9.0
+forge build
+forge test
 ```
 
-Las dependencias Solidity están fijadas a commits completos y verificadas por
-contenido. `install:solidity` aplica LF sólo al proceso de Git hijo, sin modificar
-la configuración global. Los vectores propios están en `test/fixtures`.
-
-`verify` compila, ejecuta Foundry, comprueba tamaños y lint. Los forks necesitan
-RPC configurado; un fork omitido no es prueba de red. Ningún comando anterior
-despliega contratos o utiliza fondos remotos.
-
-`release-package` contiene snapshots mínimos de ABI/bytecode para consumidores
-de pruebas. No sustituye un deployment manifest ni prueba despliegues. Una
-nueva versión se entrega explícitamente; los consumidores no leen `out/`.
-
-El remapping de EntryPoint ahora es local `node_modules/`, no `../node_modules`.
-Esto puede cambiar metadata/bytecode y por tanto futuras predicciones CREATE2.
-Los archivos de `deployments/421614/account-v3` del 26 de septiembre conservan
-sus fuentes y artefactos archivados sin cambios: usar esos archivos para
-reproducir aquel despliegue, no atribuirle esta compilación nueva. No se realizó
-redeploy, upgrade ni cambio de policy como parte de la separación de repos.
+| Path | Contents |
+|---|---|
+| `src/wallet/` | Account, factory and paymaster |
+| `src/` | Universal Checkout payment routers (used by Flow) |
+| `script/DeployWallet.s.sol` | Multichain CREATE2 deployment of the wallet |
+| `script/Deploy.s.sol` | Payment router deployment |
+| `test/wallet/` | Unit, fuzz and invariant tests of the wallet (`WalletFixture.sol` builds and signs operations) |
+| `deployments/` | Records of deployed contracts |
+| `storage-layout.json` | Account storage layout that upgrades must keep |
+| `.gas-snapshot` | Gas of the wallet tests (`forge snapshot --match-path test/wallet/GatoPagoWallet.t.sol --check`) |

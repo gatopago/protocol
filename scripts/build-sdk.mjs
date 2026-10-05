@@ -1,84 +1,82 @@
-import assert from 'node:assert/strict';
+// Builds @gatopago/shared and @gatopago/environment into each package's dist/:
+// ESM for every exported module (esbuild) and declarations (tsc).
 import { execFileSync } from 'node:child_process';
-import {
-  copyFileSync,
-  existsSync,
-  mkdirSync,
-  readFileSync,
-  readdirSync,
-  rmSync,
-  writeFileSync,
-} from 'node:fs';
-import { dirname, extname, join, relative, resolve } from 'node:path';
+import { cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
 import { build } from 'esbuild';
 
 const root = resolve(import.meta.dirname, '..');
-function files(path) {
-  return readdirSync(path, { withFileTypes: true }).flatMap((entry) => {
-    if (['dist', 'node_modules'].includes(entry.name)) return [];
-    const file = join(path, entry.name);
-    return entry.isDirectory() ? files(file) : [file];
-  });
-}
-for (const name of ['shared', 'environment', 'test-fixtures']) {
-  const source = join(root, 'packages', name),
-    destination = resolve(source, 'dist');
-  assert(
-    destination === join(root, 'packages', name, 'dist'),
-    'Build destination outside producer',
-  );
-  const inputs = files(source);
 
-  rmSync(destination, { recursive: true, force: true });
-  mkdirSync(destination, { recursive: true });
+for (const name of ['shared', 'environment']) {
+  const source = join(root, 'packages', name);
+  const dist = join(source, 'dist');
+  const pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
+  const outputs = Object.values(pkg.exports).flatMap((value) =>
+    typeof value === 'string' ? [value] : [value.import],
+  );
+  rmSync(dist, { recursive: true, force: true });
+
   await build({
-    entryPoints: inputs.filter((file) => file.endsWith('.ts') && !file.endsWith('.d.ts')),
-    outbase: source,
-    outdir: destination,
+    entryPoints: outputs
+      .filter((file) => file.endsWith('.js'))
+      .map((file) => join(source, file.replace('./dist/', '').replace(/\.js$/, '.ts'))),
+    outdir: dist,
     bundle: true,
     packages: 'external',
     format: 'esm',
     platform: 'neutral',
     target: 'es2022',
-    sourcemap: false,
     logLevel: 'warning',
   });
+  for (const file of outputs.filter((file) => file.endsWith('.json'))) {
+    cpSync(join(source, file.replace('./dist/', '')), join(source, file));
+  }
+  // JSON modules imported by the sources (e.g. ABIs) are referenced by the declarations.
+  if (existsSync(join(source, 'abis')))
+    cpSync(join(source, 'abis'), join(dist, 'abis'), { recursive: true });
   execFileSync(
     process.execPath,
     [join(root, 'node_modules/typescript/bin/tsc'), '-p', join(source, 'tsconfig.build.json')],
-    { stdio: 'inherit' },
+    {
+      stdio: 'inherit',
+    },
   );
-  for (const input of inputs.filter(
-    (file) =>
-      ['.json', '.mjs', '.mts'].includes(extname(file)) &&
-      !file.endsWith('package.json') &&
-      !file.endsWith('tsconfig.build.json'),
-  )) {
-    const target = join(destination, relative(source, input));
-    mkdirSync(dirname(target), { recursive: true });
-    copyFileSync(input, target);
-  }
 
-  const generated = (directory) =>
-    readdirSync(directory, { withFileTypes: true }).flatMap((entry) =>
-      entry.isDirectory() ? generated(join(directory, entry.name)) : [join(directory, entry.name)],
-    );
-  for (const file of generated(destination).filter((file) => file.endsWith('.d.ts'))) {
-    const sourceText = readFileSync(file, 'utf8');
+  // ESM consumers need explicit extensions in relative declaration imports.
+  for (const file of readdirSync(dist).filter((file) => file.endsWith('.d.ts'))) {
+    const path = join(dist, file);
     writeFileSync(
-      file,
-      sourceText.replace(/(['"])(\.{1,2}\/[^'"\n]+)\1/g, (original, quote, specifier) =>
-        existsSync(resolve(dirname(file), specifier + '.js'))
+      path,
+      readFileSync(path, 'utf8').replace(/(['"])(\.\/[^'"\n]+)\1/g, (original, quote, specifier) =>
+        existsSync(resolve(dirname(path), `${specifier}.js`))
           ? `${quote}${specifier}.js${quote}`
           : original,
       ),
     );
   }
-  const pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));
-  for (const exported of Object.values(pkg.exports).flatMap((value) =>
-    typeof value === 'string' ? [value] : Object.values(value),
-  )) {
-    assert(existsSync(resolve(source, exported)), `Missing export ${name}: ${exported}`);
+  for (const file of outputs) {
+    if (!existsSync(join(source, file))) throw new Error(`Missing export ${pkg.name}: ${file}`);
   }
-  console.log(`Built ${pkg.name}@${pkg.version} ESM and declarations.`);
+  // The published declarations must resolve on their own, as a consumer sees them.
+  const declarations = readdirSync(dist).filter((file) => file.endsWith('.d.ts'));
+  execFileSync(
+    process.execPath,
+    [
+      join(root, 'node_modules/typescript/bin/tsc'),
+      ...[
+        '--noEmit',
+        '--strict',
+        '--skipLibCheck',
+        'false',
+        '--module',
+        'esnext',
+        '--moduleResolution',
+        'bundler',
+      ],
+      ...['--target', 'es2022', '--resolveJsonModule', '--esModuleInterop', '--types', 'node'],
+      ...declarations,
+    ],
+    { cwd: dist, stdio: 'inherit' },
+  );
+  console.log(`Built ${pkg.name}@${pkg.version}`);
 }

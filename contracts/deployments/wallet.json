@@ -1,0 +1,92 @@
+{
+  "contracts": {
+    "ERC7913WebAuthnVerifier": "0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8",
+    "GatoPagoAccountFactory": "0x4A000246131C2DEd46ff6eA047808E708Fa0da02",
+    "GatoPagoAccount (implementation)": "0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D",
+    "GatoPagoPaymaster": "0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1"
+  },
+  "entryPoint": "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
+  "salt": "keccak256(\"gatopago.wallet.v1\")",
+  "sponsorSigner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "paymasterOwner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "networks": {
+    "eip155:421614": {
+      "name": "Arbitrum Sepolia",
+      "explorer": "https://sepolia.arbiscan.io",
+      "transactions": [
+        {
+          "transaction": "ERC7913WebAuthnVerifier",
+          "hash": "0x79cdc5b6af89a6bb6b879ffa1ef319736b460573def3c36e4b13951048d99280",
+          "block": 315832776
+        },
+        {
+          "transaction": "GatoPagoAccountFactory",
+          "hash": "0x4e2a719e979dad5e7c83be7f7211589e53c8f242fe461b93a399146bccd55dcb",
+          "block": 315832788
+        },
+        {
+          "transaction": "GatoPagoPaymaster",
+          "hash": "0x20e55f190bd234f8f96d17ff82f8339f90bd7a72f4a2b6b198a4246f6457734e",
+          "block": 315832800
+        },
+        {
+          "transaction": "GatoPagoPaymaster.deposit",
+          "hash": "0xd7aa85f002dc4cc17e9453a4e9eba0aa7f929f88b12d1963260b718ce248a1b5",
+          "block": 315832822
+        }
+      ]
+    },
+    "eip155:43113": {
+      "name": "Avalanche Fuji",
+      "explorer": "https://testnet.snowtrace.io",
+      "transactions": [
+        {
+          "transaction": "ERC7913WebAuthnVerifier",
+          "hash": "0x2108ec31f01f0f08c34cebd2e0d7b87c355a51bad327dc675270701b249eea7c",
+          "block": 59049284
+        },
+        {
+          "transaction": "GatoPagoAccountFactory",
+          "hash": "0x2eeb6e5b03c8a1e23e03968dd7ce010be13ec1a2aa4f1559069e56094a7d8a61",
+          "block": 59049285
+        },
+        {
+          "transaction": "GatoPagoPaymaster",
+          "hash": "0xa052a425feda8ffae1cb79a4b665bc54e3e9e9164b03ca008b348dfee471b4a9",
+          "block": 59049285
+        },
+        {
+          "transaction": "GatoPagoPaymaster.deposit",
+          "hash": "0xcce4016699df94511c2f08e7bb61cbbbd0440fd0bde293a2d3fb4707d5228837",
+          "block": 59049285
+        }
+      ]
+    },
+    "eip155:10143": {
+      "name": "Monad testnet",
+      "explorer": "https://testnet.monadexplorer.com",
+      "transactions": [
+        {
+          "transaction": "ERC7913WebAuthnVerifier",
+          "hash": "0x2a9de02f625039d95a97a43bb9661862095f4b12e92640f97abb34c78c4216cd",
+          "block": 68248214
+        },
+        {
+          "transaction": "GatoPagoAccountFactory",
+          "hash": "0xf123da2dbbbf7ea350ac4810b63b76a1c52837f495b08cc1a608a5764c135b65",
+          "block": 68248217
+        },
+        {
+          "transaction": "GatoPagoPaymaster",
+          "hash": "0x060cb8721f69d4c3151a58b42caa05716a9de53ce055b570c21fe89d1fa8a640",
+          "block": 68248220
+        },
+        {
+          "transaction": "GatoPagoPaymaster.deposit",
+          "hash": "0x23dd631f480dcd82034f25ab59c5dfa63c48732940f9a7e4fe00deb6eef755bc",
+          "block": 68248224
+        }
+      ]
+    }
+  }
+}

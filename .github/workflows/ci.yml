@@ -1,48 +1,42 @@
-# Protocol repository: the standalone Foundry project lives under contracts/.
 name: Protocol CI
 on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:
+  contracts:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
+      - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
+        with:
+          version: v1.7.1
+      - run: pnpm contracts:install
+      - run: cd contracts && forge fmt --check
+      - run: pnpm contracts:build --sizes
+      - run: pnpm contracts:test
+      - name: Wallet gas snapshot
+        run: cd contracts && forge snapshot --match-path test/wallet/GatoPagoWallet.t.sol --check
+      - name: Account storage layout (upgrade compatibility)
+        run: node scripts/storage-layout.mjs
+      - name: Slither
+        run: pip install slither-analyzer==0.11.5 && cd contracts && slither . --config-file slither.config.json --fail-medium
   sdk:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
       - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
-        with:
-          version: 11.23.0
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
         with:
           node-version: 24
           cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm test
-      - run: pnpm run pack
-      - run: pnpm check:consumer
-  verify:
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    defaults:
-      run:
-        working-directory: contracts
-    env:
-      CI: "true"
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: pnpm/action-setup@0977fd99725f1db4007ccb2928dbb4e90d06cc86
-        with:
-          version: 11.23.0
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
-        with:
-          node-version: 24
-          cache: pnpm
-          cache-dependency-path: contracts/pnpm-lock.yaml
       - uses: foundry-rs/foundry-toolchain@908c540300062bd5a7e473851cdb4282204cee09
         with:
           version: v1.7.1
       - run: pnpm install --frozen-lockfile
-      - run: pnpm install:solidity
-      - run: pnpm verify
+      - run: pnpm format:check
+      - run: pnpm contracts:install && pnpm contracts:build
+      - run: pnpm build
+      - run: pnpm test

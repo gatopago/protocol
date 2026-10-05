@@ -8,7 +8,7 @@ import {ERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/ERC20P
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
-import {GatoPagoPaymentRouter} from "src/GatoPagoPaymentRouter.sol";
+import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
 
 contract MockCheckoutUSDC is ERC20, ERC20Permit {
     constructor() ERC20("Mock Checkout USDC", "USDC") ERC20Permit("Mock Checkout USDC") {}
@@ -188,8 +188,7 @@ contract GatoPagoPaymentRouterTest is Test {
         vm.prank(payer);
         vm.expectRevert(
             abi.encodeWithSelector(
-                GatoPagoPaymentRouter.GatoPagoPaymentRouter__AuthorizationNotActive.selector,
-                authorization.validAfter
+                GatoPagoPaymentRouter.GatoPagoPaymentRouter__AuthorizationNotActive.selector, authorization.validAfter
             )
         );
         router.pay(authorization, signature);
@@ -299,9 +298,7 @@ contract GatoPagoPaymentRouterTest is Test {
     function test_attackerCannotPauseAndPausedRouterRejectsPayment() public {
         vm.prank(attacker);
         vm.expectRevert(
-            abi.encodeWithSelector(
-                GatoPagoPaymentRouter.GatoPagoPaymentRouter__UnauthorizedPause.selector, attacker
-            )
+            abi.encodeWithSelector(GatoPagoPaymentRouter.GatoPagoPaymentRouter__UnauthorizedPause.selector, attacker)
         );
         router.pause();
 

@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/environment",
   "private": true,
-  "version": "3.2.3",
+  "version": "4.1.0",
   "files": [
     "dist"
   ],
@@ -14,9 +14,6 @@
       "default": "./dist/index.js"
     },
     "./environments.json": "./dist/environments.json"
-  },
-  "dependencies": {
-    "@gatopago/shared": "workspace:3.2.3"
   },
   "engines": {
     "node": ">=24"

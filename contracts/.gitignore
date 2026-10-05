@@ -1,23 +1,7 @@
-node_modules/
-.next/
-.vercel/
-.wrangler/
-output/
-coverage/
-*.log
-*.tsbuildinfo
-.env*
-.dev.vars*
-!.env.example
-!.dev.vars.example
 out/
 cache/
 lib/
 # Raw broadcasts can contain signed transactions and provider metadata.
 broadcast/
-lcov.info
-docs/
-.DS_Store
-*.DS_Store
-.vscode/
-.idea/
+.env*
+!.env.example

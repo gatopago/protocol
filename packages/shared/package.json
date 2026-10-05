@@ -1,330 +1,73 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "3.2.3",
+  "version": "4.1.0",
+  "type": "module",
   "files": [
     "dist"
   ],
-  "type": "module",
   "exports": {
+    "./primitives": {
+      "types": "./dist/primitives.d.ts",
+      "import": "./dist/primitives.js",
+      "default": "./dist/primitives.js"
+    },
+    "./http": {
+      "types": "./dist/http.d.ts",
+      "import": "./dist/http.js",
+      "default": "./dist/http.js"
+    },
+    "./fees": {
+      "types": "./dist/fees.d.ts",
+      "import": "./dist/fees.js",
+      "default": "./dist/fees.js"
+    },
     "./payment-contracts": {
       "types": "./dist/paymentContracts.d.ts",
       "import": "./dist/paymentContracts.js",
-      "require": "./dist/paymentContracts.js",
       "default": "./dist/paymentContracts.js"
     },
     "./payment-authorizations": {
       "types": "./dist/paymentAuthorizations.d.ts",
       "import": "./dist/paymentAuthorizations.js",
-      "require": "./dist/paymentAuthorizations.js",
       "default": "./dist/paymentAuthorizations.js"
     },
-    "./v3/primitives": {
-      "types": "./dist/v3/primitives.d.ts",
-      "import": "./dist/v3/primitives.js",
-      "require": "./dist/v3/primitives.js",
-      "default": "./dist/v3/primitives.js"
-    },
-    "./v3/authorizations": {
-      "types": "./dist/v3/authorizations.d.ts",
-      "import": "./dist/v3/authorizations.js",
-      "require": "./dist/v3/authorizations.js",
-      "default": "./dist/v3/authorizations.js"
-    },
-    "./v3/transfer": {
-      "types": "./dist/v3/transfer.d.ts",
-      "import": "./dist/v3/transfer.js",
-      "require": "./dist/v3/transfer.js",
-      "default": "./dist/v3/transfer.js"
-    },
-    "./v3/transfer-review-record": {
-      "types": "./dist/v3/transferReviewRecord.d.ts",
-      "import": "./dist/v3/transferReviewRecord.js",
-      "require": "./dist/v3/transferReviewRecord.js",
-      "default": "./dist/v3/transferReviewRecord.js"
-    },
-    "./v3/transfer-authorization": {
-      "types": "./dist/v3/transferAuthorization.d.ts",
-      "import": "./dist/v3/transferAuthorization.js",
-      "require": "./dist/v3/transferAuthorization.js",
-      "default": "./dist/v3/transferAuthorization.js"
-    },
-    "./v3/transfer-wire": {
-      "types": "./dist/v3/transferWire.d.ts",
-      "import": "./dist/v3/transferWire.js",
-      "require": "./dist/v3/transferWire.js",
-      "default": "./dist/v3/transferWire.js"
-    },
-    "./v3/amount": {
-      "types": "./dist/v3/amount.d.ts",
-      "import": "./dist/v3/amount.js",
-      "require": "./dist/v3/amount.js",
-      "default": "./dist/v3/amount.js"
-    },
-    "./v3/finality": {
-      "types": "./dist/v3/finality.d.ts",
-      "import": "./dist/v3/finality.js",
-      "require": "./dist/v3/finality.js",
-      "default": "./dist/v3/finality.js"
-    },
-    "./v3/client-release": {
-      "types": "./dist/v3/clientRelease.d.ts",
-      "import": "./dist/v3/clientRelease.js",
-      "require": "./dist/v3/clientRelease.js",
-      "default": "./dist/v3/clientRelease.js"
-    },
-    "./v3/webauthn": {
-      "types": "./dist/v3/webauthn.d.ts",
-      "import": "./dist/v3/webauthn.js",
-      "require": "./dist/v3/webauthn.js",
-      "default": "./dist/v3/webauthn.js"
-    },
-    "./v3/credential-inventory": {
-      "types": "./dist/v3/credentialInventory.d.ts",
-      "import": "./dist/v3/credentialInventory.js",
-      "require": "./dist/v3/credentialInventory.js",
-      "default": "./dist/v3/credentialInventory.js"
-    },
-    "./v3/credential-detail": {
-      "types": "./dist/v3/credentialDetail.d.ts",
-      "import": "./dist/v3/credentialDetail.js",
-      "require": "./dist/v3/credentialDetail.js",
-      "default": "./dist/v3/credentialDetail.js"
-    },
-    "./v3/security-policy": {
-      "types": "./dist/v3/securityPolicy.d.ts",
-      "import": "./dist/v3/securityPolicy.js",
-      "require": "./dist/v3/securityPolicy.js",
-      "default": "./dist/v3/securityPolicy.js"
-    },
-    "./v3/deployment": {
-      "types": "./dist/v3/deployment.d.ts",
-      "import": "./dist/v3/deployment.js",
-      "require": "./dist/v3/deployment.js",
-      "default": "./dist/v3/deployment.js"
-    },
-    "./v3/account-inspection": {
-      "types": "./dist/v3/accountInspection.d.ts",
-      "import": "./dist/v3/accountInspection.js",
-      "require": "./dist/v3/accountInspection.js",
-      "default": "./dist/v3/accountInspection.js"
-    },
-    "./v3/initialization": {
-      "types": "./dist/v3/initialization.d.ts",
-      "import": "./dist/v3/initialization.js",
-      "require": "./dist/v3/initialization.js",
-      "default": "./dist/v3/initialization.js"
-    },
-    "./v3/initialization-wire": {
-      "types": "./dist/v3/initializationWire.d.ts",
-      "import": "./dist/v3/initializationWire.js",
-      "require": "./dist/v3/initializationWire.js",
-      "default": "./dist/v3/initializationWire.js"
-    },
-    "./v3/creation-inspection": {
-      "types": "./dist/v3/creationInspection.d.ts",
-      "import": "./dist/v3/creationInspection.js",
-      "require": "./dist/v3/creationInspection.js",
-      "default": "./dist/v3/creationInspection.js"
-    },
-    "./v3/paymaster": {
-      "types": "./dist/v3/paymaster.d.ts",
-      "import": "./dist/v3/paymaster.js",
-      "require": "./dist/v3/paymaster.js",
-      "default": "./dist/v3/paymaster.js"
-    },
-    "./v3/creation-operation": {
-      "types": "./dist/v3/creationOperation.d.ts",
-      "import": "./dist/v3/creationOperation.js",
-      "require": "./dist/v3/creationOperation.js",
-      "default": "./dist/v3/creationOperation.js"
-    },
-    "./v3/creation-operation-wire": {
-      "types": "./dist/v3/creationOperationWire.d.ts",
-      "import": "./dist/v3/creationOperationWire.js",
-      "require": "./dist/v3/creationOperationWire.js",
-      "default": "./dist/v3/creationOperationWire.js"
-    },
-    "./v3/backup-enrollment": {
-      "types": "./dist/v3/backupEnrollment.d.ts",
-      "import": "./dist/v3/backupEnrollment.js",
-      "require": "./dist/v3/backupEnrollment.js",
-      "default": "./dist/v3/backupEnrollment.js"
-    },
-    "./v3/backup-wire": {
-      "types": "./dist/v3/backupWire.d.ts",
-      "import": "./dist/v3/backupWire.js",
-      "require": "./dist/v3/backupWire.js",
-      "default": "./dist/v3/backupWire.js"
-    },
-    "./v3/backup-status": {
-      "types": "./dist/v3/backupStatus.d.ts",
-      "import": "./dist/v3/backupStatus.js",
-      "require": "./dist/v3/backupStatus.js",
-      "default": "./dist/v3/backupStatus.js"
-    },
-    "./v3/external-enrollment": {
-      "types": "./dist/v3/externalEnrollment.d.ts",
-      "import": "./dist/v3/externalEnrollment.js",
-      "require": "./dist/v3/externalEnrollment.js",
-      "default": "./dist/v3/externalEnrollment.js"
-    },
-    "./v3/wire-validators": {
-      "types": "./dist/v3/wire-validators.d.mts",
-      "import": "./dist/v3/wire-validators.mjs",
-      "default": "./dist/v3/wire-validators.mjs",
-      "require": "./dist/v3/wire-validators.mjs"
-    },
-    "./http": {
-      "types": "./dist/http.d.ts",
-      "import": "./dist/http.js",
-      "require": "./dist/http.js",
-      "default": "./dist/http.js"
-    },
-    "./fixtures/v3-storage-layout.json": "./dist/fixtures/v3-storage-layout.json",
     "./payment-networks": {
       "types": "./dist/paymentNetworks.d.ts",
       "import": "./dist/paymentNetworks.js",
-      "require": "./dist/paymentNetworks.js",
       "default": "./dist/paymentNetworks.js"
     },
     "./payment-abis": {
       "types": "./dist/paymentAbis.d.ts",
       "import": "./dist/paymentAbis.js",
-      "require": "./dist/paymentAbis.js",
       "default": "./dist/paymentAbis.js"
     },
     "./payment-errors": {
       "types": "./dist/paymentErrors.d.ts",
       "import": "./dist/paymentErrors.js",
-      "require": "./dist/paymentErrors.js",
       "default": "./dist/paymentErrors.js"
     },
-    "./v3/assertion-record": {
-      "types": "./dist/v3/assertionRecord.d.ts",
-      "import": "./dist/v3/assertionRecord.js",
-      "require": "./dist/v3/assertionRecord.js",
-      "default": "./dist/v3/assertionRecord.js"
+    "./wallet": {
+      "types": "./dist/wallet.d.ts",
+      "import": "./dist/wallet.js",
+      "default": "./dist/wallet.js"
     },
-    "./v3/security-inspection": {
-      "types": "./dist/v3/securityInspection.d.ts",
-      "import": "./dist/v3/securityInspection.js",
-      "require": "./dist/v3/securityInspection.js",
-      "default": "./dist/v3/securityInspection.js"
-    },
-    "./fixtures/v3-protocol.json": "./dist/fixtures/v3-protocol.json",
-    "./v3/security-policy-record": {
-      "types": "./dist/v3/securityPolicyRecord.d.ts",
-      "import": "./dist/v3/securityPolicyRecord.js",
-      "require": "./dist/v3/securityPolicyRecord.js",
-      "default": "./dist/v3/securityPolicyRecord.js"
-    },
-    "./v3/transfer-operation": {
-      "types": "./dist/v3/transferOperation.d.ts",
-      "import": "./dist/v3/transferOperation.js",
-      "require": "./dist/v3/transferOperation.js",
-      "default": "./dist/v3/transferOperation.js"
-    },
-    "./v3/transfer-security": {
-      "types": "./dist/v3/transferSecurity.d.ts",
-      "import": "./dist/v3/transferSecurity.js",
-      "require": "./dist/v3/transferSecurity.js",
-      "default": "./dist/v3/transferSecurity.js"
+    "./bundler": {
+      "types": "./dist/bundler.d.ts",
+      "import": "./dist/bundler.js",
+      "default": "./dist/bundler.js"
     },
     "./fixtures/payment-authorizations.json": "./dist/fixtures/payment-authorizations.json",
-    "./v3/execution": {
-      "types": "./dist/v3/execution.d.ts",
-      "import": "./dist/v3/execution.js",
-      "require": "./dist/v3/execution.js",
-      "default": "./dist/v3/execution.js"
-    },
-    "./v3/creation-receipt": {
-      "types": "./dist/v3/creationReceipt.d.ts",
-      "import": "./dist/v3/creationReceipt.js",
-      "require": "./dist/v3/creationReceipt.js",
-      "default": "./dist/v3/creationReceipt.js"
-    },
-    "./fixtures/v3-webauthn-chromium.json": "./dist/fixtures/v3-webauthn-chromium.json",
-    "./fixtures/v3-webauthn-encoding.json": "./dist/fixtures/v3-webauthn-encoding.json",
-    "./v3/creation-lifecycle": {
-      "types": "./dist/v3/creationLifecycle.d.ts",
-      "import": "./dist/v3/creationLifecycle.js",
-      "require": "./dist/v3/creationLifecycle.js",
-      "default": "./dist/v3/creationLifecycle.js"
-    },
-    "./fees": {
-      "types": "./dist/fees.d.ts",
-      "import": "./dist/fees.js",
-      "require": "./dist/fees.js",
-      "default": "./dist/fees.js"
-    },
-    "./v3/transfer-calls": {
-      "types": "./dist/v3/transferCalls.d.ts",
-      "import": "./dist/v3/transferCalls.js",
-      "require": "./dist/v3/transferCalls.js",
-      "default": "./dist/v3/transferCalls.js"
-    },
-    "./v3/transfer-balance": {
-      "types": "./dist/v3/transferBalance.d.ts",
-      "import": "./dist/v3/transferBalance.js",
-      "require": "./dist/v3/transferBalance.js",
-      "default": "./dist/v3/transferBalance.js"
-    },
-    "./v3/contract-signature": {
-      "types": "./dist/v3/contractSignature.d.ts",
-      "import": "./dist/v3/contractSignature.js",
-      "require": "./dist/v3/contractSignature.js",
-      "default": "./dist/v3/contractSignature.js"
-    },
-    "./v3/upgrade": {
-      "types": "./dist/v3/upgrade.d.ts",
-      "import": "./dist/v3/upgrade.js",
-      "require": "./dist/v3/upgrade.js",
-      "default": "./dist/v3/upgrade.js"
-    },
-    "./v3/wallet-release": {
-      "types": "./dist/v3/walletRelease.d.ts",
-      "import": "./dist/v3/walletRelease.js",
-      "require": "./dist/v3/walletRelease.js",
-      "default": "./dist/v3/walletRelease.js"
-    },
-    "./v3/money-operation": {
-      "types": "./dist/v3/moneyOperation.d.ts",
-      "import": "./dist/v3/moneyOperation.js",
-      "require": "./dist/v3/moneyOperation.js",
-      "default": "./dist/v3/moneyOperation.js"
-    },
-    "./v3/money-calls": {
-      "types": "./dist/v3/moneyCalls.d.ts",
-      "import": "./dist/v3/moneyCalls.js",
-      "require": "./dist/v3/moneyCalls.js",
-      "default": "./dist/v3/moneyCalls.js"
-    },
-    "./v3/aave-market": {
-      "types": "./dist/v3/aaveMarket.d.ts",
-      "import": "./dist/v3/aaveMarket.js",
-      "require": "./dist/v3/aaveMarket.js",
-      "default": "./dist/v3/aaveMarket.js"
-    },
-    "./v3/money-review-record": {
-      "types": "./dist/v3/moneyReviewRecord.d.ts",
-      "import": "./dist/v3/moneyReviewRecord.js",
-      "require": "./dist/v3/moneyReviewRecord.js",
-      "default": "./dist/v3/moneyReviewRecord.js"
-    },
-    "./v3/money-wire": {
-      "types": "./dist/v3/moneyWire.d.ts",
-      "import": "./dist/v3/moneyWire.js",
-      "require": "./dist/v3/moneyWire.js",
-      "default": "./dist/v3/moneyWire.js"
+    "./networks": {
+      "types": "./dist/networks.d.ts",
+      "import": "./dist/networks.js",
+      "default": "./dist/networks.js"
     }
   },
   "dependencies": {
-    "@noble/curves": "1.9.7",
     "viem": "2.55.19"
   },
   "devDependencies": {
-    "ajv": "8.18.0",
     "typescript": "~6.0.3"
   },
   "engines": {

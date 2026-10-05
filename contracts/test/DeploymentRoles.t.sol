@@ -5,10 +5,6 @@ import {Test} from "forge-std/Test.sol";
 import {DeploymentRoles} from "../script/DeploymentRoles.sol";
 
 contract DeploymentRolesHarness {
-    function validatePaymaster(uint256 chainId, address deployer, address owner, address signer) external pure {
-        DeploymentRoles.validatePaymaster(chainId, deployer, owner, signer);
-    }
-
     function validatePaymentRouter(uint256 chainId, address deployer, address owner, address treasury, address signer)
         external
         pure
@@ -53,7 +49,6 @@ contract DeploymentRolesTest is Test {
     bytes32 internal constant ROLE_DEPLOYER = "deployer";
     bytes32 internal constant ROLE_OWNER = "owner";
     bytes32 internal constant ROLE_TREASURY = "treasury";
-    bytes32 internal constant ROLE_PAYMASTER_SIGNER = "paymasterSigner";
     bytes32 internal constant ROLE_INVOICE_SIGNER = "invoiceSigner";
     bytes32 internal constant ROLE_AUTHORIZATION_SIGNER = "authorizationSigner";
     bytes32 internal constant ROLE_PAUSE_GUARDIAN = "pauseGuardian";
@@ -66,15 +61,15 @@ contract DeploymentRolesTest is Test {
 
     function test_rejectsZeroAndFoundryDefaultBroadcastersOnEveryNetwork() public {
         vm.expectRevert(abi.encodeWithSelector(DeploymentRoles.UnsafeBroadcaster.selector, address(0)));
-        harness.validatePaymaster(ARBITRUM_SEPOLIA, address(0), address(0x1), address(0x2));
+        harness.validateCrosschainRouter(ARBITRUM_SEPOLIA, address(0), address(0x1), address(0x2));
 
         vm.expectRevert(abi.encodeWithSelector(DeploymentRoles.UnsafeBroadcaster.selector, FOUNDRY_SENDER));
-        harness.validatePaymaster(ARBITRUM_SEPOLIA, FOUNDRY_SENDER, address(0x1), address(0x2));
+        harness.validateCrosschainRouter(ARBITRUM_SEPOLIA, FOUNDRY_SENDER, address(0x1), address(0x2));
     }
 
     function test_rejectsMissingRolesOnEveryNetwork() public {
         vm.expectRevert(abi.encodeWithSelector(DeploymentRoles.MissingDeploymentRole.selector, ROLE_OWNER));
-        harness.validatePaymaster(ARBITRUM_SEPOLIA, DEPLOYER, address(0), SIGNER);
+        harness.validateCrosschainRouter(ARBITRUM_SEPOLIA, DEPLOYER, address(0), TREASURY);
 
         vm.expectRevert(abi.encodeWithSelector(DeploymentRoles.MissingDeploymentRole.selector, ROLE_TREASURY));
         harness.validatePaymentRouter(ARBITRUM_SEPOLIA, DEPLOYER, OWNER, address(0), SIGNER);
@@ -92,29 +87,12 @@ contract DeploymentRolesTest is Test {
     }
 
     function test_testnetAllowsIntentionalRoleReuse() public view {
-        harness.validatePaymaster(ARBITRUM_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER);
         harness.validatePaymentRouter(ARBITRUM_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER, DEPLOYER);
         harness.validatePaymentRouterV2(ARBITRUM_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER, DEPLOYER, DEPLOYER);
         harness.validateCrosschainRouter(ARBITRUM_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER);
 
-        harness.validatePaymaster(BASE_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER);
         harness.validatePaymentRouterV2(BASE_SEPOLIA, DEPLOYER, DEPLOYER, DEPLOYER, DEPLOYER, DEPLOYER);
         harness.validateCrosschainRouter(AVALANCHE_FUJI, DEPLOYER, DEPLOYER, DEPLOYER);
-    }
-
-    function test_mainnetPaymasterAcceptsSeparatedRoles() public view {
-        harness.validatePaymaster(ARBITRUM_ONE, DEPLOYER, OWNER, SIGNER);
-    }
-
-    function test_mainnetPaymasterRejectsEveryRoleCollision() public {
-        _expectCollision(ROLE_DEPLOYER, ROLE_OWNER, DEPLOYER);
-        harness.validatePaymaster(ARBITRUM_ONE, DEPLOYER, DEPLOYER, SIGNER);
-
-        _expectCollision(ROLE_DEPLOYER, ROLE_PAYMASTER_SIGNER, DEPLOYER);
-        harness.validatePaymaster(ARBITRUM_ONE, DEPLOYER, OWNER, DEPLOYER);
-
-        _expectCollision(ROLE_OWNER, ROLE_PAYMASTER_SIGNER, OWNER);
-        harness.validatePaymaster(ARBITRUM_ONE, DEPLOYER, OWNER, OWNER);
     }
 
     function test_mainnetPaymentRouterAcceptsSeparatedRoles() public view {
@@ -181,7 +159,7 @@ contract DeploymentRolesTest is Test {
 
     function test_baseAndAvalancheMainnetDoNotBypassRoleSeparation() public {
         _expectCollision(ROLE_DEPLOYER, ROLE_OWNER, DEPLOYER);
-        harness.validatePaymaster(BASE, DEPLOYER, DEPLOYER, SIGNER);
+        harness.validateCrosschainRouter(BASE, DEPLOYER, DEPLOYER, TREASURY);
 
         _expectCollision(ROLE_DEPLOYER, ROLE_TREASURY, DEPLOYER);
         harness.validateCrosschainRouter(AVALANCHE, DEPLOYER, OWNER, DEPLOYER);

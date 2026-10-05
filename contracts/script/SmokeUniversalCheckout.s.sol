@@ -6,10 +6,10 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
 import {SafeCast} from "@openzeppelin/contracts/utils/math/SafeCast.sol";
-import {GatoPagoPaymentRouter} from "src/GatoPagoPaymentRouter.sol";
-import {GatoPagoCctpPaymentRouter} from "src/GatoPagoCctpPaymentRouter.sol";
-import {GatoPagoCrosschainRouter} from "src/GatoPagoCrosschainRouter.sol";
-import {NetworkDeploymentConfig} from "script/NetworkDeploymentConfig.sol";
+import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
+import {GatoPagoCctpPaymentRouter} from "../src/GatoPagoCctpPaymentRouter.sol";
+import {GatoPagoCrosschainRouter} from "../src/GatoPagoCrosschainRouter.sol";
+import {NetworkDeploymentConfig} from "./NetworkDeploymentConfig.sol";
 
 interface ISmokeUSDC is IERC20, IERC20Permit {
     function DOMAIN_SEPARATOR() external view returns (bytes32);

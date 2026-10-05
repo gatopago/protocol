@@ -1,4 +1,4 @@
-import { parseResourceId } from './v3/primitives';
+import { parseResourceId } from './primitives';
 
 export const PAYMENTS_CONTRACT_VERSION = 3 as const;
 export const PAYMENT_JOB_MESSAGE_VERSION = 2 as const;

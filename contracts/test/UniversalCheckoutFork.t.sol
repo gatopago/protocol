@@ -5,10 +5,10 @@ import {Test} from "forge-std/Test.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {IERC20Permit} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Permit.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {GatoPagoPaymentRouter} from "src/GatoPagoPaymentRouter.sol";
-import {GatoPagoCctpPaymentRouter} from "src/GatoPagoCctpPaymentRouter.sol";
-import {ITokenMessengerV2} from "src/interfaces/ITokenMessengerV2.sol";
-import {NetworkDeploymentConfig} from "script/NetworkDeploymentConfig.sol";
+import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
+import {GatoPagoCctpPaymentRouter} from "../src/GatoPagoCctpPaymentRouter.sol";
+import {ITokenMessengerV2} from "../src/interfaces/ITokenMessengerV2.sol";
+import {NetworkDeploymentConfig} from "../script/NetworkDeploymentConfig.sol";
 
 interface IForkUSDC is IERC20, IERC20Permit {
     function DOMAIN_SEPARATOR() external view returns (bytes32);

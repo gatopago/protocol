@@ -7,7 +7,7 @@ import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol
 import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import {ITokenMessengerV2} from "src/interfaces/ITokenMessengerV2.sol";
+import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
 
 /**
  * @title GatoPagoCrosschainRouter

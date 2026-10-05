@@ -11,7 +11,6 @@ library DeploymentRoles {
     bytes32 internal constant DEPLOYER = "deployer";
     bytes32 internal constant OWNER = "owner";
     bytes32 internal constant TREASURY = "treasury";
-    bytes32 internal constant PAYMASTER_SIGNER = "paymasterSigner";
     bytes32 internal constant INVOICE_SIGNER = "invoiceSigner";
     bytes32 internal constant AUTHORIZATION_SIGNER = "authorizationSigner";
     bytes32 internal constant PAUSE_GUARDIAN = "pauseGuardian";
@@ -19,17 +18,6 @@ library DeploymentRoles {
     error UnsafeBroadcaster(address broadcaster);
     error MissingDeploymentRole(bytes32 role);
     error MainnetRoleCollision(bytes32 firstRole, bytes32 secondRole, address account);
-
-    function validatePaymaster(uint256 chainId, address deployer, address owner, address sponsorSigner) internal pure {
-        _validateBroadcaster(deployer);
-        _validateAddress(OWNER, owner);
-        _validateAddress(PAYMASTER_SIGNER, sponsorSigner);
-        if (!_isMainnet(chainId)) return;
-
-        _requireDistinct(DEPLOYER, deployer, OWNER, owner);
-        _requireDistinct(DEPLOYER, deployer, PAYMASTER_SIGNER, sponsorSigner);
-        _requireDistinct(OWNER, owner, PAYMASTER_SIGNER, sponsorSigner);
-    }
 
     function validatePaymentRouter(
         uint256 chainId,

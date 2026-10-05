@@ -2,7 +2,7 @@
 pragma solidity ^0.8.34;
 
 import {Test} from "forge-std/Test.sol";
-import {NetworkDeploymentConfig} from "script/NetworkDeploymentConfig.sol";
+import {NetworkDeploymentConfig} from "../script/NetworkDeploymentConfig.sol";
 
 contract NetworkDeploymentConfigHarness {
     function get(uint256 chainId) external pure returns (NetworkDeploymentConfig.Config memory config) {
@@ -43,8 +43,6 @@ contract NetworkDeploymentConfigTest is Test {
         assertTrue(arbitrumMainnet.isHomeChain);
         assertEq(arbitrumTestnet.settlementChainId, ARBITRUM_SEPOLIA);
         assertEq(arbitrumMainnet.settlementChainId, ARBITRUM_ONE);
-        assertGt(arbitrumTestnet.paymasterStake, 0);
-        assertGt(arbitrumMainnet.paymasterDeposit, 0);
     }
 
     function test_configuresBaseAndAvalancheAsInboundOnly() public view {
@@ -61,8 +59,6 @@ contract NetworkDeploymentConfigTest is Test {
         assertEq(avalancheTestnet.settlementChainId, ARBITRUM_SEPOLIA);
         assertEq(baseMainnet.settlementChainId, ARBITRUM_ONE);
         assertEq(avalancheMainnet.settlementChainId, ARBITRUM_ONE);
-        assertEq(baseTestnet.paymasterStake, 0);
-        assertEq(avalancheMainnet.paymasterDeposit, 0);
         assertEq(baseTestnet.cctpPaymentPlatformFeeCapBps, 100);
         assertEq(avalancheTestnet.cctpPaymentPlatformFeeCapBps, 100);
         assertEq(baseMainnet.cctpPaymentPlatformFeeCapBps, 100);

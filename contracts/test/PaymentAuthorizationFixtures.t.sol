@@ -6,9 +6,9 @@ import {stdJson} from "forge-std/StdJson.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MessageHashUtils} from "@openzeppelin/contracts/utils/cryptography/MessageHashUtils.sol";
-import {GatoPagoPaymentRouter} from "src/GatoPagoPaymentRouter.sol";
-import {GatoPagoCctpPaymentRouter} from "src/GatoPagoCctpPaymentRouter.sol";
-import {ITokenMessengerV2} from "src/interfaces/ITokenMessengerV2.sol";
+import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
+import {GatoPagoCctpPaymentRouter} from "../src/GatoPagoCctpPaymentRouter.sol";
+import {ITokenMessengerV2} from "../src/interfaces/ITokenMessengerV2.sol";
 
 contract FixtureUSDC is ERC20 {
     constructor() ERC20("Fixture USDC", "USDC") {}

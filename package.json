@@ -1,21 +1,25 @@
 {
-  "name": "@gatopago/protocol-workspace",
-  "version": "3.2.3",
+  "name": "@gatopago/protocol",
   "private": true,
   "type": "module",
-  "engines": { "node": "24.x" },
+  "engines": {
+    "node": "24.x"
+  },
   "packageManager": "pnpm@11.23.0",
   "scripts": {
+    "contracts:install": "cd contracts && forge install --no-git --shallow forge-std=foundry-rs/forge-std@bf647bd6046f2f7da30d0c2bf435e5c76a780c1b openzeppelin-contracts=OpenZeppelin/openzeppelin-contracts@cab19933c33c2ad1d4c7a84864a3601dddfd16f3 account-abstraction=eth-infinitism/account-abstraction@b36a1ed52ae00da6f8a4c8d50181e2877e4fa410",
+    "contracts:build": "cd contracts && forge build",
+    "contracts:test": "cd contracts && forge test",
     "build": "node scripts/build-sdk.mjs",
-    "pack": "node scripts/pack-sdk.mjs",
-    "check:consumer": "node scripts/check-sdk-consumer.mjs",
-    "distribute": "node scripts/distribute.mjs",
-    "format": "prettier --write packages scripts",
-    "test": "vitest run"
+    "test": "vitest run",
+    "pack": "pnpm build && pnpm --dir packages/shared pack --pack-destination ../../output && pnpm --dir packages/environment pack --pack-destination ../../output",
+    "format": "prettier --write packages scripts test",
+    "format:check": "prettier --check packages scripts test"
   },
   "devDependencies": {
     "@types/node": "24.13.3",
     "esbuild": "0.28.1",
+    "prettier": "3.9.9",
     "typescript": "6.0.3",
     "viem": "2.55.19",
     "vitest": "4.1.11"

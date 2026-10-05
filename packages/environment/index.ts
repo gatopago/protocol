@@ -1,6 +1,4 @@
-import { validateEnvironmentShape } from '@gatopago/shared/v3/wire-validators';
-import { assertWebAuthnScope } from '@gatopago/shared/v3/webauthn';
-import type { NetworkId } from '@gatopago/shared/v3/primitives';
+export type NetworkId = `${string}:${string}`;
 
 export interface Environment {
   schema_version: 1;
@@ -19,9 +17,38 @@ export interface Environment {
   firebase_project_id: string | null;
 }
 
+const strings = (value: unknown, allowed?: readonly string[]) =>
+  Array.isArray(value) &&
+  value.every((item) => typeof item === 'string' && (!allowed || allowed.includes(item)));
+
+function isEnvironment(input: unknown): input is Environment {
+  if (!input || typeof input !== 'object' || Array.isArray(input)) return false;
+  const c = input as Record<string, unknown>;
+  return (
+    Object.keys(c).length === 14 &&
+    c.schema_version === 1 &&
+    c.environment === 'production' &&
+    (c.status === 'unprovisioned' || c.status === 'provisioned') &&
+    typeof c.web_origin === 'string' &&
+    typeof c.business_origin === 'string' &&
+    typeof c.api_origin === 'string' &&
+    typeof c.webauthn_rp_id === 'string' &&
+    strings(c.webauthn_allowed_origins) &&
+    strings(c.api_modes, ['test', 'live']) &&
+    strings(c.blockchain_tiers, ['testnet', 'mainnet']) &&
+    strings(c.wallet_candidates) &&
+    strings(c.wallet_enabled) &&
+    [...(c.wallet_candidates as string[]), ...(c.wallet_enabled as string[])].every((id) =>
+      /^[a-z0-9-]{3,8}:[A-Za-z0-9-]{1,32}$/.test(id),
+    ) &&
+    typeof c.payment_live_enabled === 'boolean' &&
+    (c.firebase_project_id === null || typeof c.firebase_project_id === 'string')
+  );
+}
+
 export function parseEnvironment(input: unknown): Environment {
-  if (!validateEnvironmentShape(input)) throw new Error('Invalid V3 environment schema');
-  const config = input as Environment;
+  if (!isEnvironment(input)) throw new Error('Invalid environment');
+  const config = input;
   for (const origin of [config.web_origin, config.api_origin, config.business_origin]) {
     const url = new URL(origin);
     if (
@@ -40,7 +67,6 @@ export function parseEnvironment(input: unknown): Environment {
   ) {
     throw new Error('Environment origins and RP do not match');
   }
-  assertWebAuthnScope({ rpId: config.webauthn_rp_id, origin: config.web_origin });
 
   if (
     config.payment_live_enabled ||
@@ -109,7 +135,7 @@ export function environmentFromVariables(input: EnvironmentVariables): Environme
 
 export function assertProvisioned(config: Environment): void {
   if (parseEnvironment(config).status !== 'provisioned')
-    throw new Error('V3 environment is not provisioned');
+    throw new Error('Environment is not provisioned');
 }
 
 const flowCollections = new Set([
