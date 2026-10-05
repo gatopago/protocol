@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "4.1.0",
+  "version": "5.5.0",
   "type": "module",
   "files": [
     "dist"
@@ -17,51 +17,40 @@
       "import": "./dist/http.js",
       "default": "./dist/http.js"
     },
-    "./fees": {
-      "types": "./dist/fees.d.ts",
-      "import": "./dist/fees.js",
-      "default": "./dist/fees.js"
-    },
-    "./payment-contracts": {
-      "types": "./dist/paymentContracts.d.ts",
-      "import": "./dist/paymentContracts.js",
-      "default": "./dist/paymentContracts.js"
-    },
-    "./payment-authorizations": {
-      "types": "./dist/paymentAuthorizations.d.ts",
-      "import": "./dist/paymentAuthorizations.js",
-      "default": "./dist/paymentAuthorizations.js"
-    },
-    "./payment-networks": {
-      "types": "./dist/paymentNetworks.d.ts",
-      "import": "./dist/paymentNetworks.js",
-      "default": "./dist/paymentNetworks.js"
-    },
-    "./payment-abis": {
-      "types": "./dist/paymentAbis.d.ts",
-      "import": "./dist/paymentAbis.js",
-      "default": "./dist/paymentAbis.js"
-    },
-    "./payment-errors": {
-      "types": "./dist/paymentErrors.d.ts",
-      "import": "./dist/paymentErrors.js",
-      "default": "./dist/paymentErrors.js"
-    },
     "./wallet": {
       "types": "./dist/wallet.d.ts",
       "import": "./dist/wallet.js",
       "default": "./dist/wallet.js"
+    },
+    "./crosschain": {
+      "types": "./dist/crosschain.d.ts",
+      "import": "./dist/crosschain.js",
+      "default": "./dist/crosschain.js"
     },
     "./bundler": {
       "types": "./dist/bundler.d.ts",
       "import": "./dist/bundler.js",
       "default": "./dist/bundler.js"
     },
-    "./fixtures/payment-authorizations.json": "./dist/fixtures/payment-authorizations.json",
     "./networks": {
       "types": "./dist/networks.d.ts",
       "import": "./dist/networks.js",
       "default": "./dist/networks.js"
+    },
+    "./payments": {
+      "types": "./dist/payments.d.ts",
+      "import": "./dist/payments.js",
+      "default": "./dist/payments.js"
+    },
+    "./earn": {
+      "types": "./dist/earn.d.ts",
+      "import": "./dist/earn.js",
+      "default": "./dist/earn.js"
+    },
+    "./swap": {
+      "types": "./dist/swap.d.ts",
+      "import": "./dist/swap.js",
+      "default": "./dist/swap.js"
     }
   },
   "dependencies": {

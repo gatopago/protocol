@@ -13,7 +13,7 @@ Report vulnerabilities privately through this repository's GitHub Security Advis
 | Factory | `contracts/src/wallet/GatoPagoAccountFactory.sol` | OpenZeppelin `ERC1967Proxy`, `Create2` |
 | Paymaster | `contracts/src/wallet/GatoPagoPaymaster.sol` | OpenZeppelin `PaymasterSigner`, `SignerECDSA`, `Ownable` |
 | Bundler | `packages/shared/bundler.ts` | — (liveness only, see below) |
-| Payment routers (Flow) | `contracts/src/GatoPago*Router.sol` | — |
+| Payment router (Flow) | `contracts/src/GatoPagoPaymentRouter.sol` | OpenZeppelin `EIP712`, `ECDSA`, `SafeERC20`, `Ownable2Step`, `Pausable`; Circle CCTP V2 |
 
 The contracts target the ERC-4337 EntryPoint v0.9 at `0x433709009B8330FDa32311DF1C2AFA402eD8D009`.
 The GatoPago-specific account logic is about 170 lines; it has not had an external audit yet.

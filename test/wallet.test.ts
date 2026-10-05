@@ -11,9 +11,13 @@ import {
   encodeDeployData,
   encodeFunctionData,
   erc20Abi,
+  getAddress,
   getContractAddress,
   http,
   keccak256,
+  pad,
+  parseAbi,
+  parseEventLogs,
   toHex,
   zeroHash,
   type Abi,
@@ -45,6 +49,11 @@ import {
   type WalletContracts,
 } from '../packages/shared/wallet';
 import { bundlerJsonRpc, createBundler, gatopagoGasConfig } from '../packages/shared/bundler';
+import { crosschainCalls } from '../packages/shared/crosschain';
+import { depositCalls, withdrawCalls } from '../packages/shared/earn';
+import { minimumOut, quoteSwap, swapCalls } from '../packages/shared/swap';
+import { walletNetworks } from '../packages/shared/networks';
+import { paymentCalls, paymentRouterAbi, paymentTypedData } from '../packages/shared/payments';
 
 /**
  * Forks of real networks with GatoPago contracts deployed through the standard CREATE2 deployer
@@ -82,7 +91,8 @@ function artifact(name: string) {
 
 function network(chain: Chain, fork: string, port: number, p256: boolean) {
   const rpc = `http://127.0.0.1:${port}`;
-  const publicClient = createPublicClient({ chain, transport: http(rpc) });
+  // Forks read remote state on first touch (a pool's ticks can take longer than viem's 10 s default).
+  const publicClient = createPublicClient({ chain, transport: http(rpc, { timeout: 60_000 }) });
   const walletClient = createWalletClient({ chain, transport: http(rpc), account: relayer });
   const hardfork = p256 ? ['--hardfork', 'osaka'] : [];
   const anvil: ChildProcess = spawn(
@@ -338,6 +348,10 @@ async function send(
   expect(receipt.actualGasUsed).toBeLessThan((receipt.receipt.gasUsed * 115n) / 100n);
 }
 
+const depositForBurnAbi = parseAbi([
+  'event DepositForBurn(address indexed burnToken, uint256 amount, address indexed depositor, bytes32 mintRecipient, uint32 destinationDomain, bytes32 destinationTokenMessenger, bytes32 destinationCaller, uint256 maxFee, uint32 indexed minFinalityThreshold, bytes hookData)',
+]);
+
 const transfer = (amount: bigint) => ({
   to: usdc,
   data: encodeFunctionData({ abi: erc20Abi, functionName: 'transfer', args: [merchant, amount] }),
@@ -351,6 +365,21 @@ const balance = (on: Network, owner: Address) =>
   });
 const mint = (on: Network, to: Address) =>
   on.write(usdc, artifact('ERC20Mock').abi, 'mint', [to, 100_000_000n]);
+
+/** Circle's USDC on the Arbitrum Sepolia fork, from Aave's aUSDC reserve. */
+async function fundWithCircleUsdc(to: Address, amount: bigint) {
+  const holder = '0x460b97bd498e1157530aeb3086301d5225b91216';
+  await arbitrum.rpc('anvil_impersonateAccount', [holder]);
+  await arbitrum.rpc('anvil_setBalance', [holder, toHex(10n ** 18n)]);
+  const hash = await arbitrum.walletClient.writeContract({
+    account: holder,
+    address: walletNetworks['eip155:421614'].usdc,
+    abi: erc20Abi,
+    functionName: 'transfer',
+    args: [to, amount],
+  } as never);
+  await arbitrum.publicClient.waitForTransactionReceipt({ hash });
+}
 
 describe('GatoPago account through viem and the GatoPago bundler', () => {
   it('pays without ETH, then a backup passkey recovers it on a network where it never existed', async () => {
@@ -407,6 +436,206 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     expect((await balance(fuji, merchant)) - fujiBefore).toBe(5_000_000n);
     expect(await fuji.publicClient.getBalance({ address: onFuji.address })).toBe(0n);
   }, 180_000);
+
+  it('moves real USDC to another network through CCTP in one operation', async () => {
+    const [from, to] = [walletNetworks['eip155:421614'], walletNetworks['eip155:43113']];
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: softwarePasskey(),
+      contracts,
+    });
+    await fundWithCircleUsdc(account.address, 10_000_000n);
+
+    const calls = crosschainCalls({
+      from,
+      to,
+      amount: 10_000_000n,
+      recipient: merchant,
+      maxFee: 300_000n,
+    });
+    const bundlerClient = createBundlerClient({
+      account,
+      client: arbitrum.publicClient,
+      paymaster: sponsorship as never,
+      transport: http(arbitrum.bundlerUrl),
+    });
+    const hash = await bundlerClient.sendUserOperation({ calls });
+    const { receipt, success } = await bundlerClient.waitForUserOperationReceipt({ hash });
+    expect(success).toBe(true);
+    const [burn] = parseEventLogs({ abi: depositForBurnAbi, logs: receipt.logs });
+    expect(burn.args).toMatchObject({
+      burnToken: getAddress(from.usdc),
+      amount: 10_000_000n,
+      depositor: account.address,
+      mintRecipient: pad(merchant).toLowerCase(),
+      destinationDomain: 1,
+      maxFee: 300_000n,
+      minFinalityThreshold: 1000,
+    });
+    expect(burn.args.hookData.startsWith(toHex('cctp-forward'))).toBe(true);
+    expect(
+      await arbitrum.publicClient.readContract({
+        address: from.usdc,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [account.address],
+      }),
+    ).toBe(0n);
+  }, 60_000);
+
+  it('saves USDC in Aave and withdraws all of it', async () => {
+    const network = walletNetworks['eip155:421614'];
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: softwarePasskey(),
+      contracts,
+    });
+    await fundWithCircleUsdc(account.address, 10_000_000n);
+    const read = (token: Address) =>
+      arbitrum.publicClient.readContract({
+        address: token,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [account.address],
+      });
+
+    await send(arbitrum, account, { calls: depositCalls(network, account.address, 10_000_000n) });
+    expect(await read(network.usdc)).toBe(0n);
+    // aToken balances round to the liquidity index: within a unit of the deposit.
+    expect(await read(network.aave.aToken)).toBeGreaterThanOrEqual(9_999_999n);
+
+    await send(arbitrum, account, { calls: withdrawCalls(network, account.address, 'all') });
+    expect(await read(network.aave.aToken)).toBe(0n);
+    expect(await read(network.usdc)).toBeGreaterThanOrEqual(9_999_999n);
+  }, 60_000);
+
+  // Slow: the fork fetches the pools' tick data from the public RPC on first touch.
+  it('swaps USDC for ETH and back through Uniswap in one operation each', async () => {
+    const network = walletNetworks['eip155:421614'];
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: softwarePasskey(),
+      contracts,
+    });
+    await fundWithCircleUsdc(account.address, 10_000_000n);
+    const client = arbitrum.publicClient as never;
+    const ether = () => arbitrum.publicClient.getBalance({ address: account.address });
+    const dollars = () =>
+      arbitrum.publicClient.readContract({
+        address: network.usdc,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [account.address],
+      });
+
+    const toEther = await quoteSwap(client, network, {
+      tokenIn: 'usdc',
+      tokenOut: 'native',
+      amountIn: 10_000_000n,
+    });
+    expect(toEther.amountOut).toBeGreaterThan(0n);
+    await send(arbitrum, account, {
+      calls: swapCalls(network, account.address, toEther, minimumOut(toEther)),
+    });
+    expect(await dollars()).toBe(0n);
+    const received = await ether();
+    expect(received).toBeGreaterThanOrEqual(minimumOut(toEther));
+
+    const toUsdc = await quoteSwap(client, network, {
+      tokenIn: 'native',
+      tokenOut: 'usdc',
+      amountIn: received,
+    });
+    await send(arbitrum, account, {
+      calls: swapCalls(network, account.address, toUsdc, minimumOut(toUsdc)),
+    });
+    expect(await ether()).toBe(0n);
+    expect(await dollars()).toBeGreaterThanOrEqual(minimumOut(toUsdc));
+  }, 300_000);
+
+  it('pays a Flow payment intent through the router, locally and to another network', async () => {
+    const home = walletNetworks['eip155:421614'];
+    const flowSigner = privateKeyToAccount(
+      '0x7c852118294e51e653712a81e05800f419141751be58f605c371e15141b007a6',
+    );
+    const treasury = '0x000000000000000000000000000000000000fee5';
+    const network = {
+      ...home,
+      paymentRouter: await arbitrum.deploy('GatoPagoPaymentRouter', [
+        relayer.address,
+        flowSigner.address,
+        treasury,
+        home.usdc,
+        home.cctp.tokenMessenger,
+        home.cctp.domain,
+      ]),
+    };
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: softwarePasskey(),
+      contracts,
+    });
+    await fundWithCircleUsdc(account.address, 20_000_000n);
+    const usdcOf = (owner: Address) =>
+      arbitrum.publicClient.readContract({
+        address: home.usdc,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [owner],
+      });
+    const bundlerClient = createBundlerClient({
+      account,
+      client: arbitrum.publicClient,
+      paymaster: sponsorship as never,
+      transport: http(arbitrum.bundlerUrl),
+    });
+    const pay = async (intent: string, destinationDomain: number) => {
+      const payment = {
+        intentId: keccak256(toHex(intent)),
+        payer: account.address,
+        merchant,
+        amount: 5_000_000n,
+        fee: 50_000n,
+        destinationDomain,
+        maxCctpFee: 300_000n,
+        minFinalityThreshold: 1000,
+        validUntil: Math.floor(Date.now() / 1000) + 3600,
+      };
+      const signature = await flowSigner.signTypedData(paymentTypedData(network, payment));
+      const hash = await bundlerClient.sendUserOperation({
+        calls: paymentCalls(network, payment, signature),
+      });
+      const { receipt, success } = await bundlerClient.waitForUserOperationReceipt({ hash });
+      expect(success).toBe(true);
+      return receipt;
+    };
+
+    const merchantBefore = await usdcOf(merchant);
+    await pay('pi_local', home.cctp.domain);
+    expect((await usdcOf(merchant)) - merchantBefore).toBe(5_000_000n);
+    expect(await usdcOf(treasury)).toBe(50_000n);
+
+    const receipt = await pay('pi_avalanche', 1);
+    const [burn] = parseEventLogs({ abi: depositForBurnAbi, logs: receipt.logs });
+    expect(burn.args).toMatchObject({
+      amount: 5_300_000n,
+      mintRecipient: pad(merchant).toLowerCase(),
+      destinationDomain: 1,
+      maxFee: 300_000n,
+    });
+    const [sent] = parseEventLogs({
+      abi: paymentRouterAbi,
+      logs: receipt.logs,
+      eventName: 'PaymentSent',
+    });
+    expect(sent.args).toMatchObject({
+      payer: account.address,
+      amount: 5_000_000n,
+      destinationDomain: 1,
+    });
+    // 20 USDC − (5 + 0.05) − (5 + 0.05 + 0.3)
+    expect(await usdcOf(account.address)).toBe(9_600_000n);
+  }, 60_000);
 
   it('simulates a batch as a whole before the account exists (approve, then use the allowance)', async () => {
     const account = await toGatoPagoAccount({

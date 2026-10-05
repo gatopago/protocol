@@ -31,9 +31,6 @@ for (const name of ['shared', 'environment']) {
   for (const file of outputs.filter((file) => file.endsWith('.json'))) {
     cpSync(join(source, file.replace('./dist/', '')), join(source, file));
   }
-  // JSON modules imported by the sources (e.g. ABIs) are referenced by the declarations.
-  if (existsSync(join(source, 'abis')))
-    cpSync(join(source, 'abis'), join(dist, 'abis'), { recursive: true });
   execFileSync(
     process.execPath,
     [join(root, 'node_modules/typescript/bin/tsc'), '-p', join(source, 'tsconfig.build.json')],
