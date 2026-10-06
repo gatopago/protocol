@@ -12,7 +12,7 @@
     "contracts:test": "cd contracts && forge test",
     "build": "node scripts/build-sdk.mjs",
     "test": "vitest run",
-    "pack": "pnpm build && pnpm --dir packages/shared pack --pack-destination ../../output && pnpm --dir packages/environment pack --pack-destination ../../output",
+    "pack": "pnpm build && pnpm --dir packages/shared pack --pack-destination ../../output",
     "format": "prettier --write packages scripts test",
     "format:check": "prettier --check packages scripts test"
   },

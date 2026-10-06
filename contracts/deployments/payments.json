@@ -1,0 +1,30 @@
+{
+  "contract": "GatoPagoPaymentRouter",
+  "salt": "keccak256(\"gatopago.payments.v1\")",
+  "owner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "signer": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "treasury": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "networks": {
+    "eip155:421614": {
+      "name": "Arbitrum Sepolia",
+      "explorer": "https://sepolia.arbiscan.io",
+      "address": "0x1536b89c24b4c5296Ea67d3a5d0BFB7a3dc1c792",
+      "transaction": "0xb479b4712e0c788fd394c10d73dc0d6bfae40f817bb6a9205d62f38b0e7af33a",
+      "block": 316178398
+    },
+    "eip155:43113": {
+      "name": "Avalanche Fuji",
+      "explorer": "https://testnet.snowtrace.io",
+      "address": "0x52a0a15d762eB68092b5B45D958C4244233b7F58",
+      "transaction": "0x308cdc10271ffcf315bbe4cb5e0b3a72c8db2a484abc7234ac37c4ca8296b480",
+      "block": 59083767
+    },
+    "eip155:10143": {
+      "name": "Monad testnet",
+      "explorer": "https://testnet.monadexplorer.com",
+      "address": "0x18F716B0CCAe35471986b65b8a8A15594Ab5BE40",
+      "transaction": "0x9a4e5bfaa31b0f2df2ca7e8c66fe2bfd50b7324f618c02c3f48b0c1cb92db5ac",
+      "block": 68533468
+    }
+  }
+}

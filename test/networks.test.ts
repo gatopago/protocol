@@ -63,4 +63,12 @@ describe('payment router addresses', () => {
       );
     }
   });
+
+  it('match the deployment record', () => {
+    const record = JSON.parse(
+      readFileSync(resolve(import.meta.dirname, '../contracts/deployments/payments.json'), 'utf8'),
+    );
+    for (const [id, network] of Object.entries(walletNetworks))
+      expect(record.networks[id].address).toBe(network.paymentRouter);
+  });
 });

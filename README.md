@@ -17,8 +17,7 @@ contracts/            Foundry project
   src/                GatoPagoPaymentRouter (Flow)
   script/             DeployWallet.s.sol (wallet) and DeployPayments.s.sol (router)
   test/
-packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments
-packages/environment/ @gatopago/environment: origins and networks per environment
+packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, Aave, Uniswap
 test/                 End-to-end test on forks of real networks (viem + bundler)
 scripts/              SDK build and storage layout check
 ```
@@ -113,6 +112,23 @@ export GATOPAGO_PAYMENTS_OWNER=0x… GATOPAGO_PAYMENTS_SIGNER=0x… GATOPAGO_PAY
 forge script script/DeployPayments.s.sol --rpc-url <network> --account <foundry keystore> --broadcast
 ```
 
+Afterwards the owner can move the signer to a dedicated key with `setSigner(address)`: the router's
+address does not change, and Flow's `PAYMENT_SIGNER_PRIVATE_KEY` becomes that key instead of the
+owner's.
+
+### Deployment variables
+
+| Name | Script | What it is |
+|---|---|---|
+| `GATOPAGO_SPONSOR_SIGNER` | `DeployWallet` | Address whose signatures the paymaster accepts; Wallet Core's `SPONSOR_PRIVATE_KEY` |
+| `GATOPAGO_PAYMASTER_OWNER` | `DeployWallet` | Paymaster owner: manages and withdraws its deposit (cold key or multisig) |
+| `GATOPAGO_PAYMASTER_DEPOSIT` | `DeployWallet` | Wei deposited in the EntryPoint for the paymaster; optional |
+| `GATOPAGO_PAYMENTS_OWNER` | `DeployPayments` | Router owner: pauses it, sets its signer and treasury |
+| `GATOPAGO_PAYMENTS_SIGNER` | `DeployPayments` | Initial signer of payment authorizations (Flow's key) |
+| `GATOPAGO_PAYMENTS_TREASURY` | `DeployPayments` | Receives the platform fee |
+
+The keystore (`--account`) signs the deployment; private keys never go in environment variables.
+
 ## Commands
 
 ```sh
@@ -134,4 +150,4 @@ Consumers install the SDK from a tarball in their `vendor/` folder:
 
 1. Bump the version in `packages/*/package.json` and run `pnpm pack`.
 2. Copy `output/gatopago-*-<version>.tgz` into the consumer's `vendor/`.
-3. In the consumer: `pnpm add ./vendor/gatopago-shared-<version>.tgz` (and the same for `environment`).
+3. In the consumer: `pnpm add ./vendor/gatopago-shared-<version>.tgz`.

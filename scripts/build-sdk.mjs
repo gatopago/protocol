@@ -1,4 +1,4 @@
-// Builds @gatopago/shared and @gatopago/environment into each package's dist/:
+// Builds @gatopago/shared into packages/shared/dist/:
 // ESM for every exported module (esbuild) and declarations (tsc).
 import { execFileSync } from 'node:child_process';
 import { cpSync, existsSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
@@ -7,7 +7,7 @@ import { build } from 'esbuild';
 
 const root = resolve(import.meta.dirname, '..');
 
-for (const name of ['shared', 'environment']) {
+for (const name of ['shared']) {
   const source = join(root, 'packages', name);
   const dist = join(source, 'dist');
   const pkg = JSON.parse(readFileSync(join(source, 'package.json'), 'utf8'));

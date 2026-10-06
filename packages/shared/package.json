@@ -1,22 +1,12 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "5.5.0",
+  "version": "6.0.0",
   "type": "module",
   "files": [
     "dist"
   ],
   "exports": {
-    "./primitives": {
-      "types": "./dist/primitives.d.ts",
-      "import": "./dist/primitives.js",
-      "default": "./dist/primitives.js"
-    },
-    "./http": {
-      "types": "./dist/http.d.ts",
-      "import": "./dist/http.js",
-      "default": "./dist/http.js"
-    },
     "./wallet": {
       "types": "./dist/wallet.d.ts",
       "import": "./dist/wallet.js",
