@@ -41,7 +41,14 @@ describe('CCTP transfers', () => {
     const answers = [
       new Response(null, { status: 404 }),
       Response.json({ messages: [{ status: 'pending_confirmations' }] }),
-      Response.json({ messages: [{ status: 'complete', forwardState: 'PENDING' }] }),
+      Response.json({
+        messages: [
+          { status: 'complete', message: '0x01', attestation: '0x02', forwardState: 'PENDING' },
+        ],
+      }),
+      Response.json({
+        messages: [{ status: 'complete', forwardState: 'CONFIRMED', forwardTxHash: hash }],
+      }),
       Response.json({
         messages: [{ status: 'complete', forwardState: 'COMPLETE', forwardTxHash: hash }],
       }),
@@ -49,9 +56,17 @@ describe('CCTP transfers', () => {
     ];
     const fetch = vi.fn(async () => answers.shift()!);
     vi.stubGlobal('fetch', fetch);
-    const stages = [];
-    for (let i = 0; i < 5; i++) stages.push((await crosschainStatus(arbitrum, hash)).stage);
-    expect(stages).toEqual(['burned', 'burned', 'attested', 'delivered', 'failed']);
+    const statuses = [];
+    for (let i = 0; i < 6; i++) statuses.push(await crosschainStatus(arbitrum, hash));
+    expect(statuses[2].attested).toEqual({ message: '0x01', attestation: '0x02' });
+    expect(statuses.map((status) => status.stage)).toEqual([
+      'burned',
+      'burned',
+      'attested',
+      'delivered',
+      'delivered',
+      'failed',
+    ]);
     expect(fetch).toHaveBeenCalledWith(
       `https://iris-api-sandbox.circle.com/v2/messages/3?transactionHash=${hash}`,
       { signal: undefined },

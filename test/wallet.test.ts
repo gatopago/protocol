@@ -1,5 +1,4 @@
 import { spawn, type ChildProcess } from 'node:child_process';
-import { createHash, generateKeyPairSync, sign } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
 import { resolve } from 'node:path';
@@ -25,7 +24,7 @@ import {
   type Chain,
   type Hex,
 } from 'viem';
-import { privateKeyToAccount } from 'viem/accounts';
+import { generatePrivateKey, privateKeyToAccount } from 'viem/accounts';
 import {
   createBundlerClient,
   entryPoint09Address,
@@ -39,9 +38,11 @@ import {
   REPLAYABLE_NONCE_KEY,
   encodeApplyApproval,
   gatopagoAccountAbi,
+  keyOwner,
   passkeyOwner,
   signApproval,
   sponsorshipPaymasterData,
+  ownersAfter,
   verifyApproval,
   sponsorshipTypedData,
   toGatoPagoAccount,
@@ -51,8 +52,10 @@ import {
 import { bundlerJsonRpc, createBundler, gatopagoGasConfig } from '../packages/shared/bundler';
 import { crosschainCalls } from '../packages/shared/crosschain';
 import { depositCalls, withdrawCalls } from '../packages/shared/earn';
+import { payFromSavingsCalls, payoutCalls, splitCalls } from '../packages/shared/rules';
 import { minimumOut, quoteSwap, swapCalls } from '../packages/shared/swap';
 import { walletNetworks } from '../packages/shared/networks';
+import { softwarePasskey } from './passkey';
 import { paymentCalls, paymentRouterAbi, paymentTypedData } from '../packages/shared/payments';
 
 /**
@@ -226,47 +229,6 @@ function network(chain: Chain, fork: string, port: number, p256: boolean) {
   };
 }
 type Network = ReturnType<typeof network>;
-
-/** Software passkey producing the same bytes as `navigator.credentials.get`. */
-function softwarePasskey(): WebAuthnAccount {
-  const { privateKey, publicKey } = generateKeyPairSync('ec', { namedCurve: 'P-256' });
-  const jwk = publicKey.export({ format: 'jwk' });
-  const coordinate = (value: string) => Buffer.from(value, 'base64url').toString('hex');
-  return {
-    id: 'software-passkey',
-    publicKey: `0x${coordinate(jwk.x!)}${coordinate(jwk.y!)}`,
-    type: 'webAuthn',
-    async sign({ hash }) {
-      const authenticatorData = Buffer.concat([
-        createHash('sha256').update('gatopago.com').digest(),
-        Buffer.from([0x05, 0, 0, 0, 0]),
-      ]);
-      const challenge = Buffer.from(hash.slice(2), 'hex').toString('base64url');
-      const clientDataJSON = `{"type":"webauthn.get","challenge":"${challenge}","origin":"https://gatopago.com","crossOrigin":false}`;
-      const signed = Buffer.concat([
-        authenticatorData,
-        createHash('sha256').update(clientDataJSON).digest(),
-      ]);
-      return {
-        signature: toHex(sign('sha256', signed, { key: privateKey, dsaEncoding: 'ieee-p1363' })),
-        raw: {} as never,
-        webauthn: {
-          authenticatorData: toHex(authenticatorData),
-          clientDataJSON,
-          challengeIndex: 23,
-          typeIndex: 1,
-          userVerificationRequired: true,
-        },
-      };
-    },
-    async signMessage() {
-      throw new Error('unused');
-    },
-    async signTypedData() {
-      throw new Error('unused');
-    },
-  };
-}
 
 const networks: Network[] = NETWORKS.map((n) => network(n.chain, n.fork, n.port, n.p256));
 const [arbitrum, fuji, withoutP256] = networks;
@@ -509,6 +471,75 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     expect(await read(network.usdc)).toBeGreaterThanOrEqual(9_999_999n);
   }, 60_000);
 
+  it('pays a team, splits income and pays from savings, each in one operation, all or nothing', async () => {
+    const network = walletNetworks['eip155:421614'];
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: softwarePasskey(),
+      contracts,
+    });
+    await fundWithCircleUsdc(account.address, 10_000_000n);
+    const [ana, beto, caro] = [1, 2, 3].map(
+      (i) => `0x${i.toString(16).padStart(2, '0').repeat(20)}` as Address,
+    );
+    const balance = (token: Address, owner: Address) =>
+      arbitrum.publicClient.readContract({
+        address: token,
+        abi: erc20Abi,
+        functionName: 'balanceOf',
+        args: [owner],
+      });
+
+    await send(arbitrum, account, {
+      calls: payoutCalls(network.usdc, [
+        { to: ana, amount: 1_000_000n },
+        { to: beto, amount: 2_000_000n },
+      ]),
+    });
+    expect(await balance(network.usdc, ana)).toBe(1_000_000n);
+    expect(await balance(network.usdc, beto)).toBe(2_000_000n);
+
+    // 7 USDC arrived: 1 to the team, 4 saved, 2 stay available.
+    await send(arbitrum, account, {
+      calls: splitCalls(network, account.address, {
+        payouts: [{ to: caro, amount: 1_000_000n }],
+        save: 4_000_000n,
+      }),
+    });
+    expect(await balance(network.usdc, account.address)).toBe(2_000_000n);
+    expect(await balance(network.aave.aToken, account.address)).toBeGreaterThanOrEqual(3_999_999n);
+
+    // Paying from savings withdraws exactly the payouts: what was available stays untouched.
+    await send(arbitrum, account, {
+      calls: payFromSavingsCalls(network, account.address, [
+        { to: ana, amount: 500_000n },
+        { to: caro, amount: 1_500_000n },
+      ]),
+    });
+    expect(await balance(network.usdc, ana)).toBe(1_500_000n);
+    expect(await balance(network.usdc, caro)).toBe(2_500_000n);
+    expect(await balance(network.usdc, account.address)).toBe(2_000_000n);
+    expect(await balance(network.aave.aToken, account.address)).toBeGreaterThanOrEqual(1_999_998n);
+
+    // A payout the account cannot cover in the middle fails as a whole: the first one does not go.
+    const bundlerClient = createBundlerClient({
+      account,
+      client: arbitrum.publicClient,
+      paymaster: sponsorship as never,
+      transport: http(arbitrum.bundlerUrl),
+    });
+    await expect(
+      bundlerClient.sendUserOperation({
+        calls: payoutCalls(network.usdc, [
+          { to: beto, amount: 1_000_000n },
+          { to: caro, amount: 50_000_000n },
+        ]),
+      }),
+    ).rejects.toThrow();
+    expect(await balance(network.usdc, beto)).toBe(2_000_000n);
+    expect(await balance(network.usdc, account.address)).toBe(2_000_000n);
+  }, 120_000);
+
   // Slow: the fork fetches the pools' tick data from the public RPC on first touch.
   it('swaps USDC for ETH and back through Uniswap in one operation each', async () => {
     const network = walletNetworks['eip155:421614'];
@@ -713,6 +744,66 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     expect(await signIn(stranger)).toBe(false);
   }, 60_000);
 
+  it('lets a key derived from a passkey (Mera) own an account, pay sponsored and sign in', async () => {
+    // Mera derives this key from the passkey's PRF output; any device with the passkey derives it again.
+    const key = privateKeyToAccount(generatePrivateKey());
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: key,
+      contracts,
+    });
+    expect(account.initialOwners).toEqual([keyOwner(key.address)]);
+    await mint(arbitrum, account.address);
+    const message = { raw: keccak256(toHex('gatopago.com sign-in')) };
+    const valid = async () =>
+      arbitrum.publicClient.verifyMessage({
+        address: account.address,
+        message,
+        signature: await account.signMessage({ message }),
+      });
+    expect(await valid()).toBe(true); // ERC-6492, before the account exists
+    await send(arbitrum, account, { calls: [transfer(1_000_000n)] });
+    expect(await valid()).toBe(true); // ERC-1271
+    const stranger = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: privateKeyToAccount(generatePrivateKey()),
+      contracts,
+      initialOwners: account.initialOwners,
+    });
+    expect(
+      await arbitrum.publicClient.verifyMessage({
+        address: account.address,
+        message,
+        signature: await stranger.signMessage({ message }),
+      }),
+    ).toBe(false);
+  }, 60_000);
+
+  it('costs less gas with a Mera key than with a passkey', async () => {
+    const gasOf = async (owner: Parameters<typeof toGatoPagoAccount>[0]['owner']) => {
+      const account = await toGatoPagoAccount({ client: arbitrum.publicClient, owner, contracts });
+      await mint(arbitrum, account.address);
+      const bundlerClient = createBundlerClient({
+        account,
+        client: arbitrum.publicClient,
+        paymaster: sponsorship as never,
+        transport: http(arbitrum.bundlerUrl),
+      });
+      // The second operation, once deployed: the steady cost of a payment.
+      for (let i = 0; i < 2; i++) {
+        const hash = await bundlerClient.sendUserOperation({ calls: [transfer(1_000_000n)] });
+        const receipt = await bundlerClient.waitForUserOperationReceipt({ hash });
+        if (i === 1) return receipt.actualGasUsed;
+      }
+      throw new Error('unreachable');
+    };
+    const passkey = await gasOf(softwarePasskey());
+    const mera = await gasOf(privateKeyToAccount(generatePrivateKey()));
+    // Measured on the Arbitrum Sepolia fork (P256 precompile): 163 299 vs 145 168. Without the
+    // precompile the passkey's verification costs about 300 000 more.
+    expect(mera).toBeLessThan(passkey);
+  }, 120_000);
+
   it('verifies approvals before a server stores them for other networks', async () => {
     const phone = softwarePasskey();
     const laptop = softwarePasskey();
@@ -754,6 +845,26 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     const second = await signApproval(onLaptop, 1n, removePhone);
     expect(await verify([addLaptop], removePhone, second)).toBe(true); // the laptop is an owner after approval 0
     expect(await verify([], removePhone, second)).toBe(false); // out of order
+
+    // Signed by an owner, but the account would revert them and block every later approval.
+    const impossible = async (call: Hex) => verify([], call, await signApproval(account, 0n, call));
+    expect(await impossible(removePhone)).toBe(false); // its last owner
+    const addPhone = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'addOwners',
+      args: [[passkeyOwner(contracts.webAuthnVerifier, phone.publicKey)]],
+    });
+    expect(await impossible(addPhone)).toBe(false); // already an owner
+    const upgrade = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'upgradeToAndCall',
+      args: [contracts.factory, '0x'],
+    });
+    expect(await impossible(upgrade)).toBe(false); // not an owner change
+    // Owners derived from history stop where the account would.
+    expect(ownersAfter(account.initialOwners, [removePhone, addLaptop])).toEqual(
+      account.initialOwners.map((owner) => owner.toLowerCase()),
+    );
   }, 60_000);
 
   /** A funded account with a signed, sponsored transfer that has not been sent yet. */

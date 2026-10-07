@@ -17,6 +17,17 @@ export interface WalletNetwork {
   readonly chain: Chain;
   /** Circle USDC. */
   readonly usdc: Address;
+  /**
+   * Other coins the wallet holds on this network (ERC-20), each its own coin: they are not added to
+   * USDC. `faucet` gives test tokens on testnets.
+   */
+  readonly tokens?: readonly {
+    readonly symbol: string;
+    readonly name: string;
+    readonly address: Address;
+    readonly decimals: number;
+    readonly faucet?: Address;
+  }[];
   /** Transactions also pay for L1 data (priced into `preVerificationGas` by the bundler). */
   readonly l1Fees?: 'arbitrum';
   /**
@@ -35,6 +46,11 @@ export interface WalletNetwork {
    * the network's USDC, so it differs per network.
    */
   readonly paymentRouter: Address;
+  /**
+   * Agora Instant Settlement on this network: a fixed-price pair between two of its coins, and the
+   * contract that lets anyone allow-list itself to swap (testnets only).
+   */
+  readonly instantSettlement?: { readonly pair: Address; readonly whitelister?: Address };
   /** Aave V3 USDC market, where the network has one: its Pool and the aToken it mints. */
   readonly aave?: { readonly pool: Address; readonly aToken: Address };
   /**
@@ -103,6 +119,29 @@ export const walletNetworks = {
       fast: false,
     },
     paymentRouter: '0x18F716B0CCAe35471986b65b8a8A15594Ab5BE40',
+    // docs.agora.finance/developer/contract-deployments
+    tokens: [
+      {
+        symbol: 'AUSD',
+        name: 'Agora Dollar',
+        address: '0xa9012a055bd4e0eDfF8Ce09f960291C09D5322dC',
+        decimals: 6,
+        faucet: '0xd236c18D274E54FAccC3dd9DDA4b27965a73ee6C',
+      },
+      // Agora's test token, the other side of its testnet Instant Settlement pair: it stands for
+      // the coin a recipient keeps (USDC in the mainnet pair).
+      {
+        symbol: 'CTK',
+        name: 'Constant Token (test)',
+        address: '0x7BEb5D9DB0d85cBEa543C04f0dE8c23c2176cd9D',
+        decimals: 18,
+      },
+    ],
+    // docs.agora.finance/instant-settlement/protocol-deployments
+    instantSettlement: {
+      pair: '0x1Aa8958Aa34cEC8096EF4381cb335effe977b0ae',
+      whitelister: '0x7c10F56d6f04a51376393a1C3670e966863F6BD5',
+    },
   },
 } as const satisfies Record<string, WalletNetwork>;
 
@@ -111,4 +150,72 @@ export type WalletNetworkId = keyof typeof walletNetworks;
 export function walletNetwork(id: string): WalletNetwork {
   if (!Object.hasOwn(walletNetworks, id)) throw new Error(`UNSUPPORTED_WALLET_NETWORK: ${id}`);
   return walletNetworks[id as WalletNetworkId];
+}
+
+/**
+ * Stellar, a secondary network reached through Circle CCTP (domain 27). Accounts are OpenZeppelin
+ * `stellar-contracts` smart accounts signed by the same passkeys (stellar.ts). Contract ids are
+ * strkeys; USDC has 7 decimals there.
+ */
+export interface StellarNetwork {
+  /** What the app calls it. */
+  readonly name: string;
+  readonly passphrase: string;
+  readonly testnet: boolean;
+  /** Public Stellar RPC, for reads when no other is configured. */
+  readonly rpcUrl: string;
+  /** Block explorer: `<explorer>/tx/<hash>`. */
+  readonly explorer: string;
+  /** Circle USDC's Stellar Asset Contract. */
+  readonly usdc: string;
+  /**
+   * The smart account WASM, the WebAuthn verifier its passkey signers use and the threshold policy
+   * that lets any one of them sign (deployments recorded in stellar/smart-account-kit).
+   */
+  readonly account: {
+    readonly wasmHash: string;
+    readonly webAuthnVerifier: string;
+    /** Verifies Ed25519 signers: keys derived by Mera from a passkey. */
+    readonly ed25519Verifier: string;
+    readonly thresholdPolicy: string;
+  };
+  /** Circle CCTP V2: TokenMessengerMinter burns; CctpForwarder mints and pays a Stellar recipient. */
+  readonly cctp: {
+    readonly domain: number;
+    readonly tokenMessengerMinter: string;
+    readonly forwarder: string;
+    readonly fast: boolean;
+  };
+}
+
+/** Stellar networks by CAIP-2 id (developers.circle.com/cctp/references/stellar-contracts). */
+export const stellarNetworks = {
+  'stellar:testnet': {
+    name: 'Stellar Testnet',
+    passphrase: 'Test SDF Network ; September 2015',
+    testnet: true,
+    rpcUrl: 'https://soroban-testnet.stellar.org',
+    explorer: 'https://stellar.expert/explorer/testnet',
+    usdc: 'CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA',
+    account: {
+      wasmHash: '1b5f4534a76322da2ad7c745f6900857a6802b0ca79850c35a03561df997785a',
+      webAuthnVerifier: 'CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F',
+      ed25519Verifier: 'CAAVTMCBXEIBPR64EAASKFXERVPYFZA2JYP5A3BG6PESWEFUJX5IHKN4',
+      thresholdPolicy: 'CB3FATQKCIRIQOCYRUPCQ2KREQ7T4RPKS7EAEOZWPEPUKWEDRVROBCEG',
+    },
+    cctp: {
+      domain: 27,
+      tokenMessengerMinter: 'CDNG7HXAPBWICI2E3AUBP3YZWZELJLYSB6F5CC7WLDTLTHVM74SLRTHP',
+      forwarder: 'CA66Q2WFBND6V4UEB7RD4SAXSVIWMD6RA4X3U32ELVFGXV5PJK4T4VSZ',
+      // Stellar finalizes in seconds: Standard is already fast.
+      fast: false,
+    },
+  },
+} as const satisfies Record<string, StellarNetwork>;
+
+export type StellarNetworkId = keyof typeof stellarNetworks;
+
+export function stellarNetwork(id: string): StellarNetwork {
+  if (!Object.hasOwn(stellarNetworks, id)) throw new Error(`UNSUPPORTED_STELLAR_NETWORK: ${id}`);
+  return stellarNetworks[id as StellarNetworkId];
 }

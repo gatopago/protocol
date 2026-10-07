@@ -17,8 +17,8 @@ contracts/            Foundry project
   src/                GatoPagoPaymentRouter (Flow)
   script/             DeployWallet.s.sol (wallet) and DeployPayments.s.sol (router)
   test/
-packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, Aave, Uniswap
-test/                 End-to-end test on forks of real networks (viem + bundler)
+packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, Aave, Uniswap, Stellar
+test/                 End-to-end test on forks of real networks (viem + bundler) and on Stellar testnet
 scripts/              SDK build and storage layout check
 ```
 
@@ -46,11 +46,47 @@ networks, their USDC, their Circle CCTP domain and the wallet contract addresses
 `@gatopago/shared/crosschain` moves USDC between them with CCTP V2: `crosschainFee` asks Circle for
 the fee and `crosschainCalls` builds the approve and burn the account sends as one operation;
 Circle's Forwarding Service mints on the destination, so no relayer of ours is involved.
+`@gatopago/shared/stellar` extends an account to Stellar (see below).
 `@gatopago/shared/bundler` is a minimal ERC-4337 bundler that only accepts GatoPago-sponsored
 operations and speaks the standard RPC, so viem's `createBundlerClient` works unchanged. It simulates
 each operation's execution gas and computes `preVerificationGas` from its bytes (plus L1 data on
 Arbitrum with `l1Fees: 'arbitrum'`), so the gas charged to an operation is within a few percent of
 the transaction's actual gas. `gatopagoGasConfig` holds the measured validation limits.
+
+### Stellar
+
+Stellar is a secondary network: an account gets a Stellar address that receives USDC and moves it
+to and from the EVM networks with CCTP (domain 27). No contract of ours runs there.
+
+- **Account**: an OpenZeppelin [`stellar-contracts`](https://github.com/OpenZeppelin/stellar-contracts)
+  smart account (the WASM, WebAuthn verifier and threshold policy recorded by
+  [stellar/smart-account-kit](https://github.com/stellar/smart-account-kit/blob/main/docs/deployments-protocol-27-2026-07-09.md)).
+  Its signers are the EVM account's passkey owners and a threshold policy of 1 lets any one of
+  them sign, as on EVM. `signerChangeOperations` lists the calls that make its signers the EVM
+  account's current passkey owners and its approved Ed25519 keys (additions first, so it always
+  keeps one). Ed25519 keys are what Mera derives from a passkey (`stellarKeyFromSeed`, SEP-5's
+  `m/44'/148'/0'`): an owner key of the EVM account approves each one (`stellarKeyApproval`) and
+  the network's Ed25519 verifier checks its signatures.
+- **Address**: derived from a deployer key and the EVM account address
+  (`stellarAccountAddress`), so it works before the account exists and a backup passkey finds it
+  through the EVM account. Only the deployer can create it (`deployAccountOperation`), which
+  keeps anyone from claiming the address with other signers; the backend holds that key and pays
+  fees with it.
+- **Signing**: `signStellarAuth` signs the account's authorization entries with the same viem
+  `WebAuthnAccount` used on EVM; `prepareStellarCall` simulates with the sponsor as source and
+  `sendStellarOperation` sends with the sponsor paying. Apps use `signedStellarCall`, which does
+  both and returns base64 XDR for the backend. Signatures last five minutes; until then
+  `stellarNonceUsed` tells whether a call whose answer was lost landed.
+- **Recipients**: `isStellarAddress` accepts accounts (`G…`) and contracts (`C…`). An account
+  without a USDC trustline cannot receive it, and `stellarUsdcBalance` fails for it.
+- **CCTP**: from Stellar, `crosschainOperation` burns through Circle's TokenMessengerMinter and the
+  Forwarding Service mints on the EVM network. The burn takes USDC with `transfer_from`, so
+  `approveBurnsOperation` grants Circle's minter a long allowance once (Circle issues this USDC
+  already) and each crossing is then one signature. Toward Stellar, `crosschainToStellarCalls`
+  burns to Circle's CctpForwarder with the recipient in the hook; there is no Forwarding Service,
+  so someone must send `mintAndForwardOperation` with the attested message that
+  `crosschainStatus` returns. USDC has 7 decimals on Stellar; CCTP moves 6 and the seventh stays
+  (`toStellarUnits`, `fromStellarUnits`).
 
 ### Deployed (testnets)
 
@@ -118,14 +154,14 @@ owner's.
 
 ### Deployment variables
 
-| Name | Script | What it is |
-|---|---|---|
-| `GATOPAGO_SPONSOR_SIGNER` | `DeployWallet` | Address whose signatures the paymaster accepts; Wallet Core's `SPONSOR_PRIVATE_KEY` |
-| `GATOPAGO_PAYMASTER_OWNER` | `DeployWallet` | Paymaster owner: manages and withdraws its deposit (cold key or multisig) |
-| `GATOPAGO_PAYMASTER_DEPOSIT` | `DeployWallet` | Wei deposited in the EntryPoint for the paymaster; optional |
-| `GATOPAGO_PAYMENTS_OWNER` | `DeployPayments` | Router owner: pauses it, sets its signer and treasury |
-| `GATOPAGO_PAYMENTS_SIGNER` | `DeployPayments` | Initial signer of payment authorizations (Flow's key) |
-| `GATOPAGO_PAYMENTS_TREASURY` | `DeployPayments` | Receives the platform fee |
+| Name                         | Script           | What it is                                                                          |
+| ---------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
+| `GATOPAGO_SPONSOR_SIGNER`    | `DeployWallet`   | Address whose signatures the paymaster accepts; Wallet Core's `SPONSOR_PRIVATE_KEY` |
+| `GATOPAGO_PAYMASTER_OWNER`   | `DeployWallet`   | Paymaster owner: manages and withdraws its deposit (cold key or multisig)           |
+| `GATOPAGO_PAYMASTER_DEPOSIT` | `DeployWallet`   | Wei deposited in the EntryPoint for the paymaster; optional                         |
+| `GATOPAGO_PAYMENTS_OWNER`    | `DeployPayments` | Router owner: pauses it, sets its signer and treasury                               |
+| `GATOPAGO_PAYMENTS_SIGNER`   | `DeployPayments` | Initial signer of payment authorizations (Flow's key)                               |
+| `GATOPAGO_PAYMENTS_TREASURY` | `DeployPayments` | Receives the platform fee                                                           |
 
 The keystore (`--account`) signs the deployment; private keys never go in environment variables.
 

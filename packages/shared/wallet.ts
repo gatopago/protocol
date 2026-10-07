@@ -67,6 +67,12 @@ export interface WalletContracts {
  */
 export const REPLAYABLE_NONCE_KEY = 0x4761746f5061676fn;
 
+/**
+ * How long a sponsorship signed by Wallet Core lasts: after it, an operation that was not included
+ * can no longer be, so a client may consider it dropped.
+ */
+export const SPONSORSHIP_SECONDS = 300;
+
 /** ERC-7579 batch mode: callType 0x01, default exec type, no selector or payload. */
 const BATCH_MODE = pad('0x01', { dir: 'right', size: 32 });
 const P256_N = 0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551n;
@@ -78,7 +84,11 @@ export function passkeyOwner(webAuthnVerifier: Address, publicKey: Hex): Hex {
   return concat([webAuthnVerifier, key]);
 }
 
-/** `abi.encode([owner], [WebAuthnAuth])`, the format OpenZeppelin's MultiSignerERC7913 expects. */
+/** `abi.encode([owner], [signature])`, the format OpenZeppelin's MultiSignerERC7913 expects. */
+const ownerSignature = (owner: Hex, signature: Hex) =>
+  encodeAbiParameters([{ type: 'bytes[]' }, { type: 'bytes[]' }], [[owner], [signature]]);
+
+/** A passkey owner's signature: `ownerSignature` over its WebAuthnAuth. */
 export function encodePasskeySignature(
   owner: Hex,
   signature: Hex,
@@ -110,7 +120,7 @@ export function encodePasskeySignature(
       webauthn.clientDataJSON,
     ],
   );
-  return encodeAbiParameters([{ type: 'bytes[]' }, { type: 'bytes[]' }], [[owner], [auth]]);
+  return ownerSignature(owner, auth);
 }
 
 /** Chain-independent hash an owner signs to approve `call` as approval number `sequence`. */
@@ -144,17 +154,43 @@ const erc7913VerifierAbi = parseAbi([
 ]);
 const ERC7913_VALID = toFunctionSelector('verify(bytes,bytes32,bytes)');
 
-/** Owners after applying `calls` (approved `addOwners` / `removeOwners`, in order) to the initial owners. */
+/**
+ * Owners after applying `calls` (approved `addOwners` / `removeOwners`, in order) to the initial
+ * owners. Like the account, it stops at a change that cannot apply: none after it can either.
+ */
 export function ownersAfter(initialOwners: readonly Hex[], calls: readonly Hex[]): Hex[] {
-  const owners = new Set(initialOwners.map((owner) => owner.toLowerCase() as Hex));
+  let owners = initialOwners.map((owner) => owner.toLowerCase() as Hex);
   for (const call of calls) {
-    const { functionName, args } = decodeFunctionData({ abi: gatopagoAccountAbi, data: call });
-    if (functionName === 'addOwners')
-      for (const owner of args[0]) owners.add(owner.toLowerCase() as Hex);
-    if (functionName === 'removeOwners')
-      for (const owner of args[0]) owners.delete(owner.toLowerCase() as Hex);
+    try {
+      owners = nextOwners(owners, call);
+    } catch {
+      break;
+    }
   }
-  return [...owners];
+  return owners;
+}
+
+/**
+ * Owners after one approved owner change, refusing what the account would revert (OpenZeppelin's
+ * MultiSignerERC7913): an existing or malformed owner, a missing one, or no owner left. Upgrades
+ * are not approved through here.
+ */
+export function nextOwners(owners: readonly Hex[], call: Hex): Hex[] {
+  const { functionName, args } = decodeFunctionData({ abi: gatopagoAccountAbi, data: call });
+  const next = new Set(owners.map((owner) => owner.toLowerCase() as Hex));
+  if (functionName !== 'addOwners' && functionName !== 'removeOwners')
+    throw new Error('APPROVAL_NOT_ALLOWED');
+  const changed = args[0] as readonly Hex[];
+  if (changed.length === 0) throw new Error('APPROVAL_EMPTY');
+  for (const owner of changed.map((value) => value.toLowerCase() as Hex)) {
+    if (functionName === 'addOwners') {
+      if (size(owner) < 20) throw new Error('OWNER_INVALID');
+      if (next.has(owner)) throw new Error('OWNER_EXISTS');
+      next.add(owner);
+    } else if (!next.delete(owner)) throw new Error('OWNER_NOT_FOUND');
+  }
+  if (next.size === 0) throw new Error('LAST_OWNER');
+  return [...next];
 }
 
 /**
@@ -180,6 +216,8 @@ export async function verifyApproval(
     );
     const owners = ownersAfter(initialOwners, previous);
     if (signers.length !== 1 || !owners.includes(signers[0].toLowerCase() as Hex)) return false;
+    // The change itself must be one the account can apply, or it would block the ones after it.
+    nextOwners(owners, call);
     const valid = await readContract(client, {
       address: slice(signers[0], 0, 20),
       abi: erc7913VerifierAbi,
@@ -228,9 +266,9 @@ export type GatoPagoAccount = SmartAccount<
     typeof entryPoint09Abi,
     '0.9',
     {
-      owner: WebAuthnAccount;
+      owner: WebAuthnAccount | LocalAccount;
       initialOwners: readonly Hex[];
-      /** Passkey signature over `hash` in the account's signature format. */
+      /** The owner's signature over `hash` in the account's signature format. */
       signHash(hash: Hex): Promise<Hex>;
     }
   >
@@ -246,18 +284,29 @@ export function signApproval(account: GatoPagoAccount, sequence: bigint, call: H
 }
 
 /**
- * viem smart account for a GatoPago account signed by `owner`. The address derives from the
- * account's initial owners, so a backup passkey must pass the original `initialOwners`.
+ * ERC-7913 signer for a key the account verifies with ECDSA: its address. A passkey account
+ * derived with Mera (a key from the passkey's PRF output) owns the account this way.
+ */
+export const keyOwner = (address: Address): Hex => address.toLowerCase() as Hex;
+
+/**
+ * viem smart account for a GatoPago account signed by `owner`: a passkey (WebAuthn, signing on
+ * the device) or a local key that signs digests (such as a Mera signing session). The address
+ * derives from the account's initial owners, so a backup key must pass the original
+ * `initialOwners`.
  */
 export async function toGatoPagoAccount(parameters: {
   client: Client<Transport, Chain, JsonRpcAccount | LocalAccount | undefined>;
-  owner: WebAuthnAccount;
+  owner: WebAuthnAccount | LocalAccount;
   contracts: Pick<WalletContracts, 'factory' | 'webAuthnVerifier'>;
   initialOwners?: readonly Hex[];
   salt?: bigint;
 }): Promise<GatoPagoAccount> {
   const { client, owner, contracts, salt = 0n } = parameters;
-  const signer = passkeyOwner(contracts.webAuthnVerifier, owner.publicKey);
+  const signer =
+    owner.type === 'webAuthn'
+      ? passkeyOwner(contracts.webAuthnVerifier, owner.publicKey)
+      : keyOwner(owner.address);
   const initialOwners = parameters.initialOwners ?? [signer];
   const factoryData = encodeFunctionData({
     abi: gatopagoAccountFactoryAbi,
@@ -283,6 +332,10 @@ export async function toGatoPagoAccount(parameters: {
     salt: zeroHash,
   } as const;
   async function signHash(hash: Hex) {
+    if (owner.type === 'local') {
+      if (!owner.sign) throw new Error('OWNER_CANNOT_SIGN_DIGESTS');
+      return ownerSignature(signer, await owner.sign({ hash }));
+    }
     const { signature, webauthn } = await owner.sign({ hash });
     return encodePasskeySignature(signer, signature, {
       ...webauthn,
@@ -307,6 +360,7 @@ export async function toGatoPagoAccount(parameters: {
       return encodeCalls(calls);
     },
     async getStubSignature() {
+      if (owner.type === 'local') return ownerSignature(signer, `0x${'11'.repeat(64)}1b`);
       return encodePasskeySignature(signer, `0x${'11'.repeat(64)}`, {
         authenticatorData: `0x${'49'.repeat(37)}`,
         clientDataJSON: `{"type":"webauthn.get","challenge":"${'A'.repeat(43)}","origin":"https://gatopago.com","crossOrigin":false}`,

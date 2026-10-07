@@ -1,5 +1,6 @@
 {
   "name": "@gatopago/protocol",
+  "license": "MIT",
   "private": true,
   "type": "module",
   "engines": {
@@ -17,6 +18,7 @@
     "format:check": "prettier --check packages scripts test"
   },
   "devDependencies": {
+    "@stellar/stellar-sdk": "17.2.0",
     "@types/node": "24.13.3",
     "esbuild": "0.28.1",
     "prettier": "3.9.9",

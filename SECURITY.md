@@ -37,8 +37,12 @@ Covered by `contracts/test/wallet/` (unit, fuzz and invariant tests) and `test/w
 - An account always has at least one owner; the threshold is always 1.
 - Owners and the implementation only change through owner approvals (`applyApproval`); the normal
   channel can never call the account itself, directly or through `address(0)`.
-- Approvals never move funds, apply once per network, in order, and survive failed attempts
-  (the approval sequence only advances when the change succeeds).
+- Approvals apply once per network, in order, and survive failed attempts (the approval sequence
+  only advances when the change succeeds).
+- Adding or removing owners never moves funds. An `upgradeToAndCall` approval is different: it runs
+  the new implementation's initialization, which could do anything the account can, so upgrades
+  need their own review. Wallet Core only stores approvals that add or remove owners
+  (`verifyApproval` / `nextOwners` refuse upgrades and changes the account would revert).
 - An approval is signed without the chain id, so it applies on every network, including where the
   account is deployed later from its original owners. Payments are always chain-bound.
 - Replayed approvals must be sponsored, so they never spend account funds.

@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "6.0.0",
+  "version": "6.10.0",
   "type": "module",
   "files": [
     "dist"
@@ -41,9 +41,30 @@
       "types": "./dist/swap.d.ts",
       "import": "./dist/swap.js",
       "default": "./dist/swap.js"
+    },
+    "./stellar": {
+      "types": "./dist/stellar.d.ts",
+      "import": "./dist/stellar.js",
+      "default": "./dist/stellar.js"
+    },
+    "./rules": {
+      "types": "./dist/rules.d.ts",
+      "import": "./dist/rules.js",
+      "default": "./dist/rules.js"
+    },
+    "./assets": {
+      "types": "./dist/assets.d.ts",
+      "import": "./dist/assets.js",
+      "default": "./dist/assets.js"
+    },
+    "./settlement": {
+      "types": "./dist/settlement.d.ts",
+      "import": "./dist/settlement.js",
+      "default": "./dist/settlement.js"
     }
   },
   "dependencies": {
+    "@stellar/stellar-sdk": "17.2.0",
     "viem": "2.55.19"
   },
   "devDependencies": {
