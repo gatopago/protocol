@@ -85,12 +85,13 @@ interface BundledTransaction {
 /**
  * Durable key-value storage, as the Durable Object storage API (Wallet Core passes `ctx.storage`).
  * Each signed transaction is recorded with its relayer nonce before it is broadcast, so an
- * interrupted send is rebroadcast instead of its nonce being reused.
+ * interrupted send is rebroadcast instead of its nonce being reused. Writing or deleting several
+ * keys in one call must be atomic, as it is there.
  */
 export interface BundlerStore {
   get<T>(key: string): Promise<T | undefined>;
-  put<T>(key: string, value: T): Promise<void>;
-  delete(key: string): Promise<boolean>;
+  put(entries: Record<string, unknown>): Promise<void>;
+  delete(keys: string[]): Promise<number>;
 }
 
 export class BundlerRpcError extends Error {
@@ -260,13 +261,16 @@ export function createBundler(parameters: {
       nonce,
     });
     const raw = await walletClient.signTransaction(prepared);
-    await store.put<BundledTransaction>(`op:${userOpHash}`, {
-      transactionHash: keccak256(raw),
-      raw,
-      nonce,
+    // The transaction and its nonce's reservation are recorded together, or not at all.
+    await store.put({
+      [`op:${userOpHash}`]: {
+        transactionHash: keccak256(raw),
+        raw,
+        nonce,
+      } satisfies BundledTransaction,
+      [`nonce:${nonce}`]: userOpHash,
+      nextNonce: nonce + 1,
     });
-    await store.put(`nonce:${nonce}`, userOpHash);
-    await store.put('nextNonce', nonce + 1);
     await publicClient.sendRawTransaction({ serializedTransaction: raw });
     return userOpHash;
   }
@@ -295,8 +299,7 @@ export function createBundler(parameters: {
     bundled: BundledTransaction,
     reason: string,
   ): Promise<never> {
-    await store.delete(`op:${userOpHash}`);
-    await store.delete(`nonce:${bundled.nonce}`);
+    await store.delete([`op:${userOpHash}`, `nonce:${bundled.nonce}`]);
     throw new BundlerRpcError(-32500, `UserOperation was not included: ${reason}`);
   }
 

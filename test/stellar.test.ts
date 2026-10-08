@@ -19,13 +19,14 @@ import {
   stellarAccountAddress,
   stellarAccountExists,
   stellarBurnAllowance,
-  stellarKeyFromSeed,
   type StellarKey,
   stellarSigner,
   stellarNonceUsed,
+  stellarBalance,
   stellarUsdcBalance,
   transferOperation,
 } from '../packages/shared/stellar';
+import { stellarKeyFromSeed } from '../packages/shared/passkey';
 import { passkeyOwner } from '../packages/shared/wallet';
 import { softwarePasskey } from './passkey';
 
@@ -136,7 +137,7 @@ describe('CCTP with Stellar', () => {
 // Stellar has no forks: these run on testnet, with XLM's asset contract standing in for USDC.
 describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
   const server = new rpc.Server(testnet.rpcUrl);
-  const network = { ...testnet, usdc: Asset.native().contractId(testnet.passphrase) };
+  const network = { ...testnet, usdc: testnet.xlm };
 
   it('receive before existing, then any of their passkeys signs', async () => {
     const sponsor = Keypair.random();
@@ -179,6 +180,12 @@ describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
     await signed(addSignerOperation(network, account, owner(laptop)), phone);
     await signed(transferOperation(network, account, sponsor.publicKey(), 10_000_000n), laptop);
     expect(await stellarUsdcBalance(server, network, account)).toBe(10_000_000n);
+
+    // An account that does not exist cannot hold XLM: its balance cannot be read.
+    await expect(
+      stellarBalance(server, network, network.xlm, Keypair.random().publicKey()),
+    ).rejects.toThrow('STELLAR_READ_FAILED');
+    expect(network.xlm).toBe(Asset.native().contractId(network.passphrase));
 
     // A key that is not a signer cannot move funds.
     await expect(

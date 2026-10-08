@@ -12,9 +12,9 @@ forge test
 | Path | Contents |
 |---|---|
 | `src/wallet/` | Account, factory and paymaster |
-| `src/` | Universal Checkout payment routers (used by Flow) |
+| `src/GatoPagoPaymentRouter.sol` | Flow's payment router: pays a signed payment intent, on one network or through CCTP |
 | `script/DeployWallet.s.sol` | Multichain CREATE2 deployment of the wallet |
-| `script/Deploy.s.sol` | Payment router deployment |
+| `script/DeployPayments.s.sol` | Payment router deployment (CREATE2, idempotent) |
 | `test/wallet/` | Unit, fuzz and invariant tests of the wallet (`WalletFixture.sol` builds and signs operations) |
 | `deployments/` | Records of deployed contracts |
 | `storage-layout.json` | Account storage layout that upgrades must keep |

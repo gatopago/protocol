@@ -56,7 +56,13 @@ import { payFromSavingsCalls, payoutCalls, splitCalls } from '../packages/shared
 import { minimumOut, quoteSwap, swapCalls } from '../packages/shared/swap';
 import { walletNetworks } from '../packages/shared/networks';
 import { softwarePasskey } from './passkey';
-import { paymentCalls, paymentRouterAbi, paymentTypedData } from '../packages/shared/payments';
+import {
+  paymentCalls,
+  paymentPermit,
+  paymentRouterAbi,
+  paymentTypedData,
+  payWithPermitCall,
+} from '../packages/shared/payments';
 
 /**
  * Forks of real networks with GatoPago contracts deployed through the standard CREATE2 deployer
@@ -209,8 +215,10 @@ function network(chain: Chain, fork: string, port: number, p256: boolean) {
         gas: gatopagoGasConfig,
         store: {
           get: async <T>(key: string) => storage.get(key) as T | undefined,
-          put: async (key, value) => void storage.set(key, value),
-          delete: async (key) => storage.delete(key),
+          put: async (entries) => {
+            for (const [key, value] of Object.entries(entries)) storage.set(key, value);
+          },
+          delete: async (keys) => keys.filter((key) => storage.delete(key)).length,
         },
       });
       server = createServer(async (request, response) => {
@@ -666,6 +674,53 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     });
     // 20 USDC − (5 + 0.05) − (5 + 0.05 + 0.3)
     expect(await usdcOf(account.address)).toBe(9_600_000n);
+
+    // A browser wallet signs a permit and pays in one transaction, leaving no allowance.
+    const wallet = privateKeyToAccount(generatePrivateKey());
+    await fundWithCircleUsdc(wallet.address, 6_000_000n);
+    await arbitrum.rpc('anvil_setBalance', [wallet.address, toHex(10n ** 17n)]);
+    const payment = {
+      intentId: keccak256(toHex('pi_browser_wallet')),
+      payer: wallet.address,
+      merchant,
+      amount: 5_000_000n,
+      fee: 50_000n,
+      destinationDomain: home.cctp.domain,
+      maxCctpFee: 0n,
+      minFinalityThreshold: 1000,
+      validUntil: Math.floor(Date.now() / 1000) + 3600,
+    };
+    const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
+    const permit = await wallet.signTypedData(
+      await paymentPermit(arbitrum.publicClient, network, {
+        owner: wallet.address,
+        value: 5_050_000n,
+        deadline,
+      }),
+    );
+    const before = await usdcOf(merchant);
+    const hash = await arbitrum.walletClient.sendTransaction({
+      account: wallet,
+      ...payWithPermitCall(
+        network,
+        payment,
+        await flowSigner.signTypedData(paymentTypedData(network, payment)),
+        { deadline, signature: permit },
+      ),
+    });
+    expect((await arbitrum.publicClient.waitForTransactionReceipt({ hash })).status).toBe(
+      'success',
+    );
+    expect((await usdcOf(merchant)) - before).toBe(5_000_000n);
+    expect(await usdcOf(wallet.address)).toBe(950_000n);
+    expect(
+      await arbitrum.publicClient.readContract({
+        address: home.usdc,
+        abi: erc20Abi,
+        functionName: 'allowance',
+        args: [wallet.address, network.paymentRouter],
+      }),
+    ).toBe(0n);
   }, 60_000);
 
   it('simulates a batch as a whole before the account exists (approve, then use the allowance)', async () => {

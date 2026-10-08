@@ -13,7 +13,8 @@ import {GatoPagoPaymaster} from "../src/wallet/GatoPagoPaymaster.sol";
 /// already deployed are reused, which is how a new network is added.
 ///
 ///   GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_PAYMASTER_OWNER=0x… [GATOPAGO_PAYMASTER_DEPOSIT=wei] \
-///   forge script script/DeployWallet.s.sol --rpc-url <network> --account <keystore> --broadcast
+///   forge script script/DeployWallet.s.sol --rpc-url <network> --account <keystore> --broadcast \
+///     --verify --verifier sourcify
 ///
 /// The sponsor signer and paymaster owner are part of the paymaster address: keep them identical
 /// across networks.

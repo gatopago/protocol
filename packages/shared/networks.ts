@@ -27,6 +27,11 @@ export interface WalletNetwork {
     readonly address: Address;
     readonly decimals: number;
     readonly faucet?: Address;
+    /**
+     * Only the other side of an Instant Settlement pair: a recipient may receive it, but it is not
+     * a coin the wallet holds or lists.
+     */
+    readonly settlementOnly?: true;
   }[];
   /** Transactions also pay for L1 data (priced into `preVerificationGas` by the bundler). */
   readonly l1Fees?: 'arbitrum';
@@ -135,6 +140,7 @@ export const walletNetworks = {
         name: 'Constant Token (test)',
         address: '0x7BEb5D9DB0d85cBEa543C04f0dE8c23c2176cd9D',
         decimals: 18,
+        settlementOnly: true,
       },
     ],
     // docs.agora.finance/instant-settlement/protocol-deployments
@@ -155,7 +161,7 @@ export function walletNetwork(id: string): WalletNetwork {
 /**
  * Stellar, a secondary network reached through Circle CCTP (domain 27). Accounts are OpenZeppelin
  * `stellar-contracts` smart accounts signed by the same passkeys (stellar.ts). Contract ids are
- * strkeys; USDC has 7 decimals there.
+ * strkeys; USDC and XLM have 7 decimals there.
  */
 export interface StellarNetwork {
   /** What the app calls it. */
@@ -168,6 +174,8 @@ export interface StellarNetwork {
   readonly explorer: string;
   /** Circle USDC's Stellar Asset Contract. */
   readonly usdc: string;
+  /** The Stellar Asset Contract of lumens (XLM), the network's own coin. */
+  readonly xlm: string;
   /**
    * The smart account WASM, the WebAuthn verifier its passkey signers use and the threshold policy
    * that lets any one of them sign (deployments recorded in stellar/smart-account-kit).
@@ -188,6 +196,9 @@ export interface StellarNetwork {
   };
 }
 
+/** Decimals of XLM, Stellar's own coin. */
+export const XLM_DECIMALS = 7;
+
 /** Stellar networks by CAIP-2 id (developers.circle.com/cctp/references/stellar-contracts). */
 export const stellarNetworks = {
   'stellar:testnet': {
@@ -197,6 +208,7 @@ export const stellarNetworks = {
     rpcUrl: 'https://soroban-testnet.stellar.org',
     explorer: 'https://stellar.expert/explorer/testnet',
     usdc: 'CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA',
+    xlm: 'CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC',
     account: {
       wasmHash: '1b5f4534a76322da2ad7c745f6900857a6802b0ca79850c35a03561df997785a',
       webAuthnVerifier: 'CC7EKIHQP3TN4CARQDND6CEOY2UXLWWC2X5GHTD5NLAT7BG5GPZIOM3F',

@@ -1,5 +1,5 @@
 import { encodeFunctionData, parseAbi, type Address, type Hex } from 'viem';
-import { walletNetwork } from './networks';
+import { walletNetwork, XLM_DECIMALS } from './networks';
 
 /**
  * What a person holds, as coins rather than networks: USDC is one balance wherever it is, each
@@ -28,9 +28,10 @@ const NAMES: Record<string, string> = { ETH: 'Ether', AVAX: 'Avalanche', MON: 'M
 
 /**
  * The coins of the wallet networks `networkIds`: USDC first, then the networks' other tokens, then
- * each native coin; a coin on several networks appears once.
+ * each native coin; a coin on several networks appears once. With `stellarId`, XLM comes last, as
+ * that network's native coin (its USDC is counted apart, through CCTP).
  */
-export function walletAssets(networkIds: readonly string[]): WalletAsset[] {
+export function walletAssets(networkIds: readonly string[], stellarId?: string): WalletAsset[] {
   const coins = new Map<string, { name: string; decimals: number; holdings: WalletHolding[] }>();
   const add = (symbol: string, name: string, decimals: number, holding: WalletHolding) => {
     const coin = coins.get(symbol) ?? { name, decimals, holdings: [] };
@@ -41,15 +42,17 @@ export function walletAssets(networkIds: readonly string[]): WalletAsset[] {
     add('USDC', 'USD Coin', 6, { networkId, token: walletNetwork(networkId).usdc });
   for (const networkId of networkIds)
     for (const token of walletNetwork(networkId).tokens ?? [])
-      add(token.symbol, token.name, token.decimals, {
-        networkId,
-        token: token.address,
-        ...(token.faucet ? { faucet: token.faucet } : {}),
-      });
+      if (!token.settlementOnly)
+        add(token.symbol, token.name, token.decimals, {
+          networkId,
+          token: token.address,
+          ...(token.faucet ? { faucet: token.faucet } : {}),
+        });
   for (const networkId of networkIds) {
     const { symbol, name, decimals } = walletNetwork(networkId).chain.nativeCurrency;
     add(symbol, NAMES[symbol] ?? name, decimals, { networkId, token: null });
   }
+  if (stellarId) add('XLM', 'Stellar Lumens', XLM_DECIMALS, { networkId: stellarId, token: null });
   return [...coins].map(([symbol, coin]) => ({ symbol, ...coin }));
 }
 

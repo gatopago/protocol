@@ -218,14 +218,15 @@ export function removeSignerOperation(account: string, signerId: number) {
   ]);
 }
 
-/** Sends `amount` (7 decimals) of USDC to any Stellar address. */
+/** Sends `amount` (7 decimals) of `token`, USDC unless said otherwise, to any Stellar address. */
 export function transferOperation(
   network: StellarNetwork,
   from: string,
   to: string,
   amount: bigint,
+  token: string = network.usdc,
 ) {
-  return call(network.usdc, 'transfer', [address(from), address(to), i128(amount)]);
+  return call(token, 'transfer', [address(from), address(to), i128(amount)]);
 }
 
 /** How long a burn allowance lasts, in ledgers: about 174 days, within the network's longest. */
@@ -504,40 +505,6 @@ export async function stellarNonceUsed(server: rpc.Server, account: string, nonc
 }
 
 /**
- * The Ed25519 private key at SEP-5's path `m/44'/148'/<index>'` (SLIP-10, every level hardened) of
- * a BIP-39 `seed`: the Stellar key any SEP-5 wallet derives from the same recovery phrase.
- */
-export async function stellarKeyFromSeed(seed: Uint8Array, index = 0): Promise<Uint8Array> {
-  const hmac = async (key: Uint8Array, data: Uint8Array) =>
-    new Uint8Array(
-      await crypto.subtle.sign(
-        'HMAC',
-        await crypto.subtle.importKey(
-          'raw',
-          key as Uint8Array<ArrayBuffer>,
-          { name: 'HMAC', hash: 'SHA-512' },
-          false,
-          ['sign'],
-        ),
-        data as Uint8Array<ArrayBuffer>,
-      ),
-    );
-  let node = await hmac(stringToBytes('ed25519 seed'), seed);
-  for (const level of [44, 148, index]) {
-    // 0x00 ‖ parent key ‖ index + 2^31.
-    const data = new Uint8Array(37);
-    data.set(node.subarray(0, 32), 1);
-    new DataView(data.buffer).setUint32(33, level + 0x8000_0000);
-    const child = await hmac(node.subarray(32), data);
-    node.fill(0);
-    node = child;
-  }
-  const key = node.slice(0, 32);
-  node.fill(0);
-  return key;
-}
-
-/**
  * What an owner key of the EVM account signs (EIP-191) so that the Ed25519 `publicKey` also signs
  * for its Stellar account, until `expiresAt` (Unix seconds): Wallet Core accepts it only before then
  * and only while the signer owns the account, so an old approval cannot bring a key back.
@@ -561,16 +528,27 @@ export const stellarKeyApproval = (
 export const stellarServer = (network: StellarNetwork, rpcUrl?: string) =>
   new rpc.Server(rpcUrl ?? network.rpcUrl);
 
-/** Whether USDC can be sent to `value` on Stellar: an account (G…) or a contract (C…). */
+/** Whether `value` is a Stellar address: an account (G…) or a contract (C…). */
 export const isStellarAddress = (value: string) =>
   StrKey.isValidEd25519PublicKey(value) || StrKey.isValidContract(value);
 
 /** Any account will do to simulate a read. */
 const SIMULATION_SOURCE = 'GAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAWHF';
 
+/**
+ * Balance of `token` (a Stellar Asset Contract) of a Stellar address, in 7 decimals. Fails for an
+ * account (G…) that cannot hold it: one without a trustline, or for XLM one that does not exist.
+ */
+export const stellarBalance = (
+  server: rpc.Server,
+  network: StellarNetwork,
+  token: string,
+  owner: string,
+) => read<bigint>(server, network, call(token, 'balance', [address(owner)]));
+
 /** USDC balance of a Stellar address, in 7 decimals. */
 export const stellarUsdcBalance = (server: rpc.Server, network: StellarNetwork, owner: string) =>
-  read<bigint>(server, network, call(network.usdc, 'balance', [address(owner)]));
+  stellarBalance(server, network, network.usdc, owner);
 
 /** USDC that Circle's minter may still burn from `account` (`approveBurnsOperation`). */
 export const stellarBurnAllowance = (

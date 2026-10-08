@@ -15,7 +15,6 @@ describe('wallet assets', () => {
     expect(assets.map(({ symbol, name }) => [symbol, name])).toEqual([
       ['USDC', 'USD Coin'],
       ['AUSD', 'Agora Dollar'],
-      ['CTK', 'Constant Token (test)'],
       ['ETH', 'Ether'],
       ['AVAX', 'Avalanche'],
       ['MON', 'Monad'],
@@ -39,6 +38,17 @@ describe('wallet assets', () => {
     ]);
     // Without Monad configured, AUSD is not a coin of the wallet.
     expect(walletAssets(['eip155:421614']).map(({ symbol }) => symbol)).toEqual(['USDC', 'ETH']);
+  });
+
+  it('lists XLM last when Stellar is on, as its native coin', () => {
+    const assets = walletAssets(['eip155:421614'], 'stellar:testnet');
+    expect(assets.map(({ symbol }) => symbol)).toEqual(['USDC', 'ETH', 'XLM']);
+    expect(assets.at(-1)).toEqual({
+      symbol: 'XLM',
+      name: 'Stellar Lumens',
+      decimals: 7,
+      holdings: [{ networkId: 'stellar:testnet', token: null }],
+    });
   });
 
   it('adds up a coin across its networks, once every one is read', () => {

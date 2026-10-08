@@ -47,6 +47,13 @@ networks, their USDC, their Circle CCTP domain and the wallet contract addresses
 the fee and `crosschainCalls` builds the approve and burn the account sends as one operation;
 Circle's Forwarding Service mints on the destination, so no relayer of ours is involved.
 `@gatopago/shared/stellar` extends an account to Stellar (see below).
+`@gatopago/shared/passkey` is how a passkey identifies an account, shared by the app and the merchant
+console so both always find the same one: `recoverPasskeyPublicKeys` recovers the passkey's key from
+a WebAuthn signature and `passkeyAccount` matches it against an account's current owners, and
+Mera's fixed recipe turns a passkey's PRF output into keys (`meraSeed`, `meraEvmKey` at
+`m/44'/60'/0'/0/0`, `stellarKeyFromSeed` at SEP-5's `m/44'/148'/0'`). `capturingWebAuthnClient`
+lets one prompt serve both: Mera gets its PRF output and the assertion is kept for
+`passkeyAccount` (it types against `@category-labs/mera`, an optional peer dependency).
 `@gatopago/shared/bundler` is a minimal ERC-4337 bundler that only accepts GatoPago-sponsored
 operations and speaks the standard RPC, so viem's `createBundlerClient` works unchanged. It simulates
 each operation's execution gas and computes `preVerificationGas` from its bytes (plus L1 data on
@@ -64,8 +71,8 @@ to and from the EVM networks with CCTP (domain 27). No contract of ours runs the
   Its signers are the EVM account's passkey owners and a threshold policy of 1 lets any one of
   them sign, as on EVM. `signerChangeOperations` lists the calls that make its signers the EVM
   account's current passkey owners and its approved Ed25519 keys (additions first, so it always
-  keeps one). Ed25519 keys are what Mera derives from a passkey (`stellarKeyFromSeed`, SEP-5's
-  `m/44'/148'/0'`): an owner key of the EVM account approves each one (`stellarKeyApproval`) and
+  keeps one). Ed25519 keys are what Mera derives from a passkey (`stellarKeyFromSeed` in
+  `@gatopago/shared/passkey`, SEP-5's `m/44'/148'/0'`): an owner key of the EVM account approves each one (`stellarKeyApproval`) and
   the network's Ed25519 verifier checks its signatures.
 - **Address**: derived from a deployer key and the EVM account address
   (`stellarAccountAddress`), so it works before the account exists and a backup passkey finds it
@@ -77,8 +84,11 @@ to and from the EVM networks with CCTP (domain 27). No contract of ours runs the
   `sendStellarOperation` sends with the sponsor paying. Apps use `signedStellarCall`, which does
   both and returns base64 XDR for the backend. Signatures last five minutes; until then
   `stellarNonceUsed` tells whether a call whose answer was lost landed.
-- **Recipients**: `isStellarAddress` accepts accounts (`G…`) and contracts (`C…`). An account
-  without a USDC trustline cannot receive it, and `stellarUsdcBalance` fails for it.
+- **Coins**: USDC and XLM (the network's own coin, `network.xlm`), both through their Stellar
+  Asset Contracts: `transferOperation` takes the token (USDC by default) and `stellarBalance` reads
+  either. `isStellarAddress` accepts accounts (`G…`) and contracts (`C…`). An account without a
+  USDC trustline cannot receive USDC, one that does not exist cannot receive XLM, and the balance
+  read fails for both.
 - **CCTP**: from Stellar, `crosschainOperation` burns through Circle's TokenMessengerMinter and the
   Forwarding Service mints on the EVM network. The burn takes USDC with `transfer_from`, so
   `approveBurnsOperation` grants Circle's minter a long allowance once (Circle issues this USDC
@@ -92,6 +102,8 @@ to and from the EVM networks with CCTP (domain 27). No contract of ours runs the
 
 Same addresses on Arbitrum Sepolia (`eip155:421614`), Avalanche Fuji (`eip155:43113`) and Monad
 testnet (`eip155:10143`). Transactions and blocks: [`contracts/deployments/wallet.json`](contracts/deployments/wallet.json).
+Every contract, the payment routers included, is verified on [Sourcify](https://sourcify.dev)
+(exact match); deployments pass `--verify --verifier sourcify`.
 
 | Contract                         | Address                                      |
 | -------------------------------- | -------------------------------------------- |
@@ -114,7 +126,7 @@ there (contracts already deployed are skipped):
 cd contracts
 export GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_PAYMASTER_OWNER=0x…
 GATOPAGO_PAYMASTER_DEPOSIT=<wei> forge script script/DeployWallet.s.sol \
-  --rpc-url <network> --account <foundry keystore> --broadcast
+  --rpc-url <network> --account <foundry keystore> --broadcast --verify --verifier sourcify
 ```
 
 The sponsor signer and the paymaster owner are part of the paymaster address: keep them identical
@@ -130,8 +142,9 @@ payer must be the caller, each intent is paid once and the authorization expires
 receives `amount` on the same network or, when `destinationDomain` is another Circle domain, the
 router burns with CCTP V2 and requests Circle's Forwarding Service, which mints to the merchant.
 The payer also pays the platform fee and the CCTP fee ceiling. `payWithPermit` lets an external
-wallet pay in one transaction. `@gatopago/shared/payments` builds the typed data Flow signs and the
-calls a GatoPago account sends.
+wallet pay in one transaction. `@gatopago/shared/payments` builds the typed data Flow signs, the
+calls a GatoPago account sends, and for an external wallet the EIP-2612 permit it signs
+(`paymentPermit`, read from Circle's USDC) and the one call that spends it (`payWithPermitCall`).
 
 | Network          | `GatoPagoPaymentRouter`                      |
 | ---------------- | -------------------------------------------- |
@@ -145,7 +158,8 @@ The address depends on them and on the network's USDC; deploy with:
 ```sh
 cd contracts
 export GATOPAGO_PAYMENTS_OWNER=0x… GATOPAGO_PAYMENTS_SIGNER=0x… GATOPAGO_PAYMENTS_TREASURY=0x…
-forge script script/DeployPayments.s.sol --rpc-url <network> --account <foundry keystore> --broadcast
+forge script script/DeployPayments.s.sol --rpc-url <network> --account <foundry keystore> --broadcast \
+  --verify --verifier sourcify
 ```
 
 Afterwards the owner can move the signer to a dedicated key with `setSigner(address)`: the router's

@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "6.10.0",
+  "version": "6.13.0",
   "type": "module",
   "files": [
     "dist"
@@ -61,11 +61,27 @@
       "types": "./dist/settlement.d.ts",
       "import": "./dist/settlement.js",
       "default": "./dist/settlement.js"
+    },
+    "./passkey": {
+      "types": "./dist/passkey.d.ts",
+      "import": "./dist/passkey.js",
+      "default": "./dist/passkey.js"
     }
   },
   "dependencies": {
+    "@scure/bip32": "1.7.0",
+    "@scure/bip39": "1.6.0",
     "@stellar/stellar-sdk": "17.2.0",
+    "ox": "0.14.34",
     "viem": "2.55.19"
+  },
+  "peerDependencies": {
+    "@category-labs/mera": "0.2.0"
+  },
+  "peerDependenciesMeta": {
+    "@category-labs/mera": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "typescript": "~6.0.3"

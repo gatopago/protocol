@@ -2,10 +2,13 @@ import {
   encodeFunctionData,
   erc20Abi,
   parseAbi,
+  parseSignature,
   type Address,
+  type Client,
   type Hex,
   type TypedDataDefinition,
 } from 'viem';
+import { readContract } from 'viem/actions';
 import type { WalletNetwork } from './networks';
 
 /** `GatoPagoPaymentRouter` (contracts/src): pays a Flow payment intent as Flow authorized it. */
@@ -86,4 +89,73 @@ export function paymentCalls(network: WalletNetwork, payment: Payment, signature
       }),
     },
   ];
+}
+
+const permitAbi = parseAbi([
+  'function name() view returns (string)',
+  'function version() view returns (string)',
+  'function nonces(address owner) view returns (uint256)',
+]);
+
+/**
+ * The EIP-2612 permit a browser wallet signs (no gas) so the router takes exactly `value` USDC in
+ * the same transaction as the payment (`payWithPermitCall`): one transaction instead of an approve
+ * and a payment, and no allowance left behind. Circle's USDC supports it; its EIP-712 name,
+ * version and the owner's nonce are read from the token.
+ */
+export async function paymentPermit(
+  client: Client,
+  network: WalletNetwork,
+  permit: { owner: Address; value: bigint; deadline: bigint },
+) {
+  const read = <const name extends 'name' | 'version'>(functionName: name) =>
+    readContract(client, { address: network.usdc, abi: permitAbi, functionName });
+  const [name, version, nonce] = await Promise.all([
+    read('name'),
+    read('version'),
+    readContract(client, {
+      address: network.usdc,
+      abi: permitAbi,
+      functionName: 'nonces',
+      args: [permit.owner],
+    }),
+  ]);
+  return {
+    domain: { name, version, chainId: network.chain.id, verifyingContract: network.usdc },
+    types: {
+      Permit: [
+        { name: 'owner', type: 'address' },
+        { name: 'spender', type: 'address' },
+        { name: 'value', type: 'uint256' },
+        { name: 'nonce', type: 'uint256' },
+        { name: 'deadline', type: 'uint256' },
+      ],
+    },
+    primaryType: 'Permit',
+    message: {
+      owner: permit.owner,
+      spender: network.paymentRouter,
+      value: permit.value,
+      nonce,
+      deadline: permit.deadline,
+    },
+  } as const satisfies TypedDataDefinition;
+}
+
+/** The router call that spends a signed `paymentPermit` and pays in one transaction. */
+export function payWithPermitCall(
+  network: WalletNetwork,
+  payment: Payment,
+  signature: Hex,
+  permit: { deadline: bigint; signature: Hex },
+) {
+  const { r, s, yParity } = parseSignature(permit.signature);
+  return {
+    to: network.paymentRouter,
+    data: encodeFunctionData({
+      abi: paymentRouterAbi,
+      functionName: 'payWithPermit',
+      args: [payment, signature, permit.deadline, 27 + yParity, r, s],
+    }),
+  };
 }

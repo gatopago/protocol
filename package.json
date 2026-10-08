@@ -18,6 +18,8 @@
     "format:check": "prettier --check packages scripts test"
   },
   "devDependencies": {
+    "@category-labs/mera": "0.2.0",
+    "@scure/bip39": "1.6.0",
     "@stellar/stellar-sdk": "17.2.0",
     "@types/node": "24.13.3",
     "esbuild": "0.28.1",
