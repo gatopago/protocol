@@ -38,11 +38,14 @@ import {
   REPLAYABLE_NONCE_KEY,
   encodeApplyApproval,
   gatopagoAccountAbi,
+  gatopagoAccountFactoryAbi,
   keyOwner,
+  messageSigner,
   passkeyOwner,
   signApproval,
   sponsorshipPaymasterData,
   ownersAfter,
+  verifiedOwners,
   verifyApproval,
   sponsorshipTypedData,
   toGatoPagoAccount,
@@ -55,7 +58,8 @@ import { depositCalls, withdrawCalls } from '../packages/shared/earn';
 import { payFromSavingsCalls, payoutCalls, splitCalls } from '../packages/shared/rules';
 import { minimumOut, quoteSwap, swapCalls } from '../packages/shared/swap';
 import { walletNetworks } from '../packages/shared/networks';
-import { softwarePasskey } from './passkey';
+import { findAccount, type AccountApprovals } from '../packages/shared/passkey';
+import { passkeyAssertion, softwarePasskey } from './passkey';
 import {
   paymentCalls,
   paymentPermit,
@@ -893,33 +897,228 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
       });
 
     const first = await signApproval(account, 0n, addLaptop);
-    expect(await verify([], addLaptop, first)).toBe(true);
-    expect(await verify([], removePhone, first)).toBe(false); // altered call
-    expect(await verify([], addLaptop, await signApproval(onLaptop, 0n, addLaptop))).toBe(false); // not an owner yet
+    expect(await verify([], addLaptop, first)).toBe(
+      passkeyOwner(contracts.webAuthnVerifier, phone.publicKey).toLowerCase(),
+    );
+    expect(await verify([], removePhone, first)).toBeNull(); // altered call
+    expect(await verify([], addLaptop, await signApproval(onLaptop, 0n, addLaptop))).toBeNull(); // not an owner yet
 
     const second = await signApproval(onLaptop, 1n, removePhone);
-    expect(await verify([addLaptop], removePhone, second)).toBe(true); // the laptop is an owner after approval 0
-    expect(await verify([], removePhone, second)).toBe(false); // out of order
+    expect(await verify([addLaptop], removePhone, second)).toBe(
+      passkeyOwner(contracts.webAuthnVerifier, laptop.publicKey).toLowerCase(),
+    ); // the laptop is an owner after approval 0
+    expect(await verify([], removePhone, second)).toBeNull(); // out of order
+
+    // Who signed a message for the account, checked against the owners given: the phone, until
+    // the owners no longer include it, whatever a lagging network would still accept.
+    const signed = await account.signMessage({ message: 'sign in' });
+    const signer = (owners: readonly Hex[]) =>
+      messageSigner(arbitrum.publicClient, {
+        account: account.address,
+        owners,
+        message: 'sign in',
+        signature: signed,
+      });
+    expect(await signer(account.initialOwners)).toBe(account.initialOwners[0].toLowerCase());
+    expect(await signer([passkeyOwner(contracts.webAuthnVerifier, laptop.publicKey)])).toBeNull();
+
+    // A client rebuilds the owners from the history without trusting who served it.
+    const history = [
+      { sequence: 0, call: addLaptop, signature: first },
+      { sequence: 1, call: removePhone, signature: second },
+    ];
+    const owners = (approvals: typeof history, initialOwners = account.initialOwners) =>
+      verifiedOwners(arbitrum.publicClient, {
+        factory: contracts.factory,
+        account: account.address,
+        initialOwners,
+        approvals,
+      });
+    expect(await owners(history)).toEqual([
+      passkeyOwner(contracts.webAuthnVerifier, laptop.publicKey).toLowerCase(),
+    ]);
+    // A server that slips in an owner no one approved, reorders, or lies about the initial owners.
+    const intruder = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'addOwners',
+      args: [[keyOwner(privateKeyToAccount(generatePrivateKey()).address)]],
+    });
+    await expect(
+      owners([...history, { sequence: 2, call: intruder, signature: second }]),
+    ).rejects.toThrow('APPROVALS_INVALID');
+    await expect(owners([history[1], history[0]])).rejects.toThrow('APPROVALS_INVALID');
+    await expect(
+      owners(history, [passkeyOwner(contracts.webAuthnVerifier, laptop.publicKey)]),
+    ).rejects.toThrow('APPROVALS_INVALID');
 
     // Signed by an owner, but the account would revert them and block every later approval.
     const impossible = async (call: Hex) => verify([], call, await signApproval(account, 0n, call));
-    expect(await impossible(removePhone)).toBe(false); // its last owner
+    expect(await impossible(removePhone)).toBeNull(); // its last owner
     const addPhone = encodeFunctionData({
       abi: gatopagoAccountAbi,
       functionName: 'addOwners',
       args: [[passkeyOwner(contracts.webAuthnVerifier, phone.publicKey)]],
     });
-    expect(await impossible(addPhone)).toBe(false); // already an owner
+    expect(await impossible(addPhone)).toBeNull(); // already an owner
     const upgrade = encodeFunctionData({
       abi: gatopagoAccountAbi,
       functionName: 'upgradeToAndCall',
       args: [contracts.factory, '0x'],
     });
-    expect(await impossible(upgrade)).toBe(false); // not an owner change
+    expect(await impossible(upgrade)).toBeNull(); // not an owner change
     // Owners derived from history stop where the account would.
     expect(ownersAfter(account.initialOwners, [removePhone, addLaptop])).toEqual(
       account.initialOwners.map((owner) => owner.toLowerCase()),
     );
+  }, 60_000);
+
+  it('finds the account a passkey opens by the verified owners of its Mera key', async () => {
+    // A Mera account (its key the only initial owner) and its backup Mera key.
+    const [mera, backupKey] = [
+      privateKeyToAccount(generatePrivateKey()),
+      privateKeyToAccount(generatePrivateKey()),
+    ];
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: mera,
+      contracts,
+    });
+    const addBackup = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'addOwners',
+      args: [[keyOwner(backupKey.address)]],
+    });
+    const known = new Map<string, AccountApprovals>([
+      [account.address.toLowerCase(), { initial_owners: null, approvals: [] }],
+    ]);
+    const lookup = {
+      accountOf: (owners: readonly Hex[]) =>
+        arbitrum.publicClient.readContract({
+          address: contracts.factory,
+          abi: gatopagoAccountFactoryAbi,
+          functionName: 'getAddress',
+          args: [owners, 0n],
+        }),
+      approvals: async (address: Address) => known.get(address.toLowerCase()) ?? null,
+    };
+    // The assertion only lends its user handle (and its signature, for older accounts).
+    const find = async (owner: Address, handle?: Hex) =>
+      findAccount(arbitrum.publicClient, {
+        contracts,
+        assertion: await passkeyAssertion(softwarePasskey(), handle),
+        owner,
+        lookup,
+      });
+    expect(await find(mera.address)).toEqual({
+      address: account.address,
+      initialOwners: [keyOwner(mera.address).toLowerCase()],
+    });
+    // The backup names the account in its user handle; it opens it once approved, not before.
+    expect(await find(backupKey.address, account.address)).toBeNull();
+    const approved = {
+      sequence: 0,
+      call: addBackup,
+      signature: await signApproval(account, 0n, addBackup),
+    };
+    known.set(account.address.toLowerCase(), {
+      initial_owners: account.initialOwners,
+      approvals: [approved],
+    });
+    expect(await find(backupKey.address, account.address)).toMatchObject({
+      address: account.address,
+    });
+    // An approval nobody signed does not make a key an owner, whatever the server says.
+    const stranger = privateKeyToAccount(generatePrivateKey());
+    const addStranger = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'addOwners',
+      args: [[keyOwner(stranger.address)]],
+    });
+    known.set(account.address.toLowerCase(), {
+      initial_owners: account.initialOwners,
+      approvals: [approved, { sequence: 1, call: addStranger, signature: approved.signature }],
+    });
+    expect(await find(stranger.address, account.address)).toBeNull();
+
+    // Wallet Core forgot the account (a reset database): the chain finds it for the key that
+    // created it, not for a backup key, whose initial owners the chain does not tell.
+    known.clear();
+    const created = { address: account.address, initialOwners: account.initialOwners };
+    expect(await find(mera.address)).toEqual(created);
+    expect(await find(backupKey.address, account.address)).toBeNull();
+    // Deployed, the account itself says whether the key still owns it.
+    await arbitrum.write(contracts.factory, gatopagoAccountFactoryAbi, 'createAccount', [
+      account.initialOwners,
+      0n,
+    ]);
+    expect(await find(mera.address)).toEqual(created);
+    await arbitrum.rpc('anvil_impersonateAccount', [account.address]);
+    await arbitrum.rpc('anvil_setBalance', [account.address, toHex(10n ** 18n)]);
+    for (const [functionName, owner] of [
+      ['addOwners', backupKey.address],
+      ['removeOwners', mera.address],
+    ] as const) {
+      const hash = await arbitrum.walletClient.writeContract({
+        account: account.address,
+        address: account.address,
+        abi: gatopagoAccountAbi,
+        functionName,
+        args: [[keyOwner(owner)]],
+      } as never);
+      await arbitrum.publicClient.waitForTransactionReceipt({ hash });
+    }
+    expect(await find(mera.address)).toBeNull();
+  }, 60_000);
+
+  it('verifies approvals of a Mera account, whose owner is a key of 20 bytes', async () => {
+    const mera = privateKeyToAccount(generatePrivateKey());
+    const account = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: mera,
+      contracts,
+    });
+    expect(account.initialOwners).toEqual([keyOwner(mera.address)]);
+    const backup = softwarePasskey();
+    const onBackup = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: backup,
+      contracts,
+      initialOwners: account.initialOwners,
+    });
+    const addBackup = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'addOwners',
+      args: [[passkeyOwner(contracts.webAuthnVerifier, backup.publicKey)]],
+    });
+    const removeMera = encodeFunctionData({
+      abi: gatopagoAccountAbi,
+      functionName: 'removeOwners',
+      args: [[keyOwner(mera.address)]],
+    });
+    const verify = (previous: Hex[], call: Hex, signature: Hex) =>
+      verifyApproval(arbitrum.publicClient, {
+        account: account.address,
+        initialOwners: account.initialOwners,
+        previous,
+        call,
+        signature,
+      });
+
+    // The Mera key adds a backup passkey; then the backup alone removes the Mera key.
+    expect(await verify([], addBackup, await signApproval(account, 0n, addBackup))).toBe(
+      keyOwner(mera.address).toLowerCase(),
+    );
+    expect(
+      await verify([addBackup], removeMera, await signApproval(onBackup, 1n, removeMera)),
+    ).toBe(passkeyOwner(contracts.webAuthnVerifier, backup.publicKey).toLowerCase());
+    // Another key claiming to be the owner is refused.
+    const stranger = await toGatoPagoAccount({
+      client: arbitrum.publicClient,
+      owner: privateKeyToAccount(generatePrivateKey()),
+      contracts,
+      initialOwners: account.initialOwners,
+    });
+    expect(await verify([], addBackup, await signApproval(stranger, 0n, addBackup))).toBeNull();
   }, 60_000);
 
   /** A funded account with a signed, sponsored transfer that has not been sent yet. */
@@ -946,6 +1145,31 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     });
     return { bundlerClient, operation: operation as never, hash };
   }
+
+  it('forgets records past their retention once their nonce is used, keeping recent ones', async () => {
+    const old = await signedTransfer(1_000_000n);
+    await old.bundlerClient.waitForUserOperationReceipt({
+      hash: await old.bundlerClient.sendUserOperation(old.operation),
+    });
+    // Every record so far is made a week and a day old.
+    const records = [...arbitrum.storage.keys()].filter((key) => key.startsWith('op:'));
+    for (const key of records)
+      arbitrum.storage.set(key, { ...(arbitrum.storage.get(key) as object), sentAt: 0 });
+    const next = await signedTransfer(1_000_000n);
+    const hash = await next.bundlerClient.sendUserOperation(next.operation);
+    await next.bundlerClient.waitForUserOperationReceipt({ hash });
+    // Each send walks up to 20 used nonces: old records below where it stopped are gone, the
+    // others wait for the next sends, and the new one stays and still answers its receipt.
+    const pruned = arbitrum.storage.get('pruned') as number;
+    expect(pruned).toBeGreaterThan(0);
+    for (const key of records) {
+      const record = arbitrum.storage.get(key) as { nonce: number } | undefined;
+      if (record) expect(record.nonce).toBeGreaterThanOrEqual(pruned);
+    }
+    expect(records.some((key) => !arbitrum.storage.has(key))).toBe(true);
+    expect(arbitrum.storage.has(`op:${hash}`)).toBe(true);
+    expect(await next.bundlerClient.getUserOperationReceipt({ hash })).toBeTruthy();
+  }, 60_000);
 
   it('does not reuse the nonce of a recorded send that never reached the network', async () => {
     const first = await signedTransfer(1_000_000n);

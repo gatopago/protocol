@@ -54,6 +54,8 @@ Mera's fixed recipe turns a passkey's PRF output into keys (`meraSeed`, `meraEvm
 `m/44'/60'/0'/0/0`, `stellarKeyFromSeed` at SEP-5's `m/44'/148'/0'`). `capturingWebAuthnClient`
 lets one prompt serve both: Mera gets its PRF output and the assertion is kept for
 `passkeyAccount` (it types against `@category-labs/mera`, an optional peer dependency).
+`@gatopago/shared/http` is what both Workers answer with: `HttpError` (`{ error_code }`), `json`,
+`readJson` (a JSON object, reading at most a byte limit) and `withCors`.
 `@gatopago/shared/bundler` is a minimal ERC-4337 bundler that only accepts GatoPago-sponsored
 operations and speaks the standard RPC, so viem's `createBundlerClient` works unchanged. It simulates
 each operation's execution gas and computes `preVerificationGas` from its bytes (plus L1 data on
@@ -193,6 +195,10 @@ node scripts/storage-layout.mjs   # account upgrade compatibility (also in CI)
 ```
 
 CI also checks formatting, the wallet gas snapshot (`contracts/.gas-snapshot`) and runs Slither.
+Slither cannot analyze three OpenZeppelin functions the account inherits
+(`MultiSignerERC7913._validateSignatures`, `ERC7821.execute`, `supportsExecutionMode`); CI fails if
+any other function joins them. `scripts/storage-layout.mjs` compares the account's storage down to
+struct members and its ERC-7201 slots, and fails without a recorded layout.
 
 ## SDK for the other repositories (vendor)
 

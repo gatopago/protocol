@@ -8,7 +8,7 @@ import type { WalletNetwork } from './networks';
  * operation. Only allow-listed addresses swap: on mainnet after Agora's KYC; on testnets anyone
  * allow-lists itself through the `whitelister`.
  */
-export const instantSettlementAbi = parseAbi([
+const instantSettlementAbi = parseAbi([
   'function getAmountsOut(uint256 amountIn, address[] path) view returns (uint256[])',
   'function swapExactTokensForTokens(uint256 amountIn, uint256 amountOutMin, address[] path, address to, uint256 deadline) returns (uint256[])',
   'function hasRole(string role, address account) view returns (bool)',

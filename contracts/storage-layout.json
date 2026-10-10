@@ -1,28 +1,86 @@
 {
-  "src/wallet/GatoPagoAccount.sol:GatoPagoAccount": [
-    {
-      "label": "_nameFallback",
-      "slot": "0",
-      "offset": 0,
-      "type": "string"
-    },
-    {
-      "label": "_versionFallback",
-      "slot": "1",
-      "offset": 0,
-      "type": "string"
-    },
-    {
-      "label": "_signers",
-      "slot": "2",
-      "offset": 0,
-      "type": "struct EnumerableSet.BytesSet"
-    },
-    {
-      "label": "_threshold",
-      "slot": "4",
-      "offset": 0,
-      "type": "uint64"
+  "src/wallet/GatoPagoAccount.sol:GatoPagoAccount": {
+    "storage": [
+      {
+        "label": "_nameFallback",
+        "slot": "0",
+        "offset": 0,
+        "type": {
+          "label": "string",
+          "numberOfBytes": "32",
+          "encoding": "bytes"
+        }
+      },
+      {
+        "label": "_versionFallback",
+        "slot": "1",
+        "offset": 0,
+        "type": {
+          "label": "string",
+          "numberOfBytes": "32",
+          "encoding": "bytes"
+        }
+      },
+      {
+        "label": "_signers",
+        "slot": "2",
+        "offset": 0,
+        "type": {
+          "label": "struct EnumerableSet.BytesSet",
+          "numberOfBytes": "64",
+          "encoding": "inplace",
+          "members": [
+            {
+              "label": "_values",
+              "slot": "0",
+              "offset": 0,
+              "type": {
+                "label": "bytes[]",
+                "numberOfBytes": "32",
+                "encoding": "dynamic_array",
+                "base": {
+                  "label": "bytes",
+                  "numberOfBytes": "32",
+                  "encoding": "bytes"
+                }
+              }
+            },
+            {
+              "label": "_positions",
+              "slot": "1",
+              "offset": 0,
+              "type": {
+                "label": "mapping(bytes => uint256)",
+                "numberOfBytes": "32",
+                "encoding": "mapping",
+                "key": {
+                  "label": "bytes",
+                  "numberOfBytes": "32",
+                  "encoding": "bytes"
+                },
+                "value": {
+                  "label": "uint256",
+                  "numberOfBytes": "32",
+                  "encoding": "inplace"
+                }
+              }
+            }
+          ]
+        }
+      },
+      {
+        "label": "_threshold",
+        "slot": "4",
+        "offset": 0,
+        "type": {
+          "label": "uint64",
+          "numberOfBytes": "8",
+          "encoding": "inplace"
+        }
+      }
+    ],
+    "slots": {
+      "APPROVAL_SEQUENCE_SLOT": "0x51d7185701a1af8ad4fac1160c0c9aeb5b7e433ce89846477d0377fef9edec00"
     }
-  ]
+  }
 }

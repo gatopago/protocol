@@ -105,7 +105,7 @@ function passkeySigner(network: StellarNetwork, publicKey: Hex): xdr.ScVal {
 }
 
 /** External signer of an Ed25519 public key (32 bytes), checked by the network's verifier. */
-export function ed25519Signer(network: StellarNetwork, publicKey: Hex): xdr.ScVal {
+function ed25519Signer(network: StellarNetwork, publicKey: Hex): xdr.ScVal {
   if (size(publicKey) !== 32) throw new Error('INVALID_ED25519_PUBLIC_KEY');
   return xdr.ScVal.scvVec([
     xdr.ScVal.scvSymbol('External'),
@@ -179,22 +179,7 @@ export async function signerChangeOperations(
   keys: readonly Hex[] = [],
 ): Promise<xdr.Operation[]> {
   const wanted = accountSigners(network, owners, keys).map((signer) => signer.toXdr('base64'));
-  const rule = await simulate(
-    server,
-    network,
-    call(account, 'get_context_rule', [xdr.ScVal.scvU32(DEFAULT_RULE)]),
-  );
-  // ContextRule { signers: Vec<Signer>, signer_ids: Vec<u32>, … }
-  const field = (name: string) => {
-    const value =
-      rule.type === 'scvMap'
-        ? rule.map?.find(({ key }) => key.type === 'scvSymbol' && key.value === name)?.val
-        : undefined;
-    if (value?.type !== 'scvVec' || !value.vec) throw new Error('STELLAR_READ_FAILED');
-    return value.vec;
-  };
-  const current = field('signers').map((signer) => signer.toXdr('base64'));
-  const ids = field('signer_ids').map((id) => (id.type === 'scvU32' ? id.u32 : -1));
+  const { current, ids } = await currentSigners(server, network, account);
   return [
     ...wanted
       .filter((signer) => !current.includes(signer))
@@ -210,8 +195,41 @@ export async function signerChangeOperations(
   ];
 }
 
+/** Whether the Ed25519 `key` (32 bytes) already signs for the Stellar `account`. */
+export async function isStellarKeySigner(
+  server: rpc.Server,
+  network: StellarNetwork,
+  account: string,
+  key: Hex,
+) {
+  const { current } = await currentSigners(server, network, account);
+  return current.includes(ed25519Signer(network, key).toXdr('base64'));
+}
+
+/** The signers of the account's default rule (as base64 XDR) and their ids. */
+async function currentSigners(server: rpc.Server, network: StellarNetwork, account: string) {
+  const rule = await simulate(
+    server,
+    network,
+    call(account, 'get_context_rule', [xdr.ScVal.scvU32(DEFAULT_RULE)]),
+  );
+  // ContextRule { signers: Vec<Signer>, signer_ids: Vec<u32>, … }
+  const field = (name: string) => {
+    const value =
+      rule.type === 'scvMap'
+        ? rule.map?.find(({ key }) => key.type === 'scvSymbol' && key.value === name)?.val
+        : undefined;
+    if (value?.type !== 'scvVec' || !value.vec) throw new Error('STELLAR_READ_FAILED');
+    return value.vec;
+  };
+  return {
+    current: field('signers').map((signer) => signer.toXdr('base64')),
+    ids: field('signer_ids').map((id) => (id.type === 'scvU32' ? id.u32 : -1)),
+  };
+}
+
 /** Removes the signer `signerId` (the account's `get_signer_id`). */
-export function removeSignerOperation(account: string, signerId: number) {
+function removeSignerOperation(account: string, signerId: number) {
   return call(account, 'remove_signer', [
     xdr.ScVal.scvU32(DEFAULT_RULE),
     xdr.ScVal.scvU32(signerId),
@@ -597,15 +615,16 @@ export async function stellarAccountExists(server: rpc.Server, account: string) 
  */
 export function burnMessage(message: Hex) {
   const word = (offset: number) => slice(message, offset, offset + 32);
-  const hook = size(message) > 376 ? slice(message, 376) : '0x';
-  const recipientLength = size(hook) >= 32 ? hexToNumber(slice(hook, 28, 32)) : 0;
   return {
     destinationDomain: hexToNumber(slice(message, 8, 12)),
     amount: hexToBigInt(word(216)),
     sender: getAddress(slice(word(248), 12)),
-    recipient:
-      recipientLength > 0 && size(hook) >= 32 + recipientLength
-        ? hexToString(slice(hook, 32, 32 + recipientLength))
-        : null,
+    recipient: hookRecipient(size(message) > 376 ? slice(message, 376) : '0x'),
   };
+}
+
+/** The Stellar recipient a CctpForwarder hook names (`forwardRecipientHook`), or null without one. */
+export function hookRecipient(hook: Hex): string | null {
+  const length = size(hook) >= 32 ? hexToNumber(slice(hook, 28, 32)) : 0;
+  return length > 0 && size(hook) >= 32 + length ? hexToString(slice(hook, 32, 32 + length)) : null;
 }

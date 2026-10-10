@@ -10,10 +10,12 @@ import {
   crosschainOperation,
   deployAccountOperation,
   forwardRecipientHook,
+  hookRecipient,
   prepareStellarCall,
   sendStellarOperation,
   signStellarAuth,
   signedStellarCall,
+  isStellarKeySigner,
   signerChangeOperations,
   signedCallOperation,
   stellarAccountAddress,
@@ -90,6 +92,10 @@ describe('CCTP with Stellar', () => {
     expect(() => forwardRecipientHook('0x75464f762bc50d0A0B127ab5a085504BF102Bb88')).toThrow(
       'INVALID_STELLAR_ADDRESS',
     );
+    // And read back, as a relayer finds it in a burn.
+    const recipient = 'CAGJXUQ3OQQJVIUW773L44CYXJYS6AEQCTFO7SGRDCAORGMFGIAFQZA7';
+    expect(hookRecipient(forwardRecipientHook(recipient))).toBe(recipient);
+    expect(hookRecipient('0x')).toBeNull();
   });
 
   it('reads who burned toward which Stellar recipient', () => {
@@ -250,6 +256,9 @@ describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
     await expect(
       signed(transferOperation(network, account, sponsor.publicKey(), 1n), stranger),
     ).rejects.toThrow();
+    // Only the key the account was created with signs for it.
+    expect(await isStellarKeySigner(server, network, account, mera.publicKey)).toBe(true);
+    expect(await isStellarKeySigner(server, network, account, stranger.publicKey)).toBe(false);
 
     // A passkey approved later joins; the Mera key stays.
     const phoneOwner = passkeyOwner(walletContracts.webAuthnVerifier, phone.publicKey);

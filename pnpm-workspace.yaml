@@ -2,3 +2,5 @@ packages:
   - packages/*
 allowBuilds:
   esbuild: false
+
+minimumReleaseAge: 10080

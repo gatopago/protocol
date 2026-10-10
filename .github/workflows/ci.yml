@@ -20,8 +20,16 @@ jobs:
         run: cd contracts && forge snapshot --match-path test/wallet/GatoPagoWallet.t.sol --check
       - name: Account storage layout (upgrade compatibility)
         run: node scripts/storage-layout.mjs
+      # Slither cannot build its IR for three OpenZeppelin functions the account inherits
+      # (MultiSignerERC7913._validateSignatures, ERC7821.execute and supportsExecutionMode):
+      # those are not analyzed. Any other function it cannot analyze fails the build.
       - name: Slither
-        run: pip install slither-analyzer==0.11.5 && cd contracts && slither . --config-file slither.config.json --fail-medium
+        run: |
+          pip install slither-analyzer==0.11.6
+          cd contracts
+          slither . --config-file slither.config.json --fail-medium 2>&1 | tee slither.log
+          ! grep "Impossible to generate IR" slither.log |
+            grep -vE "GatoPagoAccount\.(_validateSignatures|execute|supportsExecutionMode) \("
   sdk:
     runs-on: ubuntu-latest
     timeout-minutes: 20

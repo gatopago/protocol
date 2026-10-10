@@ -1,6 +1,7 @@
 import { createHash, generateKeyPairSync, sign } from 'node:crypto';
-import { toHex } from 'viem';
+import { hexToBigInt, hexToBytes, slice, toHex, type Hex } from 'viem';
 import type { WebAuthnAccount } from 'viem/account-abstraction';
+import type { PasskeyAssertion } from '../packages/shared/passkey';
 
 /** Software passkey producing the same bytes as `navigator.credentials.get`. */
 export function softwarePasskey(): WebAuthnAccount {
@@ -41,4 +42,18 @@ export function softwarePasskey(): WebAuthnAccount {
       throw new Error('unused');
     },
   };
+}
+
+/** What ox's `WebAuthnP256.sign` returns for `passkey`, with an optional user handle. */
+export async function passkeyAssertion(passkey: WebAuthnAccount, userHandle?: Hex) {
+  const { signature, webauthn } = await passkey.sign({ hash: `0x${'cd'.repeat(32)}` });
+  return {
+    id: 'credential',
+    metadata: webauthn,
+    signature: {
+      r: hexToBigInt(slice(signature, 0, 32)),
+      s: hexToBigInt(slice(signature, 32, 64)),
+    },
+    raw: { response: { userHandle: userHandle ? hexToBytes(userHandle).buffer : null } },
+  } as unknown as PasskeyAssertion;
 }

@@ -6,9 +6,11 @@ import {
   encodeFunctionData,
   hashTypedData,
   hexToBigInt,
+  isErc6492Signature,
   numberToHex,
   pad,
   parseAbi,
+  parseErc6492Signature,
   size,
   slice,
   toFunctionSelector,
@@ -31,7 +33,7 @@ import {
   type UserOperation,
   type WebAuthnAccount,
 } from 'viem/account-abstraction';
-import { readContract } from 'viem/actions';
+import { readContract, verifyHash } from 'viem/actions';
 import {
   hashMessage,
   hashTypedData as hashNestedTypedData,
@@ -89,7 +91,7 @@ const ownerSignature = (owner: Hex, signature: Hex) =>
   encodeAbiParameters([{ type: 'bytes[]' }, { type: 'bytes[]' }], [[owner], [signature]]);
 
 /** A passkey owner's signature: `ownerSignature` over its WebAuthnAuth. */
-export function encodePasskeySignature(
+function encodePasskeySignature(
   owner: Hex,
   signature: Hex,
   webauthn: {
@@ -124,7 +126,7 @@ export function encodePasskeySignature(
 }
 
 /** Chain-independent hash an owner signs to approve `call` as approval number `sequence`. */
-export function approvalHash(account: Address, sequence: bigint, call: Hex): Hex {
+function approvalHash(account: Address, sequence: bigint, call: Hex): Hex {
   return hashTypedData({
     domain: { name: 'GatoPagoAccount', version: '1', verifyingContract: account },
     types: {
@@ -147,7 +149,7 @@ export function encodeApplyApproval(sequence: bigint, call: Hex): Hex {
   });
 }
 
-export const isReplayableNonce = (nonce: bigint) => nonce >> 64n === REPLAYABLE_NONCE_KEY;
+const isReplayableNonce = (nonce: bigint) => nonce >> 64n === REPLAYABLE_NONCE_KEY;
 
 const erc7913VerifierAbi = parseAbi([
   'function verify(bytes key, bytes32 hash, bytes signature) view returns (bytes4)',
@@ -175,7 +177,7 @@ export function ownersAfter(initialOwners: readonly Hex[], calls: readonly Hex[]
  * MultiSignerERC7913): an existing or malformed owner, a missing one, or no owner left. Upgrades
  * are not approved through here.
  */
-export function nextOwners(owners: readonly Hex[], call: Hex): Hex[] {
+function nextOwners(owners: readonly Hex[], call: Hex): Hex[] {
   const { functionName, args } = decodeFunctionData({ abi: gatopagoAccountAbi, data: call });
   const next = new Set(owners.map((owner) => owner.toLowerCase() as Hex));
   if (functionName !== 'addOwners' && functionName !== 'removeOwners')
@@ -193,10 +195,76 @@ export function nextOwners(owners: readonly Hex[], call: Hex): Hex[] {
   return [...next];
 }
 
+/** The account's EIP-712 domain, which its ERC-7739 signatures are bound to. */
+const accountDomain = (chainId: number, account: Address) =>
+  ({
+    name: 'GatoPagoAccount',
+    version: '1',
+    chainId,
+    verifyingContract: account,
+    salt: zeroHash,
+  }) as const;
+
+/**
+ * The owner among `owners` that signed `message` for `account` as the account signs messages
+ * (ERC-1271 in the ERC-7739 format, wrapped in ERC-6492 while it is not deployed), or null. It is
+ * checked against the owners given, not against a network's state, which may lag behind a removal.
+ */
+export async function messageSigner(
+  client: Client,
+  parameters: { account: Address; owners: readonly Hex[]; message: string; signature: Hex },
+): Promise<Hex | null> {
+  const { account, owners, message, signature } = parameters;
+  if (!client.chain) throw new Error('CHAIN_REQUIRED');
+  return signingOwner(client, {
+    owners,
+    hash: hashMessage({ message, verifierDomain: accountDomain(client.chain.id, account) }),
+    signature: isErc6492Signature(signature)
+      ? parseErc6492Signature(signature).signature
+      : signature,
+  });
+}
+
+/**
+ * The owner that signed `hash` for the account, in the account's signature format
+ * (`abi.encode(bytes[] signers, bytes[] signatures)` with one signer), if it is among `owners` and the
+ * signature is valid as the account checks it onchain (OpenZeppelin's `SignatureChecker`): an owner
+ * of 20 bytes is a key (a Mera key), verified by ECDSA or ERC-1271; a longer one is
+ * `verifier || key`, verified by its ERC-7913 verifier. Null otherwise.
+ */
+async function signingOwner(
+  client: Client,
+  parameters: { owners: readonly Hex[]; hash: Hex; signature: Hex },
+): Promise<Hex | null> {
+  const { owners, hash, signature } = parameters;
+  try {
+    const [signers, signatures] = decodeAbiParameters(
+      [{ type: 'bytes[]' }, { type: 'bytes[]' }],
+      signature,
+    );
+    const owner = signers[0]?.toLowerCase() as Hex | undefined;
+    if (signers.length !== 1 || !owner || !owners.some((value) => value.toLowerCase() === owner))
+      return null;
+    const valid =
+      size(owner) === 20
+        ? await verifyHash(client, { address: owner, hash, signature: signatures[0] })
+        : (await readContract(client, {
+            address: slice(owner, 0, 20),
+            abi: erc7913VerifierAbi,
+            functionName: 'verify',
+            args: [slice(owner, 20), hash, signatures[0]],
+          })) === ERC7913_VALID;
+    return valid ? owner : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Whether `signature` is the next approval of `account`: signed by an owner at that point (the initial
- * owners plus the `previous` approvals) and valid for that owner's ERC-7913 verifier, the same check the
- * account runs onchain. Lets a server store approvals for other networks without trusting the client.
+ * owners plus the `previous` approvals), as the account checks it onchain (`signingOwner`), for a
+ * change the account can apply. Lets a server store approvals for other networks without trusting
+ * the client.
  */
 export async function verifyApproval(
   client: Client,
@@ -207,31 +275,59 @@ export async function verifyApproval(
     call: Hex;
     signature: Hex;
   },
-): Promise<boolean> {
+): Promise<Hex | null> {
   const { account, initialOwners, previous, call, signature } = parameters;
+  const owners = ownersAfter(initialOwners, previous);
   try {
-    const [signers, signatures] = decodeAbiParameters(
-      [{ type: 'bytes[]' }, { type: 'bytes[]' }],
-      signature,
-    );
-    const owners = ownersAfter(initialOwners, previous);
-    if (signers.length !== 1 || !owners.includes(signers[0].toLowerCase() as Hex)) return false;
     // The change itself must be one the account can apply, or it would block the ones after it.
     nextOwners(owners, call);
-    const valid = await readContract(client, {
-      address: slice(signers[0], 0, 20),
-      abi: erc7913VerifierAbi,
-      functionName: 'verify',
-      args: [
-        slice(signers[0], 20),
-        approvalHash(account, BigInt(previous.length), call),
-        signatures[0],
-      ],
-    });
-    return valid === ERC7913_VALID;
   } catch {
-    return false;
+    return null;
   }
+  const hash = approvalHash(account, BigInt(previous.length), call);
+  return signingOwner(client, { owners, hash, signature });
+}
+
+/**
+ * The owners of `account` now, rebuilt without trusting whoever handed over its history: the
+ * address must be the factory's for `initialOwners`, and each approval must be the next one in
+ * order, signed by an owner at that point (`verifyApproval`). Throws `APPROVALS_INVALID` when any of
+ * it does not hold. A history cut short before a removal cannot be told from a complete one here:
+ * the caller compares its length with the newest it knows (the account's own count onchain).
+ */
+export async function verifiedOwners(
+  client: Client,
+  parameters: {
+    factory: Address;
+    account: Address;
+    initialOwners: readonly Hex[];
+    approvals: readonly { sequence: number; call: Hex; signature: Hex }[];
+  },
+): Promise<Hex[]> {
+  const { factory, account, initialOwners, approvals } = parameters;
+  const derived = await readContract(client, {
+    address: factory,
+    abi: gatopagoAccountFactoryAbi,
+    functionName: 'getAddress',
+    args: [initialOwners, 0n],
+  });
+  if (derived.toLowerCase() !== account.toLowerCase()) throw new Error('APPROVALS_INVALID');
+  const previous: Hex[] = [];
+  for (const [index, approval] of approvals.entries()) {
+    const signer =
+      approval.sequence === index
+        ? await verifyApproval(client, {
+            account,
+            initialOwners,
+            previous,
+            call: approval.call,
+            signature: approval.signature,
+          })
+        : null;
+    if (!signer) throw new Error('APPROVALS_INVALID');
+    previous.push(approval.call);
+  }
+  return ownersAfter(initialOwners, previous);
 }
 
 export function encodeCalls(calls: readonly { to: Address; value?: bigint; data?: Hex }[]): Hex {
@@ -324,13 +420,7 @@ export async function toGatoPagoAccount(parameters: {
     address: entryPoint09Address,
     version: '0.9',
   } as const;
-  const verifierDomain = {
-    name: 'GatoPagoAccount',
-    version: '1',
-    chainId: client.chain.id,
-    verifyingContract: address,
-    salt: zeroHash,
-  } as const;
+  const verifierDomain = accountDomain(client.chain.id, address);
   async function signHash(hash: Hex) {
     if (owner.type === 'local') {
       if (!owner.sign) throw new Error('OWNER_CANNOT_SIGN_DIGESTS');

@@ -80,7 +80,17 @@ interface BundledTransaction {
   readonly transactionHash: Hash;
   readonly raw: Hex;
   readonly nonce: number;
+  /** When it was signed (seconds): records are kept `RETENTION_SECONDS`. */
+  readonly sentAt: number;
 }
+
+/**
+ * How long a sent operation's record is kept: its receipt is asked for while the app waits on it
+ * (minutes), so a week is ample. Older records whose nonce the network already used are removed,
+ * a few at each send, so storage does not grow forever.
+ */
+const RETENTION_SECONDS = 7 * 86_400;
+const PRUNED_PER_SEND = 20;
 
 /**
  * Durable key-value storage, as the Durable Object storage API (Wallet Core passes `ctx.storage`).
@@ -254,7 +264,8 @@ export function createBundler(parameters: {
         typeof reason === 'string' ? reason : 'UserOperation simulation failed',
       );
     }
-    const nonce = await nextNonce();
+    const { nonce, used } = await nextNonce();
+    await prune(used);
     const prepared = await walletClient.prepareTransactionRequest({
       to: entryPoint09Address,
       data: encodeFunctionData(request),
@@ -267,6 +278,7 @@ export function createBundler(parameters: {
         transactionHash: keccak256(raw),
         raw,
         nonce,
+        sentAt: Math.floor(Date.now() / 1000),
       } satisfies BundledTransaction,
       [`nonce:${nonce}`]: userOpHash,
       nextNonce: nonce + 1,
@@ -290,7 +302,23 @@ export function createBundler(parameters: {
           .sendRawTransaction({ serializedTransaction: bundled.raw })
           .catch(() => undefined);
     }
-    return Math.max(network, reserved);
+    return { nonce: Math.max(network, reserved), used: network };
+  }
+
+  /**
+   * Removes the oldest records past `RETENTION_SECONDS` whose nonce the network already used
+   * (below `used`), from where the last pruning stopped; a pending one is never touched.
+   */
+  async function prune(used: number) {
+    let next = (await store.get<number>('pruned')) ?? 0;
+    const cutoff = Math.floor(Date.now() / 1000) - RETENTION_SECONDS;
+    for (let i = 0; i < PRUNED_PER_SEND && next < used; i++, next++) {
+      const userOpHash = await store.get<Hash>(`nonce:${next}`);
+      const bundled = userOpHash && (await store.get<BundledTransaction>(`op:${userOpHash}`));
+      if (bundled && bundled.sentAt > cutoff) break;
+      await store.delete(userOpHash ? [`op:${userOpHash}`, `nonce:${next}`] : [`nonce:${next}`]);
+    }
+    await store.put({ pruned: next });
   }
 
   /** The bundle failed without including the operation: forget it so the client can resubmit it. */
