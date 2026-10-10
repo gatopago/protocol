@@ -1,0 +1,27 @@
+@startuml mera
+!pragma layout smetana
+skinparam componentStyle rectangle
+
+component "Passkey\n(huella o rostro, sincronizada por iCloud o Google)" as pk
+component "Salida PRF\n(32 bytes, siempre la misma para esa passkey)" as prf
+component "Semilla BIP-39" as seed
+component "Llave EVM\nm/44'/60'/0'/0/0" as evm
+component "Llave Stellar\nSEP-5 m/44'/148'/0'" as xlm
+component "Llave de Negocios\n(otra sal, solo para entrar a la consola)" as biz
+component "Cuenta GatoPago EVM\n(la llave es su dueña)" as cuenta
+component "Smart account de Stellar\n(la llave es su firmante)" as sa
+
+pk --> prf : WebAuthn PRF
+pk --> biz : PRF con otra sal
+prf --> seed
+seed --> evm
+seed --> xlm
+evm --> cuenta
+xlm --> sa
+
+note right of seed
+  Sin frase que anotar: la passkey la regenera.
+  Las llaves viven en memoria; una huella abre
+  una sesión de 15 minutos sin volver a pedirla.
+end note
+@enduml

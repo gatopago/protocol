@@ -1,0 +1,22 @@
+@startuml red-stellar
+!pragma layout smetana
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+
+Container(wc, "Wallet Core", "GatoPago", "Cuenta patrocinadora: despliega, envía y paga las comisiones")
+
+Boundary(red, "Stellar testnet (Soroban)") {
+  Component(sa, "Smart account de la persona", "OpenZeppelin stellar-contracts", "Firmada con su llave Ed25519")
+  Component_Ext(oz, "Verificador Ed25519 y política de umbral", "OpenZeppelin")
+  Component_Ext(usdc, "USDC y XLM", "Stellar Asset Contracts")
+  Component_Ext(cctp, "CCTP V2", "Circle")
+}
+System_Ext(evm, "Redes EVM", "Cuenta GatoPago de la misma persona")
+
+Rel(wc, sa, "despliega y envía sus llamadas")
+Rel(sa, oz, "verifica la firma")
+Rel(sa, usdc, "envía")
+Rel(sa, cctp, "quema hacia EVM")
+Rel(wc, cctp, "acuña hacia Stellar")
+Rel(cctp, evm, "dólares entre redes")
+@enduml

@@ -1,0 +1,18 @@
+@startuml seq-stellar-gas
+actor Persona
+participant App
+participant "Wallet Core" as WC
+participant "StellarRelayer\n(cuenta patrocinadora G…)" as Rel
+participant "Stellar" as XLM
+participant "Smart account\nde la persona (C…)" as SA
+
+Persona -> App : enviar USDC o XLM, mover a EVM
+App -> App : la llave Ed25519 firma solo la autorización\nde esa llamada (vence en 5 min)
+App -> WC : llamada + autorización firmada
+WC -> WC : ¿es una llamada permitida?\n¿no usa la autoridad del patrocinador?\n¿queda en el cupo diario?
+WC -> Rel : enviar
+Rel -> XLM : transacción con la cuenta patrocinadora como origen:\nella firma y paga la comisión (máx. 0,5 XLM)
+XLM -> SA : __check_auth: verifica la firma Ed25519
+SA -> SA : ejecuta la llamada
+WC --> App : hash de la transacción
+@enduml

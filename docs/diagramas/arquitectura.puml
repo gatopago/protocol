@@ -1,0 +1,29 @@
+@startuml arquitectura
+!pragma layout smetana
+!include <C4/C4_Container>
+LAYOUT_TOP_DOWN()
+
+Person(persona, "Persona")
+Person(comercio, "Comercio")
+
+System_Boundary(gp, "GatoPago") {
+  Container(app, "App", "Next.js en Vercel", "Billetera con passkey")
+  Container(consola, "Consola de Negocios", "Next.js en Vercel", "Cobros, claves API y webhooks")
+  Container(wc, "Wallet Core", "Cloudflare Worker", "Sesiones, envía las operaciones y paga el gas")
+  Container(flow, "Flow", "Cloudflare Worker", "API de cobros")
+}
+
+System_Ext(evm, "Redes EVM", "Arbitrum (principal), Avalanche, Monad")
+System_Ext(stellar, "Stellar", "Soroban")
+System_Ext(circle, "Circle", "USDC y CCTP: mueve dólares entre redes")
+
+Rel(persona, app, "usa")
+Rel(comercio, consola, "usa")
+Rel(app, wc, "opera")
+Rel(app, flow, "paga cobros")
+Rel(consola, flow, "crea cobros")
+Rel(wc, evm, "operaciones ERC-4337")
+Rel(wc, stellar, "transacciones patrocinadas")
+Rel(evm, circle, "CCTP")
+Rel(stellar, circle, "CCTP")
+@enduml

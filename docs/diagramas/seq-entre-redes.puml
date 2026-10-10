@@ -1,0 +1,20 @@
+@startuml seq-entre-redes
+actor Persona
+participant "Red de origen" as Origen
+participant "Circle CCTP" as Circle
+participant "Wallet Core" as WC
+participant "Red de destino" as Destino
+
+Persona -> Origen : quema USDC (CCTP)
+Circle -> Circle : attestation
+alt destino EVM
+  Circle -> Destino : el Forwarding Service acuña
+else destino Stellar
+  WC -> Circle : pide la attestation
+  WC -> Destino : mint_and_forward a la smart account
+end
+note over Persona
+  Desde Stellar es igual: la smart account quema
+  y Circle acuña en la red EVM.
+end note
+@enduml

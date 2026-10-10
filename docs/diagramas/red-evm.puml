@@ -1,0 +1,25 @@
+@startuml red-evm
+!pragma layout smetana
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+
+Container(wc, "Wallet Core", "GatoPago", "Envía las operaciones y paga el gas")
+
+Boundary(red, "Cada red EVM: Arbitrum Sepolia, Avalanche Fuji, Monad testnet") {
+  Component_Ext(ep, "EntryPoint v0.9", "ERC-4337")
+  Component(pm, "Paymaster", "GatoPago", "Paga el gas")
+  Component(fac, "Factory", "GatoPago", "Crea las cuentas")
+  Component(cuenta, "Cuenta de la persona", "GatoPago", "Smart account, misma dirección en todas las redes")
+  Component(router, "PaymentRouter", "GatoPago", "Paga cobros de Flow")
+  Component_Ext(usdc, "USDC y CCTP", "Circle")
+  Component_Ext(defi, "Aave, Uniswap, Agora", "DeFi")
+}
+
+Rel(wc, ep, "operación firmada")
+Rel(ep, pm, "cobra el gas")
+Rel(ep, fac, "crea en la primera operación")
+Rel(ep, cuenta, "ejecuta")
+Rel(cuenta, usdc, "envía y mueve entre redes")
+Rel(cuenta, defi, "ahorra y cambia")
+Rel(cuenta, router, "paga un cobro")
+@enduml

@@ -1,0 +1,16 @@
+@startuml seq-pago
+actor Persona
+participant App
+participant "Wallet Core\n(paymaster y bundler)" as WC
+participant "EntryPoint" as EP
+participant "Cuenta" as Cuenta
+
+Persona -> App : enviar, pagar, ahorrar o cambiar
+App -> WC : pedir patrocinio del gas
+WC --> App : patrocinio firmado
+App -> App : la llave firma la operación
+App -> WC : enviar la operación
+WC -> EP : handleOps
+EP -> Cuenta : valida la firma y ejecuta (en lote)
+WC --> App : recibo
+@enduml

@@ -1,0 +1,16 @@
+@startuml seq-cobro
+participant Comercio
+participant Flow
+actor Cliente
+participant "PaymentRouter" as Router
+participant "Cuenta del comercio" as Destino
+
+Comercio -> Flow : crear cobro (consola o API)
+Flow --> Comercio : enlace o QR de pago
+Cliente -> Flow : abre el enlace
+Flow --> Cliente : autorización firmada del cobro
+Cliente -> Router : paga (GatoPago o MetaMask)
+Router -> Destino : USDC, directo o por CCTP si es otra red
+Flow -> Router : confirma el pago en la red
+Flow -> Comercio : webhook firmado
+@enduml

@@ -3,7 +3,15 @@ import { entropyToMnemonic, mnemonicToSeedSync } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import type { WebAuthnClient } from '@category-labs/mera';
 import { Base64, PublicKey, WebAuthnP256 } from 'ox';
-import { bytesToHex, getAddress, stringToBytes, type Address, type Client, type Hex } from 'viem';
+import {
+  bytesToHex,
+  getAddress,
+  sha256,
+  stringToBytes,
+  type Address,
+  type Client,
+  type Hex,
+} from 'viem';
 import { getCode, readContract } from 'viem/actions';
 import { gatopagoAccountAbi, keyOwner, verifiedOwners, type WalletContracts } from './wallet';
 
@@ -228,3 +236,45 @@ export async function stellarKeyFromSeed(seed: Uint8Array, index = 0): Promise<U
   node.fill(0);
   return key;
 }
+
+/**
+ * GatoPago Business signs in with a key of its own: the passkey's PRF output under this salt (a
+ * namespace apart from Mera's, which derives the keys that move money). No account has it as a
+ * signer, on EVM or Stellar, so nothing it signs can move funds.
+ */
+export const BUSINESS_KEY_SALT = sha256(stringToBytes('gatopago.business-auth.v1'), 'bytes');
+
+/**
+ * The Ed25519 private key (32 bytes) of a Business sign-in key, from the PRF output under
+ * `BUSINESS_KEY_SALT` (HKDF-SHA256). The same passkey derives the same key on every device; the
+ * caller wipes the output and the key after use.
+ */
+export async function businessKey(prfOutput: Uint8Array): Promise<Uint8Array> {
+  const material = await crypto.subtle.importKey(
+    'raw',
+    prfOutput as Uint8Array<ArrayBuffer>,
+    'HKDF',
+    false,
+    ['deriveBits'],
+  );
+  return new Uint8Array(
+    await crypto.subtle.deriveBits(
+      {
+        name: 'HKDF',
+        hash: 'SHA-256',
+        salt: new Uint8Array(),
+        info: stringToBytes('gatopago business-auth v1') as Uint8Array<ArrayBuffer>,
+      },
+      material,
+      256,
+    ),
+  );
+}
+
+/** What a Business key signs to sign in: the console's origin and a single-use Wallet Core nonce. */
+export const businessSignInMessage = (origin: string, nonce: string) =>
+  new TextEncoder().encode(['GatoPago Business sign-in', origin, nonce].join('\n'));
+
+/** The SIWE resource with which an owner approves exactly one Business key (32-byte hex). */
+export const businessKeyResource = (publicKey: Hex) =>
+  `urn:gatopago:business-key:${publicKey.toLowerCase()}`;

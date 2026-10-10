@@ -1,0 +1,25 @@
+@startuml seq-login
+actor Persona
+participant App
+participant "Wallet Core" as WC
+participant "Red principal" as Red
+
+alt crear cuenta
+  Persona -> App : Crear cuenta (nombre, @usuario)
+  App -> App : nueva passkey con PRF → Mera deriva la llave EVM
+  App -> Red : dirección de la cuenta (factory, CREATE2)
+else iniciar sesión
+  Persona -> App : Iniciar sesión
+  App -> App : huella → Mera deriva la llave EVM
+  App -> WC : ¿qué cuenta y qué dueños conoce?
+  App -> Red : verifica que la llave sea dueña
+end
+App -> WC : mensaje SIWE firmado por la cuenta (ERC-1271 / ERC-6492)
+WC -> Red : comprueba la firma y los dueños
+WC --> App : sesión (24 h)
+note over WC
+  Una cuenta nueva pasa Turnstile.
+  Si la base se perdiera, la cuenta se encuentra
+  por la cadena y se registra otra vez.
+end note
+@enduml

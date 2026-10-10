@@ -1,0 +1,27 @@
+@startuml casos-de-uso
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+actor Persona
+actor Comercio
+
+rectangle "GatoPago" {
+  usecase "Crear cuenta y entrar\ncon su huella" as cuenta
+  usecase "Guardar, enviar y recibir dólares" as dinero
+  usecase "Pagar a un comercio" as pagar
+  usecase "Pagar a un grupo" as grupo
+  usecase "Ahorrar y cambiar monedas" as defi
+  usecase "Mover entre redes\n(incluida Stellar)" as redes
+  usecase "Cobrar en dólares\n(consola o API)" as cobrar
+}
+
+Persona --> cuenta
+Persona --> dinero
+Persona --> pagar
+Persona --> grupo
+Persona --> defi
+Persona --> redes
+Comercio --> cobrar
+pagar ..> cobrar
+@enduml
