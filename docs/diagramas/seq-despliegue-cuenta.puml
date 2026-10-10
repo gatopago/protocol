@@ -1,0 +1,35 @@
+@startuml seq-despliegue-cuenta
+actor Persona
+participant App
+actor "Quien paga" as Pagador
+participant "Wallet Core" as WC
+participant "Red EVM\n(USDC, EntryPoint, Factory)" as EVM
+participant "Stellar" as XLM
+
+== 1. Crear la cuenta: no se despliega nada ==
+Persona -> App : Crear cuenta
+App -> EVM : factory.getAddress(dueños): solo lectura, sin gas
+App --> Persona : su dirección (y su dirección Stellar, que sale de ella)
+
+== 2. Recibir dinero: tampoco se despliega ==
+Pagador -> EVM : transfer de USDC a la dirección
+note over EVM
+  El saldo queda en el contrato de USDC a nombre de esa dirección.
+  La cuenta sigue sin código: recibir no necesita firmar.
+end note
+Pagador -> XLM : USDC o XLM a la dirección Stellar
+note over XLM
+  Igual en Stellar: el saldo vive en el contrato del activo.
+end note
+
+== 3. Primera vez que saca dinero en una red EVM: se despliega ==
+Persona -> App : enviar, pagar, ahorrar...
+App -> WC : operación con initCode (factory + dueños)
+WC -> EVM : handleOps (gas patrocinado)
+EVM -> EVM : la factory crea la cuenta (CREATE2, misma dirección)\ny en la misma transacción ejecuta la operación
+
+== 4. Primera vez que envía desde Stellar: se despliega ==
+App -> WC : desplegar la smart account
+WC -> XLM : la cuenta patrocinadora la despliega\ndesde el WASM de OpenZeppelin
+App -> WC : llamada firmada (ver patrocinio)
+@enduml

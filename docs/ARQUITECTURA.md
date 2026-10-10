@@ -80,8 +80,41 @@ cuenta.
   ERC-7913). Recibe antes de existir y se crea con su primera operación.
 - **En Stellar** la cuenta es una smart account de OpenZeppelin `stellar-contracts`, cuyo firmante
   es la llave Ed25519 de Mera. Su dirección sale de la cuenta EVM: también recibe antes de existir.
-- GatoPago paga el gas en todas las redes. Agregar una llave de respaldo se firma una vez y vale en
-  todas.
+- Agregar una llave de respaldo se firma una vez y vale en todas las redes.
+
+### Quién paga el gas
+
+Las cuentas nunca pagan gas: guardan el dinero y verifican la firma de la persona. Paga GatoPago:
+
+| | Redes EVM | Stellar |
+|---|---|---|
+| Quién paga | Nuestro contrato `GatoPagoPaymaster` (sobre `PaymasterSigner` de OpenZeppelin), desde su depósito en el EntryPoint | Nuestra cuenta patrocinadora `GBG4…XDV6`, una cuenta Stellar con XLM; no es un contrato |
+| Quién decide qué se patrocina | Wallet Core firma cada patrocinio, con límite diario | Wallet Core revisa la llamada; la cuenta patrocinadora firma la transacción |
+
+La persona nunca necesita ETH, AVAX, MON ni XLM.
+
+### Despliegue diferido: no se gasta gas hasta que se usa
+
+![seq-despliegue-cuenta](diagramas/seq-despliegue-cuenta.svg)
+
+- **Crear la cuenta no cuesta gas.** La dirección se calcula (CREATE2 con los dueños iniciales) y ya
+  puede recibir dólares en las tres redes EVM y en Stellar.
+- **En EVM**, la cuenta se despliega dentro de su primera operación en **cada red**, y solo en las
+  redes donde se usa. La factory la crea y en la misma transacción se ejecuta lo que la persona
+  pidió. El gas de ambas cosas lo paga el paymaster.
+- **En Stellar**, la cuenta patrocinadora despliega la smart account la primera vez que la persona
+  envía desde Stellar. Recibir no la necesita.
+- **Cambios de llaves en una red donde la cuenta aún no existe:** se aplican antes de su primera
+  operación en esa red, en orden.
+- **Recibir no despliega.** El dinero que llega, de otra persona o de un cobro, queda en el
+  contrato del activo a nombre de la dirección. La cuenta se despliega recién cuando tiene que firmar
+  para sacar dinero.
+- **Ejemplos reales** (verificados en la cadena el 10-10):
+  - La cuenta Stellar de @dani (`CDDQAU3NJCESYIJYRHCDZZYBM7O7RBMV2ZDYKEY2NTULV25DBSWP6WDA`) tiene
+    10 USDC y 1000 XLM y **no está desplegada**.
+  - La cuenta de @testeo (`0xd3dbc9620130c2665f37b7817e9ebab82b91d9ec`) tiene la misma dirección en
+    las tres redes. Está desplegada en Arbitrum y en Avalanche, donde operó, y no en Monad, donde
+    nunca se usó.
 
 ## Login
 
@@ -124,13 +157,16 @@ si sirve para nuestras smart accounts `C…`. Si sirve, reemplazaría la consult
 
 ![red-evm](diagramas/red-evm.svg)
 
-Nuestros contratos, **la misma dirección en las tres redes** (CREATE2, verificados en Sourcify):
+Nuestros contratos, **la misma dirección en las tres redes** (CREATE2, verificados en Sourcify con
+coincidencia parcial: el código es idéntico y solo difiere el hash de metadatos del compilador).
+Los cuatro primeros son código propio construido sobre las librerías de OpenZeppelin; todos los
+desplegamos nosotros:
 
 | Contrato | Dirección |
 |---|---|
-| Factory de cuentas | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
-| Cuenta (implementación) | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
-| Paymaster | `0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1` |
+| Factory de cuentas (`GatoPagoAccountFactory`, propio) | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
+| Cuenta, implementación (`GatoPagoAccount`, propio) | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
+| Paymaster (`GatoPagoPaymaster`, propio): paga el gas | `0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1` |
 | Verificador WebAuthn (código de OpenZeppelin, desplegado por nosotros) | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
 
 Por red:
@@ -151,9 +187,11 @@ TokenMessengerV2 `0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA`.
 
 ![red-stellar](diagramas/red-stellar.svg)
 
-En Stellar **no desplegamos contratos propios**: usamos los auditados de OpenZeppelin y de Circle,
-que **ya están desplegados en testnet** por sus equipos (lo comprobamos en la red: el WASM está
-subido y los verificadores y la política responden). Lo nuestro es la cuenta patrocinadora y las
+En Stellar **no desplegamos contratos propios**: usamos código auditado de OpenZeppelin y los
+contratos de Circle, que **ya están desplegados en testnet** (lo comprobamos en la red). El
+verificador Ed25519 y la política de umbral los desplegó la cuenta
+`GAAH4OT36RRCCAGKARGPN2HLHT2NOBVFHO4GUHA6CF7UKQ4MMV24WQ4N`, la que registra el `smart-account-kit`
+de Stellar; no los desplegamos nosotros. Lo nuestro es la cuenta patrocinadora y las
 smart accounts que crea desde ese WASM, una por persona.
 
 | | Dirección |
@@ -167,6 +205,38 @@ smart accounts que crea desde ese WASM, una por persona.
 | XLM | `CDLZFC3SYJYDZT7K67VZ75HPJVIEUVNIXF47ZG2FB2RMQQVU2HHGCYSC` |
 | CCTP V2 (Circle), dominio 27 | TokenMessengerMinter `CDNG7HXAPBWICI2E3AUBP3YZWZELJLYSB6F5CC7WLDTLTHVM74SLRTHP`, CctpForwarder `CA66Q2WFBND6V4UEB7RD4SAXSVIWMD6RA4X3U32ELVFGXV5PJK4T4VSZ` |
 | Explorador | stellar.expert/explorer/testnet |
+
+**Enlaces** (stellar.expert, testnet; verificados el 10-10):
+
+- Cuenta patrocinadora de GatoPago: [GBG4…XDV6](https://stellar.expert/explorer/testnet/account/GBG4Q3UYPLS6G6FE7QYKDNVSP3SYJJ3HLZASA7VQOYALYZUMGBWZXDV6)
+- Smart accounts **desplegadas** por ella, desde el WASM `1b5f…785a` de OpenZeppelin:
+  - [CAN5…JM6D](https://stellar.expert/explorer/testnet/contract/CAN5ER6Z3SDQB5PTELJYTXIJC4C5XYMPLZLGRUCZIDIYRWKVKONQJM6D), desplegada el 08-10, con 5000 XLM.
+  - [CBRT…QVQA](https://stellar.expert/explorer/testnet/contract/CBRTCDOWOKOBI6VN3MJA5RLGGDS7CGG5PSJYFS2HHAX6M5TQNVK4QVQA), desplegada el 10-10, con 10 USDC.
+- Smart accounts **sin desplegar** (ya tienen dirección; no tienen contrato):
+  - [CDDQ…6WDA](https://stellar.expert/explorer/testnet/contract/CDDQAU3NJCESYIJYRHCDZZYBM7O7RBMV2ZDYKEY2NTULV25DBSWP6WDA), con 10 USDC y 1000 XLM recibidos.
+  - [CCAM…DIXRP](https://stellar.expert/explorer/testnet/contract/CCAM6GA7YQYVOO2D7NGWQOSUHXTUAAIROJGC7FQOOMNWHG526SIDIXRP) y [CC7U…H4RA](https://stellar.expert/explorer/testnet/contract/CC7UBLCFXZSLRJE3RUR5IT6SOOKKPBJN2EXSMDJNRZNQ4PJ2UE5JH4RA), sin saldo.
+- OpenZeppelin: [verificador Ed25519](https://stellar.expert/explorer/testnet/contract/CAAVTMCBXEIBPR64EAASKFXERVPYFZA2JYP5A3BG6PESWEFUJX5IHKN4) y [política de umbral](https://stellar.expert/explorer/testnet/contract/CB3FATQKCIRIQOCYRUPCQ2KREQ7T4RPKS7EAEOZWPEPUKWEDRVROBCEG).
+- Circle: [USDC](https://stellar.expert/explorer/testnet/contract/CBIELTK6YBZJU5UP2WWQEUCYKLPU6AUNZ2BQ4WWFEIE3USCIHMXQDAMA), [TokenMessengerMinter](https://stellar.expert/explorer/testnet/contract/CDNG7HXAPBWICI2E3AUBP3YZWZELJLYSB6F5CC7WLDTLTHVM74SLRTHP) y [CctpForwarder](https://stellar.expert/explorer/testnet/contract/CA66Q2WFBND6V4UEB7RD4SAXSVIWMD6RA4X3U32ELVFGXV5PJK4T4VSZ).
+
+**¿Por qué stellar.expert dice "unverified"?** Ese explorador verifica un contrato solo cuando su
+WASM se compiló con una atestación de su código fuente en GitHub, y el WASM de la smart account de
+OpenZeppelin no la tiene. Para confiar en él se compara su hash (`1b5f…785a`) con el que publica
+OpenZeppelin: es el mismo en todas nuestras cuentas.
+
+**¿Por qué la cuenta patrocinadora despliega las cuentas de OpenZeppelin?**
+
+- El WASM de la smart account lo publicó OpenZeppelin una sola vez. "Desplegar una cuenta" es crear
+  una instancia nueva de ese código para una persona: una transacción que alguien envía y paga. La
+  persona no tiene XLM, así que lo hace la patrocinadora.
+- La dirección de un contrato sale de quién lo despliega y de una sal. Usamos como desplegador la
+  patrocinadora y como sal el hash de la dirección EVM de la persona: la dirección se conoce desde
+  el primer día (recibe antes de existir) y solo nuestra cuenta puede crear una instancia ahí.
+- La instancia se crea con las llaves de la persona como únicas firmantes y umbral 1. La
+  patrocinadora despliega y paga comisiones, pero **no puede mover el dinero de nadie**.
+
+**¿Y el paymaster en Stellar?** No hay. En Soroban la comisión la paga la cuenta *origen* de cada
+transacción, así que no hace falta un contrato: nuestra cuenta patrocinadora cumple ese papel (ver
+abajo). En EVM sí hay paymaster, y es nuestro.
 
 - **Hacia Stellar**, Circle no acuña sola: Wallet Core trae la attestation y llama a
   `mint_and_forward`, que deposita en la smart account.
