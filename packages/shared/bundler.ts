@@ -3,6 +3,7 @@ import {
   ContractFunctionRevertedError,
   createPublicClient,
   createWalletClient,
+  decodeAbiParameters,
   encodeFunctionData,
   hexToBytes,
   http,
@@ -11,6 +12,7 @@ import {
   numberToHex,
   parseAbi,
   parseEventLogs,
+  size,
   type Address,
   type Chain,
   type Hash,
@@ -73,7 +75,30 @@ const SIGNATURE_VARIANCE_BYTES = 256n;
 
 const calldataGas = (data: Hex) =>
   hexToBytes(data).reduce((gas, byte) => gas + (byte === 0 ? 4n : 16n), 0n);
-const withMargin = (gas: bigint) => (gas * 120n) / 100n + 10_000n;
+/**
+ * Room over the simulated execution for state that moves before inclusion. Kept under the
+ * EntryPoint's 40,000 unused-gas threshold for ordinary operations (above it, 10% of the unused
+ * call gas is charged), and small because Monad charges the transaction's whole gas limit.
+ */
+const withMargin = (gas: bigint) => (gas * 110n) / 100n + 10_000n;
+
+/**
+ * Extra calldata gas to reserve for the final signature. An owner signature is `(bytes[] signers,
+ * bytes[] signatures)`: ECDSA ones (Mera keys) are always 65 bytes, as in the stub; a passkey's
+ * WebAuthn signature can carry a longer clientDataJSON than its stub.
+ */
+function signatureVariance(signature: Hex) {
+  try {
+    const [, signatures] = decodeAbiParameters(
+      [{ type: 'bytes[]' }, { type: 'bytes[]' }],
+      signature,
+    );
+    if (signatures.length > 0 && signatures.every((one) => size(one) === 65)) return 0n;
+  } catch {
+    // Not an owner signature: keep the reserve.
+  }
+  return SIGNATURE_VARIANCE_BYTES * 16n;
+}
 
 /** The signed `handleOps` transaction carrying one UserOperation. */
 interface BundledTransaction {
@@ -192,17 +217,34 @@ export function createBundler(parameters: {
               }),
             },
           ];
-    try {
-      const used = await publicClient.estimateGas({
-        account: entryPoint09Address,
-        to: operation.sender,
-        data: operation.callData,
-        stateOverride,
-      });
-      return withMargin(used - 21_000n - calldataGas(operation.callData));
-    } catch {
-      throw new BundlerRpcError(-32500, 'UserOperation execution reverts');
-    }
+    const [used, l1] = await Promise.all([
+      publicClient
+        .estimateGas({
+          account: entryPoint09Address,
+          to: operation.sender,
+          data: operation.callData,
+          stateOverride,
+        })
+        .catch(() => {
+          throw new BundlerRpcError(-32500, 'UserOperation execution reverts');
+        }),
+      // Arbitrum's estimate includes the L1 data of this call; `preVerificationGas` prices the
+      // whole bundle's, once.
+      l1Gas(operation.sender, operation.callData),
+    ]);
+    return withMargin(used - l1 - 21_000n - calldataGas(operation.callData));
+  }
+
+  /** L2 gas a transaction to `to` with `data` pays for its L1 data on Arbitrum (0 elsewhere). */
+  async function l1Gas(to: Address, data: Hex) {
+    if (l1Fees !== 'arbitrum') return 0n;
+    const [l1] = await publicClient.readContract({
+      address: ARBITRUM_NODE_INTERFACE,
+      abi: nodeInterfaceAbi,
+      functionName: 'gasEstimateL1Component',
+      args: [to, false, data],
+    });
+    return l1;
   }
 
   /** Gas the EntryPoint does not meter: transaction intrinsic and calldata, plus L1 data on Arbitrum. */
@@ -212,18 +254,14 @@ export function createBundler(parameters: {
       functionName: 'handleOps',
       args: [[toPackedUserOperation(operation)], relayer.address],
     });
-    let total =
-      21_000n + calldataGas(bundle) + SIGNATURE_VARIANCE_BYTES * 16n + PER_OPERATION_OVERHEAD;
-    if (l1Fees === 'arbitrum') {
-      const [l1] = await publicClient.readContract({
-        address: ARBITRUM_NODE_INTERFACE,
-        abi: nodeInterfaceAbi,
-        functionName: 'gasEstimateL1Component',
-        args: [entryPoint09Address, false, bundle],
-      });
-      total += (l1 * 125n) / 100n; // L1 prices move between estimation and inclusion.
-    }
-    return total;
+    const l1 = await l1Gas(entryPoint09Address, bundle);
+    return (
+      21_000n +
+      calldataGas(bundle) +
+      signatureVariance(operation.signature) +
+      PER_OPERATION_OVERHEAD +
+      (l1 * 125n) / 100n // L1 prices move between estimation and inclusion.
+    );
   }
 
   async function send(operation: UserOperation<'0.9'>) {

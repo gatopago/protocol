@@ -320,6 +320,9 @@ async function send(
   // without paying for unused call gas or a fixed preVerificationGas.
   expect(receipt.actualGasUsed).toBeGreaterThanOrEqual(receipt.receipt.gasUsed);
   expect(receipt.actualGasUsed).toBeLessThan((receipt.receipt.gasUsed * 115n) / 100n);
+  // Monad charges the transaction's whole gas limit, so the margins above execution stay small.
+  const { gas } = await on.publicClient.getTransaction({ hash: receipt.receipt.transactionHash });
+  expect(gas).toBeLessThan((receipt.receipt.gasUsed * 125n) / 100n);
 }
 
 const depositForBurnAbi = parseAbi([
