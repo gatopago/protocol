@@ -120,6 +120,8 @@ function network(chain: Chain, fork: string, port: number, p256: boolean) {
   let bundler: ReturnType<typeof createBundler> | undefined;
   /** Between the bundler and the node: can lose the next broadcast (request or response). */
   let loseNextBroadcast: 'request' | 'response' | undefined;
+  /** Runs after the node answers the next receipt request, before the bundler gets the answer. */
+  let afterNextReceipt: (() => Promise<unknown>) | undefined;
   const proxy = createServer(async (request, response) => {
     let body = '';
     for await (const chunk of request) body += chunk;
@@ -136,6 +138,11 @@ function network(chain: Chain, fork: string, port: number, p256: boolean) {
               headers: { 'Content-Type': 'application/json' },
             })
           ).text();
+    if (JSON.parse(body).method === 'eth_getTransactionReceipt' && afterNextReceipt) {
+      const run = afterNextReceipt;
+      afterNextReceipt = undefined;
+      await run();
+    }
     response.setHeader('Content-Type', 'application/json');
     response.end(
       loss
@@ -156,6 +163,9 @@ function network(chain: Chain, fork: string, port: number, p256: boolean) {
     bundlerUrl: `http://127.0.0.1:${port + 1}`,
     loseNextBroadcast(part: 'request' | 'response') {
       loseNextBroadcast = part;
+    },
+    afterNextReceipt(run: () => Promise<unknown>) {
+      afterNextReceipt = run;
     },
     async rpc(method: string, params: unknown[] = []) {
       return publicClient.request({ method: method as never, params: params as never });
@@ -1189,6 +1199,21 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
       });
       expect(receipt.success).toBe(true);
     }
+  }, 60_000);
+
+  it('waits for a bundle mined between reading its receipt and the relayer nonce', async () => {
+    const { bundlerClient, operation, hash } = await signedTransfer(1_000_000n);
+    await arbitrum.rpc('evm_setAutomine', [false]);
+    try {
+      await bundlerClient.sendUserOperation(operation);
+      // The node answers "no receipt yet", then the block with the bundle lands.
+      arbitrum.afterNextReceipt(() => arbitrum.rpc('evm_mine'));
+      expect(await arbitrum.bundler().handle('eth_getUserOperationReceipt', [hash])).toBeNull();
+    } finally {
+      await arbitrum.rpc('evm_setAutomine', [true]);
+    }
+    const receipt = await bundlerClient.waitForUserOperationReceipt({ hash, pollingInterval: 200 });
+    expect(receipt.success).toBe(true);
   }, 60_000);
 
   it('reports a reverted bundle instead of waiting forever, so the operation can be resent', async () => {

@@ -372,15 +372,18 @@ export function createBundler(parameters: {
   async function receipt(userOpHash: Hash) {
     const bundled = await store.get<BundledTransaction>(`op:${userOpHash}`);
     if (!bundled) return null;
+    // The nonce is read before the receipt: used already and still no receipt means another
+    // transaction took it. The other way round, a block landing between the two reads looks the same
+    // and an included operation would be forgotten.
+    const confirmed = await publicClient.getTransactionCount({
+      address: relayer.address,
+      blockTag: 'latest',
+    });
     const rpcReceipt = (await publicClient.request({
       method: 'eth_getTransactionReceipt',
       params: [bundled.transactionHash],
     })) as RpcTransactionReceipt | null;
     if (!rpcReceipt) {
-      const confirmed = await publicClient.getTransactionCount({
-        address: relayer.address,
-        blockTag: 'latest',
-      });
       if (confirmed > bundled.nonce)
         return notIncluded(
           userOpHash,
