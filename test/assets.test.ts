@@ -15,6 +15,7 @@ describe('wallet assets', () => {
     expect(assets.map(({ symbol, name }) => [symbol, name])).toEqual([
       ['USDC', 'USD Coin'],
       ['AUSD', 'Agora Dollar'],
+      ['CTK', 'Constant Token (test)'],
       ['ETH', 'Ether'],
       ['AVAX', 'Avalanche'],
       ['MON', 'Monad'],
@@ -36,6 +37,12 @@ describe('wallet assets', () => {
         faucet: '0xd236c18D274E54FAccC3dd9DDA4b27965a73ee6C',
       },
     ]);
+    // A test token is listed, marked as one; real coins are not.
+    expect(
+      walletAssets(ids)
+        .filter(({ test }) => test)
+        .map(({ symbol }) => symbol),
+    ).toEqual(['CTK']);
     // Without Monad configured, AUSD is not a coin of the wallet.
     expect(walletAssets(['eip155:421614']).map(({ symbol }) => symbol)).toEqual(['USDC', 'ETH']);
   });

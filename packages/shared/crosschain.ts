@@ -131,11 +131,17 @@ export interface CrosschainStatus {
   readonly attested: { readonly message: Hex; readonly attestation: Hex } | null;
 }
 
-/** The stage of the crossing burned by `transactionHash` on `from`, as Circle's Iris API reports it. */
+/**
+ * The stage of the crossing burned by `transactionHash` on `from`, as Circle's Iris API reports it.
+ * A transaction may carry several burns: `which` picks this crossing's message by its attested
+ * bytes (one not attested yet has none to compare, and waits). Without it, several burns cannot be
+ * told apart and the answer is `CCTP_MULTIPLE_MESSAGES`, never another burn's stage.
+ */
 export async function crosschainStatus(
   from: CctpNetwork,
   transactionHash: string,
   signal?: AbortSignal,
+  which?: (message: Hex) => boolean,
 ): Promise<CrosschainStatus> {
   const response = await fetch(
     `${iris(from)}/v2/messages/${from.cctp.domain}?transactionHash=${transactionHash}`,
@@ -153,7 +159,14 @@ export async function crosschainStatus(
       forwardTxHash?: Hex;
     }[];
   };
-  const message = messages?.[0];
+  const all = messages ?? [];
+  let message: (typeof all)[number] | undefined = all[0];
+  if (all.length > 1) {
+    if (!which) throw new Error('CCTP_MULTIPLE_MESSAGES');
+    message = all.find(
+      (candidate) => candidate.message && candidate.message !== '0x' && which(candidate.message),
+    );
+  }
   const forwardTxHash = message?.forwardTxHash ?? null;
   const attested =
     message?.status === 'complete' && message.message && message.attestation

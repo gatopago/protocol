@@ -1,4 +1,4 @@
-import { Asset, Keypair, rpc, scValToNative, xdr } from '@stellar/stellar-sdk';
+import { Account, Asset, Keypair, rpc, scValToNative, xdr } from '@stellar/stellar-sdk';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { bytesToHex } from 'viem';
 import { privateKeyToAddress, generatePrivateKey } from 'viem/accounts';
@@ -23,7 +23,6 @@ import {
   stellarBurnAllowance,
   type StellarKey,
   stellarSigner,
-  stellarNonceUsed,
   stellarBalance,
   stellarUsdcBalance,
   transferOperation,
@@ -141,6 +140,76 @@ describe('CCTP with Stellar', () => {
 });
 
 // Stellar has no forks: these run on testnet, with XLM's asset contract standing in for USDC.
+describe('a sponsor transaction whose result is not known', () => {
+  const keypair = Keypair.random();
+  const operation = transferOperation(testnet, keypair.publicKey(), keypair.publicKey(), 1n);
+  /** A network that takes the transaction as built and answers sending and polling as told. */
+  const fake = (answers: { send: () => Promise<unknown>; poll?: () => Promise<unknown> }) =>
+    ({
+      getAccount: async (id: string) => new Account(id, '1'),
+      prepareTransaction: async (transaction: unknown) => transaction,
+      sendTransaction: answers.send,
+      pollTransaction: answers.poll ?? (async () => ({ status: 'SUCCESS', ledger: 1 })),
+    }) as unknown as rpc.Server;
+  const send = async (server: rpc.Server) => {
+    let recorded = '';
+    const outcome = await sendStellarOperation(server, testnet, keypair, operation, {
+      onSigned: async (hash) => void (recorded = hash),
+    }).then(
+      ({ hash }) => hash,
+      (error: Error) => error.message,
+    );
+    return { recorded, outcome };
+  };
+
+  it('is pending, with its hash, once it may have reached the network', async () => {
+    const lost = async () => {
+      throw new Error('RPC disconnected after submission');
+    };
+    for (const server of [
+      fake({ send: lost }),
+      fake({ send: async () => ({ status: 'DUPLICATE' }) }),
+      fake({ send: async () => ({ status: 'PENDING' }), poll: lost }),
+      fake({
+        send: async () => ({ status: 'PENDING' }),
+        poll: async () => ({ status: 'NOT_FOUND' }),
+      }),
+    ]) {
+      const { recorded, outcome } = await send(server);
+      expect(recorded).toMatch(/^[0-9a-f]{64}$/);
+      expect(outcome).toBe(`STELLAR_TRANSACTION_PENDING: ${recorded}`);
+    }
+    const landed = await send(fake({ send: async () => ({ status: 'PENDING' }) }));
+    expect(landed.outcome).toBe(landed.recorded);
+  });
+
+  it('is rejected only when the network refused or failed it', async () => {
+    const refused = await send(fake({ send: async () => ({ status: 'ERROR' }) }));
+    expect(refused.outcome).toBe('STELLAR_SEND_FAILED: ERROR');
+    const failed = await send(
+      fake({ send: async () => ({ status: 'PENDING' }), poll: async () => ({ status: 'FAILED' }) }),
+    );
+    expect(failed.outcome).toBe(`STELLAR_TRANSACTION_FAILED: ${failed.recorded}`);
+  });
+
+  it('is not sent when it could not be recorded', async () => {
+    const sendTransaction = vi.fn();
+    const unrecorded = sendStellarOperation(
+      fake({ send: sendTransaction }),
+      testnet,
+      keypair,
+      operation,
+      {
+        onSigned: async () => {
+          throw new Error('D1_UNAVAILABLE');
+        },
+      },
+    );
+    await expect(unrecorded).rejects.toThrow('D1_UNAVAILABLE');
+    expect(sendTransaction).not.toHaveBeenCalled();
+  });
+});
+
 describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
   const server = new rpc.Server(testnet.rpcUrl);
   const network = { ...testnet, usdc: testnet.xlm };
@@ -212,20 +281,24 @@ describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
       signed(transferOperation(network, account, sponsor.publicKey(), 1n), backup),
     ).rejects.toThrow();
 
-    // What the app sends through Wallet Core, and how it finds out the call landed.
+    // What the app sends through Wallet Core, which learns the hash before broadcasting it.
     const call = await signedStellarCall(server, network, {
       sponsor: sponsor.publicKey(),
       operation: transferOperation(network, account, sponsor.publicKey(), 1_000_000n),
       owner: phone,
     });
-    expect(await stellarNonceUsed(server, account, call.nonces[0])).toBe(false);
-    await send(
+    let recorded = '';
+    const { hash } = await sendStellarOperation(
+      server,
+      network,
+      sponsor,
       signedCallOperation(
         xdr.HostFunction.fromXdr(call.func, 'base64'),
         call.auth.map((entry) => xdr.SorobanAuthorizationEntry.fromXdr(entry, 'base64')),
       ),
+      { onSigned: async (signedHash) => void (recorded = signedHash) },
     );
-    expect(await stellarNonceUsed(server, account, call.nonces[0])).toBe(true);
+    expect(recorded).toBe(hash);
     expect(await stellarUsdcBalance(server, network, account)).toBe(9_000_000n);
   });
 

@@ -72,4 +72,24 @@ describe('CCTP transfers', () => {
       { signal: undefined },
     );
   });
+
+  it("answers for the crossing's own burn when a transaction carries several", async () => {
+    const hash = `0x${'ab'.repeat(32)}` as const;
+    const twoBurns = {
+      messages: [
+        { status: 'complete', message: '0x01', attestation: '0x0a', forwardState: 'PENDING' },
+        { status: 'complete', message: '0x02', attestation: '0x0b', forwardState: 'PENDING' },
+      ],
+    };
+    vi.stubGlobal('fetch', async () => Response.json(twoBurns));
+    // Without telling which, another burn's stage is never the answer.
+    await expect(crosschainStatus(arbitrum, hash)).rejects.toThrow('CCTP_MULTIPLE_MESSAGES');
+    const second = await crosschainStatus(arbitrum, hash, undefined, (m) => m === '0x02');
+    expect(second.attested).toEqual({ message: '0x02', attestation: '0x0b' });
+    // Not attested yet, there is nothing to compare: it waits.
+    vi.stubGlobal('fetch', async () =>
+      Response.json({ messages: [{ status: 'pending' }, { status: 'pending' }] }),
+    );
+    expect((await crosschainStatus(arbitrum, hash, undefined, () => true)).stage).toBe('burned');
+  });
 });

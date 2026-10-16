@@ -35,6 +35,17 @@ export async function readJson<T>(request: Request, limit: number): Promise<T> {
   }
 }
 
+/** A Cloudflare Rate Limiting binding. */
+interface Limiter {
+  limit(options: { key: string }): Promise<{ success: boolean }>;
+}
+
+/** Spends one request of `key`'s budget (a client, a merchant); 429 once it is spent. */
+export async function rateLimit(limiter: Limiter, key: string): Promise<void> {
+  const { success } = await limiter.limit({ key });
+  if (!success) throw new HttpError(429, 'RATE_LIMITED');
+}
+
 /** The body as text, of at most `limit` bytes: reading stops as soon as it is larger. */
 export async function readBody(request: Request, limit: number): Promise<string> {
   if (Number(request.headers.get('Content-Length')) > limit)

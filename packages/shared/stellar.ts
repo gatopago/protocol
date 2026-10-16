@@ -432,36 +432,50 @@ async function passkeyProof(owner: WebAuthnAccount, digest: Uint8Array) {
 const invocations = (invocation: xdr.SorobanAuthorizedInvocation): number =>
   1 + invocation.subInvocations.reduce((total, sub) => total + invocations(sub), 0);
 
+/** Seconds a sponsor transaction may land in: past its time bound, the network rejects it. */
+export const STELLAR_TRANSACTION_SECONDS = 60;
+
 /**
  * Sends `operation` from the sponsor `keypair`, which pays its fee (at most `maxFee` stroops, when
  * given). Contract calls carry their signed authorization (`signedCallOperation`). Resolves once the
- * network applied it.
+ * network applied it. `onSigned` gets the transaction's hash before it is broadcast, to record it.
+ * Once broadcast, not learning the result is `STELLAR_TRANSACTION_PENDING: <hash>`, never a
+ * rejection: the transaction may still land until its time bound.
  */
 export async function sendStellarOperation(
   server: rpc.Server,
   network: StellarNetwork,
   keypair: Keypair,
   operation: xdr.Operation,
-  options: { maxFee?: bigint } = {},
+  options: { maxFee?: bigint; onSigned?: (hash: string) => Promise<void> } = {},
 ) {
   const transaction = new TransactionBuilder(await server.getAccount(keypair.publicKey()), {
     fee: '100',
     networkPassphrase: network.passphrase,
   })
     .addOperation(operation)
-    .setTimeout(60)
+    .setTimeout(STELLAR_TRANSACTION_SECONDS)
     .build();
   const prepared = await server.prepareTransaction(transaction);
   if (options.maxFee !== undefined && BigInt(prepared.fee) > options.maxFee)
     throw new Error('STELLAR_FEE_TOO_HIGH');
   prepared.sign(keypair);
-  const sent = await server.sendTransaction(prepared);
+  const hash = bytesToHex(prepared.hash()).slice(2);
+  await options.onSigned?.(hash);
+  const pending = () => new Error(`STELLAR_TRANSACTION_PENDING: ${hash}`);
+  const sent = await server.sendTransaction(prepared).catch(() => {
+    throw pending();
+  });
+  // Already in the network's queue: it may land.
+  if (sent.status === 'DUPLICATE') throw pending();
+  // Refused before queueing (malformed, out of sequence, or the queue is full): it cannot land.
   if (sent.status !== 'PENDING') throw new Error(`STELLAR_SEND_FAILED: ${sent.status}`);
-  const result = await server.pollTransaction(sent.hash, { attempts: 30 });
-  // Not seen yet is not failed: it may still land until its time bound.
-  if (result.status === 'NOT_FOUND') throw new Error(`STELLAR_TRANSACTION_PENDING: ${sent.hash}`);
-  if (result.status !== 'SUCCESS') throw new Error(`STELLAR_TRANSACTION_FAILED: ${sent.hash}`);
-  return { hash: sent.hash, ledger: result.ledger, returnValue: result.returnValue };
+  const result = await server.pollTransaction(hash, { attempts: 30 }).catch(() => {
+    throw pending();
+  });
+  if (result.status === 'NOT_FOUND') throw pending();
+  if (result.status !== 'SUCCESS') throw new Error(`STELLAR_TRANSACTION_FAILED: ${hash}`);
+  return { hash, ledger: result.ledger, returnValue: result.returnValue };
 }
 
 /** A contract call with its signed authorization, ready for `sendStellarOperation`. */
@@ -478,9 +492,9 @@ const SIGNATURE_LEDGERS = 60;
 
 /**
  * Prepares `operation` with the `sponsor` paying and signs it with one of the account's passkeys,
- * as base64 XDR for Wallet Core to send (`POST /app/v1/stellar/submit`). Once the call lands, its
- * `nonces` are used (`stellarNonceUsed`) and Wallet Core remembers them: how a lost answer is found
- * out. Unused at `validUntil`, it never landed.
+ * as base64 XDR for Wallet Core to send (`POST /app/v1/stellar/submit`). Wallet Core records the call
+ * by its `nonces` before sending it: how a lost answer is found out. Past `validUntil` the signature
+ * no longer works.
  */
 export async function signedStellarCall(
   server: rpc.Server,
@@ -505,21 +519,6 @@ export async function signedStellarCall(
     ),
     validUntil,
   };
-}
-
-/**
- * Whether `account` used the authorization `nonce`, that is, whether the call it signed landed.
- * The network remembers it until the signature's `validUntil` ledger.
- */
-export async function stellarNonceUsed(server: rpc.Server, account: string, nonce: string) {
-  const key = xdr.LedgerKey.contractData(
-    new xdr.LedgerKeyContractData({
-      contract: new StellarAddress(account).toScAddress(),
-      key: xdr.ScVal.scvLedgerKeyNonce(new xdr.ScNonceKey({ nonce: BigInt(nonce) })),
-      durability: xdr.ContractDataDurability.temporary,
-    }),
-  );
-  return (await server.getLedgerEntries(key)).entries.length > 0;
 }
 
 /**
@@ -611,7 +610,9 @@ export async function stellarAccountExists(server: rpc.Server, account: string) 
 
 /**
  * The parts of a CCTP V2 burn message a relayer checks: its destination, who burned it, how much,
- * and the Stellar recipient its CctpForwarder hook names (null without one).
+ * and the Stellar recipient its CctpForwarder hook names (null without one). Layout: a 148-byte
+ * header with `destinationDomain` at bytes 8-12, then the BurnMessage body with `amount` at +68,
+ * `messageSender` at +100 and `hookData` from +228: bytes 216, 248 and 376 of the message.
  */
 export function burnMessage(message: Hex) {
   const word = (offset: number) => slice(message, offset, offset + 32);

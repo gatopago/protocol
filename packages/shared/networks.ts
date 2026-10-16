@@ -27,11 +27,8 @@ export interface WalletNetwork {
     readonly address: Address;
     readonly decimals: number;
     readonly faucet?: Address;
-    /**
-     * Only the other side of an Instant Settlement pair: a recipient may receive it, but it is not
-     * a coin the wallet holds or lists.
-     */
-    readonly settlementOnly?: true;
+    /** A test token, worth nothing: the wallet lists it, and says so. */
+    readonly test?: true;
   }[];
   /** Transactions also pay for L1 data (priced into `preVerificationGas` by the bundler). */
   readonly l1Fees?: 'arbitrum';
@@ -134,13 +131,13 @@ export const walletNetworks = {
         faucet: '0xd236c18D274E54FAccC3dd9DDA4b27965a73ee6C',
       },
       // Agora's test token, the other side of its testnet Instant Settlement pair: it stands for
-      // the coin a recipient keeps (USDC in the mainnet pair).
+      // the coin a recipient keeps (USDC in the mainnet pair). It settles back into AUSD.
       {
         symbol: 'CTK',
         name: 'Constant Token (test)',
         address: '0x7BEb5D9DB0d85cBEa543C04f0dE8c23c2176cd9D',
         decimals: 18,
-        settlementOnly: true,
+        test: true,
       },
     ],
     // docs.agora.finance/instant-settlement/protocol-deployments

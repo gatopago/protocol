@@ -14,6 +14,8 @@ export interface WalletAsset {
   readonly decimals: number;
   /** Where it lives: each network and its token contract (`null` for the native coin). */
   readonly holdings: readonly WalletHolding[];
+  /** A test token, worth nothing (Agora's CTK): screens say so wherever they show it. */
+  readonly test?: true;
 }
 
 export interface WalletHolding {
@@ -32,9 +34,18 @@ const NAMES: Record<string, string> = { ETH: 'Ether', AVAX: 'Avalanche', MON: 'M
  * that network's native coin (its USDC is counted apart, through CCTP).
  */
 export function walletAssets(networkIds: readonly string[], stellarId?: string): WalletAsset[] {
-  const coins = new Map<string, { name: string; decimals: number; holdings: WalletHolding[] }>();
-  const add = (symbol: string, name: string, decimals: number, holding: WalletHolding) => {
-    const coin = coins.get(symbol) ?? { name, decimals, holdings: [] };
+  const coins = new Map<
+    string,
+    { name: string; decimals: number; holdings: WalletHolding[]; test?: true }
+  >();
+  const add = (
+    symbol: string,
+    name: string,
+    decimals: number,
+    holding: WalletHolding,
+    test?: true,
+  ) => {
+    const coin = coins.get(symbol) ?? { name, decimals, holdings: [], ...(test ? { test } : {}) };
     coin.holdings.push(holding);
     coins.set(symbol, coin);
   };
@@ -42,12 +53,13 @@ export function walletAssets(networkIds: readonly string[], stellarId?: string):
     add('USDC', 'USD Coin', 6, { networkId, token: walletNetwork(networkId).usdc });
   for (const networkId of networkIds)
     for (const token of walletNetwork(networkId).tokens ?? [])
-      if (!token.settlementOnly)
-        add(token.symbol, token.name, token.decimals, {
-          networkId,
-          token: token.address,
-          ...(token.faucet ? { faucet: token.faucet } : {}),
-        });
+      add(
+        token.symbol,
+        token.name,
+        token.decimals,
+        { networkId, token: token.address, ...(token.faucet ? { faucet: token.faucet } : {}) },
+        token.test,
+      );
   for (const networkId of networkIds) {
     const { symbol, name, decimals } = walletNetwork(networkId).chain.nativeCurrency;
     add(symbol, NAMES[symbol] ?? name, decimals, { networkId, token: null });
