@@ -1,0 +1,27 @@
+@startuml mera
+!pragma layout smetana
+skinparam componentStyle rectangle
+
+component "Passkey\n(fingerprint or face, synced by iCloud or Google)" as pk
+component "PRF output\n(32 bytes, always the same for that passkey)" as prf
+component "BIP-39 seed" as seed
+component "EVM key\nm/44'/60'/0'/0/0" as evm
+component "Stellar key\nSEP-5 m/44'/148'/0'" as xlm
+component "Business key\n(another salt, only to sign in to the console)" as biz
+component "GatoPago EVM account\n(the key is its owner)" as account
+component "Stellar smart account\n(the key is its signer)" as sa
+
+pk --> prf : WebAuthn PRF
+pk --> biz : PRF with another salt
+prf --> seed
+seed --> evm
+seed --> xlm
+evm --> account
+xlm --> sa
+
+note right of seed
+  No phrase to write down: the passkey regenerates it.
+  Keys live in memory; one fingerprint opens a
+  15-minute session without asking again.
+end note
+@enduml

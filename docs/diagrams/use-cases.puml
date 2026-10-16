@@ -1,0 +1,27 @@
+@startuml use-cases
+left to right direction
+skinparam actorStyle awesome
+skinparam packageStyle rectangle
+
+actor Person
+actor Merchant
+
+rectangle "GatoPago" {
+  usecase "Create an account and sign in\nwith a fingerprint" as account
+  usecase "Hold, send and receive dollars" as money
+  usecase "Pay a merchant" as pay
+  usecase "Pay a group" as group
+  usecase "Save and swap coins" as defi
+  usecase "Move between networks\n(Stellar included)" as networks
+  usecase "Charge in dollars\n(console or API)" as charge
+}
+
+Person --> account
+Person --> money
+Person --> pay
+Person --> group
+Person --> defi
+Person --> networks
+Merchant --> charge
+pay ..> charge
+@enduml

@@ -1,0 +1,20 @@
+@startuml seq-crosschain
+actor Person
+participant "Source network" as Source
+participant "Circle CCTP" as Circle
+participant "Wallet Core" as WC
+participant "Destination network" as Dest
+
+Person -> Source : burns USDC (CCTP)
+Circle -> Circle : attestation
+alt EVM destination
+  Circle -> Dest : the Forwarding Service mints
+else Stellar destination
+  WC -> Circle : asks for the attestation
+  WC -> Dest : mint_and_forward to the smart account
+end
+note over Person
+  From Stellar it is the same: the smart account burns
+  and Circle mints on the EVM network.
+end note
+@enduml

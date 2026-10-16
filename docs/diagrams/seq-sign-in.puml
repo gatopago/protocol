@@ -1,0 +1,25 @@
+@startuml seq-sign-in
+actor Person
+participant App
+participant "Wallet Core" as WC
+participant "Home network" as Net
+
+alt create an account
+  Person -> App : Create account (name, @username)
+  App -> App : new passkey with PRF → Mera derives the EVM key
+  App -> Net : account address (factory, CREATE2)
+else sign in
+  Person -> App : Sign in
+  App -> App : fingerprint → Mera derives the EVM key
+  App -> WC : which account and owners does it know?
+  App -> Net : checks the key is an owner
+end
+App -> WC : SIWE message signed by the account (ERC-1271 / ERC-6492)
+WC -> Net : checks the signature and the owners
+WC --> App : session (24 h)
+note over WC
+  A new account passes Turnstile.
+  If the database were lost, the account is found
+  onchain and registered again.
+end note
+@enduml

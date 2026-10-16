@@ -82,6 +82,9 @@ Desktop.ini
 *.swp
 *.swo
 
+# The architecture document exported to PDF (generated from docs/ARQUITECTURA.md)
+/docs/ARQUITECTURA.pdf
+
 # Foundry dependencies, generated artifacts and raw transaction broadcasts
 /contracts/lib/
 /contracts/out/

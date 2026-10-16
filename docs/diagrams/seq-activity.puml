@@ -1,0 +1,27 @@
+@startuml seq-activity
+participant "EVM networks" as EVM
+participant "Alchemy" as Al
+participant "Envio HyperSync" as Envio
+participant "Stellar RPC" as SR
+participant "Wallet Core" as WC
+participant "Firebase (FCM)" as FCM
+actor Person
+
+== EVM networks: real time, then reconciled ==
+EVM -> Al : transfer to a member
+Al -> WC : signed webhook (Address Activity)
+WC -> FCM : notification
+FCM -> Person : "You received 3.00 USDC"
+loop every 10 minutes
+  WC -> Envio : logs of every member in one query
+  Envio --> WC : what the webhook missed (and new accounts' history)
+end
+
+== Stellar: periodic query ==
+loop every minute
+  WC -> SR : getEvents of USDC and XLM, filtered by members' accounts
+  SR --> WC : new transfers
+  WC -> FCM : notification
+end
+FCM -> Person : "You received 10 XLM"
+@enduml

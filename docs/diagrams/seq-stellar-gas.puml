@@ -1,0 +1,18 @@
+@startuml seq-stellar-gas
+actor Person
+participant App
+participant "Wallet Core" as WC
+participant "StellarRelayer\n(sponsor account G…)" as Rel
+participant "Stellar" as XLM
+participant "Person's smart\naccount (C…)" as SA
+
+Person -> App : send USDC or XLM, move to EVM
+App -> App : the Ed25519 key signs only the authorization\nof that call (expires in 5 min)
+App -> WC : call + signed authorization
+WC -> WC : is the call allowed?\ndoes it avoid the sponsor's authority?\nis it within the daily budget?
+WC -> Rel : send
+Rel -> XLM : transaction with the sponsor account as source:\nit signs and pays the fee (max 0.5 XLM)
+XLM -> SA : __check_auth: verifies the Ed25519 signature
+SA -> SA : executes the call
+WC --> App : transaction hash
+@enduml

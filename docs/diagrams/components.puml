@@ -1,0 +1,36 @@
+@startuml components
+!pragma layout smetana
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+
+Container_Boundary(wc, "Wallet Core (Cloudflare Worker)") {
+  Component(api, "API /app/v1", "HTTP", "Sessions, profile, contacts, groups, approvals, Business")
+  Component(pay, "Paymaster", "HTTP", "Sponsors gas within daily limits")
+  Component(bundler, "Bundler", "Durable Object, one per network", "Sends ERC-4337 operations")
+  Component(relayer, "StellarRelayer", "Durable Object", "Sends Stellar transactions and mints CCTP toward Stellar")
+  Component(crons, "Crons", "1 min, 10 min, 1 h", "Indexes movements (EVM and Stellar), registers accounts, notifies, cleans up")
+  Component(hook, "Alchemy webhook", "HTTP", "Movements in real time")
+  ComponentDb(db, "D1", "SQLite", "16 tables")
+}
+
+Container_Boundary(fl, "Flow (Cloudflare Worker)") {
+  Component(fapi, "API /v1 and /checkout/v1", "HTTP", "Charges, API keys, webhooks")
+  Component(fcron, "Cron", "1 min", "Confirms payments and crossings, delivers webhooks")
+  ComponentDb(fdb, "D1", "SQLite", "7 tables")
+}
+
+System_Ext(networks, "EVM networks and Stellar")
+System_Ext(ext, "Circle, Alchemy, Envio, FCM")
+
+Rel(api, db, "")
+Rel(pay, db, "")
+Rel(crons, db, "")
+Rel(hook, db, "")
+Rel(bundler, networks, "handleOps")
+Rel(relayer, networks, "Soroban")
+Rel(crons, networks, "reads events")
+Rel(crons, ext, "HyperSync, FCM, attestations")
+Rel(fapi, fdb, "")
+Rel(fcron, networks, "reads PaymentSent")
+Rel(fapi, api, "validates every session")
+@enduml

@@ -84,8 +84,9 @@ to and from the EVM networks with CCTP (domain 27). No contract of ours runs the
 - **Signing**: `signStellarAuth` signs the account's authorization entries with the same viem
   `WebAuthnAccount` used on EVM; `prepareStellarCall` simulates with the sponsor as source and
   `sendStellarOperation` sends with the sponsor paying. Apps use `signedStellarCall`, which does
-  both and returns base64 XDR for the backend. Signatures last five minutes; until then
-  `stellarNonceUsed` tells whether a call whose answer was lost landed.
+  both and returns base64 XDR for the backend. Signatures last five minutes. Once a transaction is
+  broadcast, an unknown outcome is `STELLAR_TRANSACTION_PENDING: <hash>`, never a rejection
+  (`onSigned` hands over the hash before it is sent), so a lost answer is looked up, not repeated.
 - **Coins**: USDC and XLM (the network's own coin, `network.xlm`), both through their Stellar
   Asset Contracts: `transferOperation` takes the token (USDC by default) and `stellarBalance` reads
   either. `isStellarAddress` accepts accounts (`G…`) and contracts (`C…`). An account without a
@@ -193,6 +194,9 @@ pnpm test                # end-to-end test: needs anvil and internet access (for
 pnpm pack                # writes the SDK tarballs to output/
 node scripts/storage-layout.mjs   # account upgrade compatibility (also in CI)
 ```
+
+On Windows, if `pnpm contracts:install` fails with `Clone succeeded, but checkout failed`, the
+dependencies' paths are too long: run `git config --global core.longpaths true` and try again.
 
 CI also checks formatting, the wallet gas snapshot (`contracts/.gas-snapshot`) and runs Slither.
 Slither cannot analyze three OpenZeppelin functions the account inherits

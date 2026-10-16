@@ -1,0 +1,25 @@
+@startuml evm-network
+!pragma layout smetana
+!include <C4/C4_Component>
+LAYOUT_TOP_DOWN()
+
+Container(wc, "Wallet Core", "GatoPago", "Sends operations and pays the gas")
+
+Boundary(net, "Each EVM network: Arbitrum Sepolia, Avalanche Fuji, Monad testnet") {
+  Component_Ext(ep, "EntryPoint v0.9", "ERC-4337")
+  Component(pm, "Paymaster", "GatoPago", "Pays the gas")
+  Component(fac, "Factory", "GatoPago", "Creates the accounts")
+  Component(account, "Person's account", "GatoPago", "Smart account, same address on every network")
+  Component(router, "PaymentRouter", "GatoPago", "Pays Flow charges")
+  Component_Ext(usdc, "USDC and CCTP", "Circle")
+  Component_Ext(defi, "Aave, Uniswap, Agora", "DeFi")
+}
+
+Rel(wc, ep, "signed operation")
+Rel(ep, pm, "charges the gas")
+Rel(ep, fac, "creates on the first operation")
+Rel(ep, account, "executes")
+Rel(account, usdc, "sends and moves between networks")
+Rel(account, defi, "saves and swaps")
+Rel(account, router, "pays a charge")
+@enduml

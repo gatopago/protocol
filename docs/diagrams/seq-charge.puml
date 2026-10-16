@@ -1,0 +1,16 @@
+@startuml seq-charge
+participant Merchant
+participant Flow
+actor Customer
+participant "PaymentRouter" as Router
+participant "Merchant's account" as Dest
+
+Merchant -> Flow : create a charge (console or API)
+Flow --> Merchant : payment link or QR
+Customer -> Flow : opens the link
+Flow --> Customer : signed authorization of the charge
+Customer -> Router : pays (GatoPago or MetaMask)
+Router -> Dest : USDC, directly or through CCTP from another network
+Flow -> Router : confirms the payment onchain
+Flow -> Merchant : signed webhook
+@enduml

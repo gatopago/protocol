@@ -1,0 +1,35 @@
+@startuml seq-account-deployment
+actor Person
+participant App
+actor "Payer" as Payer
+participant "Wallet Core" as WC
+participant "EVM network\n(USDC, EntryPoint, Factory)" as EVM
+participant "Stellar" as XLM
+
+== 1. Creating the account: nothing is deployed ==
+Person -> App : Create account
+App -> EVM : factory.getAddress(owners): read-only, no gas
+App --> Person : their address (and their Stellar address, derived from it)
+
+== 2. Receiving money: still not deployed ==
+Payer -> EVM : USDC transfer to the address
+note over EVM
+  The balance sits in the USDC contract under that address.
+  The account still has no code: receiving needs no signature.
+end note
+Payer -> XLM : USDC or XLM to the Stellar address
+note over XLM
+  The same on Stellar: the balance lives in the asset contract.
+end note
+
+== 3. First time spending on an EVM network: it deploys ==
+Person -> App : send, pay, save...
+App -> WC : operation with initCode (factory + owners)
+WC -> EVM : handleOps (sponsored gas)
+EVM -> EVM : the factory creates the account (CREATE2, same address)\nand runs the operation in the same transaction
+
+== 4. First time spending on Stellar: it deploys ==
+App -> WC : deploy the smart account
+WC -> XLM : the sponsor account deploys it\nfrom OpenZeppelin's WASM
+App -> WC : signed call (see sponsorship)
+@enduml

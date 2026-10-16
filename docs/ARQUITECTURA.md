@@ -2,7 +2,7 @@
 
 GatoPago es una billetera de dólares (USDC) que se abre con una passkey, y **Flow**, una API para
 que los comercios cobren en USDC. Todo corre en testnet. Los diagramas están en `diagramas/`
-(fuente `.puml` e imagen `.svg`).
+(fuente `.puml` e imagen `.svg`) y, en inglés, en `diagrams/`.
 
 ## Qué hace
 
@@ -37,13 +37,13 @@ que los comercios cobren en USDC. Todo corre en testnet. Los diagramas están en
 
 ### Tablas
 
-**Wallet Core** (D1, 16 tablas):
+**Wallet Core** (D1, 18 tablas):
 
 | Para qué | Tablas |
 |---|---|
 | Miembros y acceso | `members`, `invites`, `siwe_nonces`, `approvals` (cambios de llaves firmados) |
 | Conveniencia | `contacts`, `member_groups`, `push_tokens`, `card_interest` |
-| Actividad (caché de la cadena) | `transfers`, `index_cursors` |
+| Actividad (caché de la cadena) | `transfers`, `index_cursors`, `index_failures`, `member_networks` (webhook e historial por red) |
 | Gas patrocinado | `sponsorship_usage` |
 | Stellar | `stellar_keys`, `stellar_relays`, `stellar_submissions` |
 | Negocios | `business_logins`, `business_keys` |
