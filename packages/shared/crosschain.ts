@@ -33,13 +33,15 @@ const forwarded = (network: CctpNetwork) => 'chain' in network;
 /**
  * Most USDC that moving `amount` from `from` to `to` can cost: Circle's CCTP fee plus, toward an EVM
  * network, the Forwarding Service fee (destination gas), both taken from the transferred USDC.
- * Amounts in CCTP's 6 decimals, also from Stellar.
+ * Amounts in CCTP's 6 decimals, also from Stellar. Burns from `from` cross at its usual finality
+ * unless `minFinalityThreshold` says otherwise.
  */
 export async function crosschainFee(
   from: CctpNetwork,
   to: CctpNetwork,
   amount: bigint,
   signal?: AbortSignal,
+  minFinalityThreshold = finality(from),
 ): Promise<bigint> {
   const response = await fetch(
     `${iris(from)}/v2/burn/USDC/fees/${from.cctp.domain}/${to.cctp.domain}${forwarded(to) ? '?forward=true' : ''}`,
@@ -48,7 +50,7 @@ export async function crosschainFee(
   if (!response.ok) throw new Error(`CCTP_FEE_UNAVAILABLE: ${response.status}`);
   const fees: { finalityThreshold: number; minimumFee: number; forwardFee?: { high: number } }[] =
     await response.json();
-  const fee = fees.find((value) => value.finalityThreshold === finality(from));
+  const fee = fees.find((value) => value.finalityThreshold === minFinalityThreshold);
   if (!fee || (forwarded(to) && !fee.forwardFee)) throw new Error('CCTP_FEE_UNAVAILABLE');
   // `minimumFee` is in basis points, possibly fractional (e.g. 1.3).
   const protocolFee = (amount * BigInt(Math.ceil(fee.minimumFee * 100)) + 999_999n) / 1_000_000n;

@@ -182,6 +182,43 @@ owner's.
 
 The keystore (`--account`) signs the deployment; private keys never go in environment variables.
 
+## Deposits (Cascabel)
+
+`CascabelDepositFactory` gives each charge a deposit address that anyone pays with a plain
+transfer, from a wallet or an exchange. A deposit is an OpenZeppelin clone whose immutable
+arguments are its settlement, so its address commits to where its funds go and what crossing
+networks costs. Sweeping takes no parameters, so anyone may sweep (`sweep(salt, settlement, token)`
+deploys the deposit first if needed) and nobody, GatoPago included, can send its funds elsewhere or
+change their fee.
+
+- USDC settles at `recipient` on `destinationDomain`: by a transfer on that network, or through
+  CCTP V2 and Circle's Forwarding Service from another one, paying Circle the settlement's
+  `maxFee` (the Forwarding Service spends all of it, so the settlement fixes it).
+- Every other token, USDC of `maxFee` or less, and the native coin go to `localRecipient` on the
+  deposit's network, and so does everything paid on a network outside `CascabelNetworks`: once
+  the factory is deployed there, nothing paid to a deposit address on the wrong network is stuck.
+
+The factory takes no constructor arguments (each network's USDC, TokenMessenger and CCTP domain
+are in `CascabelNetworks`, by chain id), so through the CREATE2 deployer it has the same address on
+every network, and so does every deposit. `@gatopago/shared/deposits` computes a deposit address
+without a network call (`depositAddress`, `depositSalt`). Adding a network to `CascabelNetworks`
+changes the factory's bytecode, so it is a new factory with new addresses; existing deposits keep
+theirs.
+
+| Contract                         | Address (every network)                      |
+| -------------------------------- | -------------------------------------------- |
+| `CascabelDepositFactory`         | `0x8cE7BD73f12934164a9a5C5CD26f173dA8A9Eb48` |
+| `CascabelDeposit` implementation | `0xa69567C9486242038aeD73b0De286C31C0bB01A6` |
+
+Not deployed yet. USDC settles on Avalanche and Arbitrum (mainnet), Avalanche Fuji, Arbitrum
+Sepolia and Monad testnet. Deploy with:
+
+```sh
+cd contracts
+forge script script/DeployDeposits.s.sol --rpc-url <network> --account <foundry keystore> --broadcast \
+  --verify --verifier sourcify
+```
+
 ## Commands
 
 ```sh

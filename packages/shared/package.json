@@ -32,6 +32,11 @@
       "import": "./dist/payments.js",
       "default": "./dist/payments.js"
     },
+    "./deposits": {
+      "types": "./dist/deposits.d.ts",
+      "import": "./dist/deposits.js",
+      "default": "./dist/deposits.js"
+    },
     "./earn": {
       "types": "./dist/earn.d.ts",
       "import": "./dist/earn.js",
