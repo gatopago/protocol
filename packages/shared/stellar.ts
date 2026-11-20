@@ -339,7 +339,9 @@ export function mintAndForwardOperation(network: StellarNetwork, message: Hex, a
 
 /**
  * Simulates `operation` with `source` paying (the sponsor) and returns what the account must sign.
- * The source needs no sequence here: only the sponsor sends.
+ * The source needs no sequence here: only the sponsor sends. Every authorization the RPC asks for
+ * must be for this very call (its contract, function and arguments; what it calls in turn is part of
+ * it): anything else would be signed with nobody seeing it, so it is refused.
  */
 export async function prepareStellarCall(
   server: rpc.Server,
@@ -359,11 +361,19 @@ export async function prepareStellarCall(
     throw new Error(`STELLAR_SIMULATION_FAILED: ${simulation.error}`);
   const body = operation.body;
   if (body.type !== 'invokeHostFunction') throw new Error('NOT_A_CONTRACT_CALL');
-  return {
-    func: body.invokeHostFunctionOp.hostFunction,
-    auth: simulation.result?.auth ?? [],
-    latestLedger: simulation.latestLedger,
-  };
+  const func = body.invokeHostFunctionOp.hostFunction;
+  const auth = simulation.result?.auth ?? [];
+  const call =
+    func.type === 'hostFunctionTypeInvokeContract' ? func.invokeContract.toXdr('base64') : null;
+  for (const { rootInvocation } of auth) {
+    const authorized = rootInvocation.function;
+    if (
+      authorized.type !== 'sorobanAuthorizedFunctionTypeContractFn' ||
+      authorized.contractFn.toXdr('base64') !== call
+    )
+      throw new Error('STELLAR_AUTH_NOT_FOR_THIS_CALL');
+  }
+  return { func, auth, latestLedger: simulation.latestLedger };
 }
 
 /**

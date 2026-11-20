@@ -140,6 +140,48 @@ describe('CCTP with Stellar', () => {
 });
 
 // Stellar has no forks: these run on testnet, with XLM's asset contract standing in for USDC.
+describe('authorizations an RPC asks the account to sign', () => {
+  const account = Keypair.random().publicKey();
+  const transfer = transferOperation(testnet, account, Keypair.random().publicKey(), 10n);
+  /** An RPC whose simulation asks for authorizations of the given calls. */
+  const rpcAsking = (...operations: xdr.Operation[]) =>
+    ({
+      simulateTransaction: async () => ({
+        transactionData: {},
+        latestLedger: 1,
+        result: {
+          auth: operations.map((operation) => {
+            const func = operation.body;
+            if (func.type !== 'invokeHostFunction') throw new Error('not a call');
+            const host = func.invokeHostFunctionOp.hostFunction;
+            if (host.type !== 'hostFunctionTypeInvokeContract') throw new Error('not a call');
+            return new xdr.SorobanAuthorizationEntry({
+              credentials: xdr.SorobanCredentials.sorobanCredentialsSourceAccount(),
+              rootInvocation: new xdr.SorobanAuthorizedInvocation({
+                function: xdr.SorobanAuthorizedFunction.sorobanAuthorizedFunctionTypeContractFn(
+                  host.invokeContract,
+                ),
+                subInvocations: [],
+              }),
+            });
+          }),
+        },
+      }),
+    }) as unknown as rpc.Server;
+
+  it('are for the call that was built', async () => {
+    const call = await prepareStellarCall(rpcAsking(transfer), testnet, account, transfer);
+    expect(call.auth).toHaveLength(1);
+  });
+
+  it('are refused when one is for anything else, such as a transfer to someone else', async () => {
+    const theft = transferOperation(testnet, account, Keypair.random().publicKey(), 10_000_000n);
+    await expect(
+      prepareStellarCall(rpcAsking(transfer, theft), testnet, account, transfer),
+    ).rejects.toThrow('STELLAR_AUTH_NOT_FOR_THIS_CALL');
+  });
+});
+
 describe('a sponsor transaction whose result is not known', () => {
   const keypair = Keypair.random();
   const operation = transferOperation(testnet, keypair.publicKey(), keypair.publicKey(), 1n);
