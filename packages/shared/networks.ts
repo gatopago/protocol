@@ -5,12 +5,13 @@ import type { WalletContracts } from './wallet';
 /**
  * CREATE2 addresses of `contracts/script/DeployWallet.s.sol`, identical on every network (checked
  * against the compiled contracts by `test/networks.test.ts`). The paymaster address includes its
- * sponsor signer and owner, on testnets both `0x75464f762bc50d0A0B127ab5a085504BF102Bb88`.
+ * sponsor signer, bundler relayer and owner, on testnets all
+ * `0x75464f762bc50d0A0B127ab5a085504BF102Bb88`.
  */
 export const walletContracts: WalletContracts = {
   webAuthnVerifier: '0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8',
   factory: '0x4A000246131C2DEd46ff6eA047808E708Fa0da02',
-  paymaster: '0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1',
+  paymaster: '0xe65D7f3a09a532303cdF63Ce9F8E6bd9859Fb1a6',
 };
 
 export interface WalletNetwork {

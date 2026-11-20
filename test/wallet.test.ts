@@ -264,7 +264,11 @@ beforeAll(async () => {
       const result = {
         webAuthnVerifier: await n.deploy('ERC7913WebAuthnVerifier'),
         factory: await n.deploy('GatoPagoAccountFactory'),
-        paymaster: await n.deploy('GatoPagoPaymaster', [sponsor.address, relayer.address]),
+        paymaster: await n.deploy('GatoPagoPaymaster', [
+          sponsor.address,
+          relayer.address,
+          relayer.address,
+        ]),
         usdc: await n.deploy('ERC20Mock'),
       };
       await n.write(result.paymaster, artifact('GatoPagoPaymaster').abi, 'deposit', [], 10n ** 18n);

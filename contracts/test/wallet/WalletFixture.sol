@@ -44,7 +44,7 @@ abstract contract WalletFixture is Test {
         factory = new GatoPagoAccountFactory();
         address sponsor;
         (sponsor, sponsorKey) = makeAddrAndKey("sponsor");
-        paymaster = new GatoPagoPaymaster(sponsor, address(this));
+        paymaster = new GatoPagoPaymaster(sponsor, bundler, address(this));
         paymaster.deposit{value: 100 ether}();
         usdc = new ERC20Mock();
     }

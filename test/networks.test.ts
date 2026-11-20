@@ -27,8 +27,8 @@ describe('wallet contract addresses', () => {
     expect(deployed(bytecode('ERC7913WebAuthnVerifier'))).toBe(walletContracts.webAuthnVerifier);
     expect(deployed(bytecode('GatoPagoAccountFactory'))).toBe(walletContracts.factory);
     const paymasterArgs = encodeAbiParameters(
-      [{ type: 'address' }, { type: 'address' }],
-      [TESTNET_OPERATOR, TESTNET_OPERATOR],
+      [{ type: 'address' }, { type: 'address' }, { type: 'address' }],
+      [TESTNET_OPERATOR, TESTNET_OPERATOR, TESTNET_OPERATOR],
     );
     expect(deployed(`${bytecode('GatoPagoPaymaster')}${paymasterArgs.slice(2)}`)).toBe(
       walletContracts.paymaster,

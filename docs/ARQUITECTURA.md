@@ -166,7 +166,7 @@ desplegamos nosotros:
 |---|---|
 | Factory de cuentas (`GatoPagoAccountFactory`, propio) | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
 | Cuenta, implementación (`GatoPagoAccount`, propio) | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
-| Paymaster (`GatoPagoPaymaster`, propio): paga el gas | `0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1` |
+| Paymaster (`GatoPagoPaymaster`, propio): paga el gas | `0xe65D7f3a09a532303cdF63Ce9F8E6bd9859Fb1a6` |
 | Verificador WebAuthn (código de OpenZeppelin, desplegado por nosotros) | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
 
 Por red:

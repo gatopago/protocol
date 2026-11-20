@@ -14,11 +14,13 @@ contract DeployWalletTest is Test {
         hex"7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf3";
 
     address sponsor = makeAddr("sponsor");
+    address relayer = makeAddr("relayer");
     address owner = makeAddr("owner");
 
     function setUp() public {
         deployCodeTo("EntryPoint.sol:EntryPoint", address(ERC4337Utils.ENTRYPOINT_V09)); // compiled via the import above
         vm.setEnv("GATOPAGO_SPONSOR_SIGNER", vm.toString(sponsor));
+        vm.setEnv("GATOPAGO_BUNDLER_RELAYER", vm.toString(relayer));
         vm.setEnv("GATOPAGO_PAYMASTER_OWNER", vm.toString(owner));
         vm.setEnv("GATOPAGO_PAYMASTER_DEPOSIT", "1000000000000000000");
     }
@@ -31,6 +33,7 @@ contract DeployWalletTest is Test {
         (address verifier, address factory, address paymaster) = _run();
         assertGt(factory.code.length, 0);
         assertEq(GatoPagoPaymaster(paymaster).signer(), sponsor);
+        assertEq(GatoPagoPaymaster(paymaster).relayer(), relayer);
         assertEq(GatoPagoPaymaster(paymaster).owner(), owner);
         assertEq(ERC4337Utils.ENTRYPOINT_V09.balanceOf(paymaster), 1 ether);
         address implementation = GatoPagoAccountFactory(factory).implementation();

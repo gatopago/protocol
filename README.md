@@ -114,11 +114,13 @@ Every contract, the payment routers included, is verified on [Sourcify](https://
 | `ERC7913WebAuthnVerifier`        | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
 | `GatoPagoAccountFactory`         | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
 | `GatoPagoAccount` implementation | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
-| `GatoPagoPaymaster`              | `0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1` |
+| `GatoPagoPaymaster`              | `0xe65D7f3a09a532303cdF63Ce9F8E6bd9859Fb1a6` |
 
 On testnets the paymaster's sponsor signer and owner, and the bundler relayer, are all
-`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. Explorers: [Arbiscan](https://sepolia.arbiscan.io),
-[Snowtrace](https://testnet.snowtrace.io), [Monad Explorer](https://testnet.monadexplorer.com).
+`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. The paymaster at `0xe65D…b1a6` (only the bundler's
+relayer may include a sponsored operation) replaces `0x9EEE…13b1` and is not deployed yet.
+Explorers: [Arbiscan](https://sepolia.arbiscan.io), [Snowtrace](https://testnet.snowtrace.io),
+[Monad Explorer](https://testnet.monadexplorer.com).
 
 ### Deploying
 
@@ -127,16 +129,17 @@ there (contracts already deployed are skipped):
 
 ```sh
 cd contracts
-export GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_PAYMASTER_OWNER=0x…
+export GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_BUNDLER_RELAYER=0x… GATOPAGO_PAYMASTER_OWNER=0x…
 GATOPAGO_PAYMASTER_DEPOSIT=<wei> forge script script/DeployWallet.s.sol \
   --rpc-url <network> --account <foundry keystore> --broadcast --verify --verifier sourcify
 ```
 
-The sponsor signer and the paymaster owner are part of the paymaster address: keep them identical
-on every network (mainnet will use separate keys, hence a different paymaster address). The owner
-can withdraw the deposit; use a cold key or a multisig. Afterwards record the transactions in
-`contracts/deployments/wallet.json` and, if an address changed, `packages/shared/networks.ts`
-(`test/networks.test.ts` fails until both match the compiled contracts).
+The sponsor signer, the bundler relayer and the paymaster owner are part of the paymaster address:
+keep them identical on every network (mainnet will use separate keys, hence a different paymaster
+address). The owner can withdraw the deposit; use a cold key or a multisig. Afterwards record the
+transactions in `contracts/deployments/wallet.json` and, if an address changed,
+`packages/shared/networks.ts` (`test/networks.test.ts` fails until both match the compiled
+contracts).
 
 ## Payments
 
@@ -174,6 +177,7 @@ owner's.
 | Name                         | Script           | What it is                                                                          |
 | ---------------------------- | ---------------- | ----------------------------------------------------------------------------------- |
 | `GATOPAGO_SPONSOR_SIGNER`    | `DeployWallet`   | Address whose signatures the paymaster accepts; Wallet Core's `SPONSOR_PRIVATE_KEY` |
+| `GATOPAGO_BUNDLER_RELAYER`   | `DeployWallet`   | The only sender of transactions that use a sponsorship; Wallet Core's bundler key   |
 | `GATOPAGO_PAYMASTER_OWNER`   | `DeployWallet`   | Paymaster owner: manages and withdraws its deposit (cold key or multisig)           |
 | `GATOPAGO_PAYMASTER_DEPOSIT` | `DeployWallet`   | Wei deposited in the EntryPoint for the paymaster; optional                         |
 | `GATOPAGO_PAYMENTS_OWNER`    | `DeployPayments` | Router owner: pauses it, sets its signer and treasury                               |

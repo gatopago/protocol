@@ -12,12 +12,12 @@ import {GatoPagoPaymaster} from "../src/wallet/GatoPagoPaymaster.sol";
 /// addresses on every network (and every user keeps one account address). Idempotent: contracts
 /// already deployed are reused, which is how a new network is added.
 ///
-///   GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_PAYMASTER_OWNER=0x… [GATOPAGO_PAYMASTER_DEPOSIT=wei] \
-///   forge script script/DeployWallet.s.sol --rpc-url <network> --account <keystore> --broadcast \
-///     --verify --verifier sourcify
+///   GATOPAGO_SPONSOR_SIGNER=0x… GATOPAGO_BUNDLER_RELAYER=0x… GATOPAGO_PAYMASTER_OWNER=0x… \
+///   [GATOPAGO_PAYMASTER_DEPOSIT=wei] forge script script/DeployWallet.s.sol --rpc-url <network> \
+///     --account <keystore> --broadcast --verify --verifier sourcify
 ///
-/// The sponsor signer and paymaster owner are part of the paymaster address: keep them identical
-/// across networks.
+/// The sponsor signer, bundler relayer and paymaster owner are part of the paymaster address: keep
+/// them identical across networks.
 contract DeployWallet is Script {
     bytes32 internal constant SALT = keccak256("gatopago.wallet.v1");
 
@@ -25,14 +25,16 @@ contract DeployWallet is Script {
 
     function run() external returns (address verifier, address factory, address paymaster) {
         address sponsorSigner = vm.envAddress("GATOPAGO_SPONSOR_SIGNER");
+        address relayer = vm.envAddress("GATOPAGO_BUNDLER_RELAYER");
         address paymasterOwner = vm.envAddress("GATOPAGO_PAYMASTER_OWNER");
         uint256 deposit = vm.envOr("GATOPAGO_PAYMASTER_DEPOSIT", uint256(0));
 
         vm.startBroadcast();
         verifier = _deploy(type(ERC7913WebAuthnVerifier).creationCode);
         factory = _deploy(type(GatoPagoAccountFactory).creationCode);
-        paymaster =
-            _deploy(abi.encodePacked(type(GatoPagoPaymaster).creationCode, abi.encode(sponsorSigner, paymasterOwner)));
+        paymaster = _deploy(
+            abi.encodePacked(type(GatoPagoPaymaster).creationCode, abi.encode(sponsorSigner, relayer, paymasterOwner))
+        );
         if (deposit != 0) GatoPagoPaymaster(paymaster).deposit{value: deposit}();
         vm.stopBroadcast();
 
