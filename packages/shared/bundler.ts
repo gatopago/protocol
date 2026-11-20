@@ -4,6 +4,7 @@ import {
   createPublicClient,
   createWalletClient,
   decodeAbiParameters,
+  decodeFunctionData,
   encodeFunctionData,
   hexToBytes,
   http,
@@ -12,6 +13,7 @@ import {
   numberToHex,
   parseAbi,
   parseEventLogs,
+  parseTransaction,
   size,
   type Address,
   type Chain,
@@ -107,6 +109,11 @@ interface BundledTransaction {
   readonly nonce: number;
   /** When it was signed (seconds): records are kept `RETENTION_SECONDS`. */
   readonly sentAt: number;
+  /**
+   * Why its bundle failed onchain, without including it. The operation is never sent again: its
+   * sponsorship paid one failed bundle, and only a new one (counted in the account's budget) can.
+   */
+  readonly failed?: string;
 }
 
 /**
@@ -272,13 +279,15 @@ export function createBundler(parameters: {
       userOperation: operation,
     });
     // A retry of a recorded operation returns it instead of building another bundle, unless it is
-    // known not to have been included (then `receipt` forgets it and it is sent again).
+    // known not to have been included: lost before reaching a block, it is sent again; after a
+    // failed bundle, never.
     if (await store.get(`op:${userOpHash}`)) {
       try {
         await receipt(userOpHash);
         return userOpHash;
       } catch (error) {
         if (!(error instanceof BundlerRpcError)) throw error;
+        if ((await store.get<BundledTransaction>(`op:${userOpHash}`))?.failed) throw error;
       }
     }
     const request = {
@@ -359,19 +368,50 @@ export function createBundler(parameters: {
     await store.put({ pruned: next });
   }
 
-  /** The bundle failed without including the operation: forget it so the client can resubmit it. */
-  async function notIncluded(
-    userOpHash: Hash,
-    bundled: BundledTransaction,
-    reason: string,
-  ): Promise<never> {
+  /** Its bundle never reached a block: forget it so the client can resubmit it. */
+  async function notIncluded(userOpHash: Hash, bundled: BundledTransaction): Promise<never> {
     await store.delete([`op:${userOpHash}`, `nonce:${bundled.nonce}`]);
+    throw new BundlerRpcError(
+      -32500,
+      'UserOperation was not included: its relayer nonce was used by another transaction',
+    );
+  }
+
+  /** Its bundle reached a block and failed: kept, so that operation is never sent again. */
+  async function failed(userOpHash: Hash, bundled: BundledTransaction, reason: string) {
+    await store.put({ [`op:${userOpHash}`]: { ...bundled, failed: reason } });
+    return failure(reason);
+  }
+
+  function failure(reason: string): never {
     throw new BundlerRpcError(-32500, `UserOperation was not included: ${reason}`);
+  }
+
+  /**
+   * Whether the EntryPoint already used the bundled operation's nonce. Only the relayer includes
+   * sponsored operations (the paymaster requires it): this bundle did, in a block this node does not
+   * show yet, or another operation of the account with that nonce did. Either way it must not be
+   * sent again.
+   */
+  async function nonceUsed(bundled: BundledTransaction) {
+    const { args } = decodeFunctionData({
+      abi: entryPoint09Abi,
+      data: parseTransaction(bundled.raw).data!,
+    });
+    const [[operation]] = args as unknown as [[{ sender: Address; nonce: bigint }]];
+    const next = await publicClient.readContract({
+      address: entryPoint09Address,
+      abi: entryPoint09Abi,
+      functionName: 'getNonce',
+      args: [operation.sender, operation.nonce >> 64n],
+    });
+    return next > operation.nonce;
   }
 
   async function receipt(userOpHash: Hash) {
     const bundled = await store.get<BundledTransaction>(`op:${userOpHash}`);
     if (!bundled) return null;
+    if (bundled.failed) failure(bundled.failed);
     // The nonce is read before the receipt: used already and still no receipt means another
     // transaction took it. The other way round, a block landing between the two reads looks the same
     // and an included operation would be forgotten.
@@ -384,12 +424,12 @@ export function createBundler(parameters: {
       params: [bundled.transactionHash],
     })) as RpcTransactionReceipt | null;
     if (!rpcReceipt) {
-      if (confirmed > bundled.nonce)
-        return notIncluded(
-          userOpHash,
-          bundled,
-          'its relayer nonce was used by another transaction',
-        );
+      if (confirmed > bundled.nonce) {
+        // Its relayer nonce is used: the bundle is in a block this node does not show yet, or another
+        // transaction took the nonce and the operation was never included.
+        if (await nonceUsed(bundled)) return null;
+        return notIncluded(userOpHash, bundled);
+      }
       // Recorded but unknown to the node (an interrupted send): rebroadcast the same bytes.
       const known = await publicClient.request({
         method: 'eth_getTransactionByHash',
@@ -402,7 +442,7 @@ export function createBundler(parameters: {
       return null;
     }
     if (rpcReceipt.status !== '0x1')
-      return notIncluded(userOpHash, bundled, 'the bundle transaction reverted');
+      return failed(userOpHash, bundled, 'the bundle transaction reverted');
     const event = parseEventLogs({
       abi: entryPoint09Abi,
       eventName: 'UserOperationEvent',
@@ -413,7 +453,7 @@ export function createBundler(parameters: {
         transactionIndex: Number(log.transactionIndex),
       })) as never,
     }).find((log) => log.args.userOpHash === userOpHash);
-    if (!event) return notIncluded(userOpHash, bundled, 'no UserOperationEvent in the bundle');
+    if (!event) return failed(userOpHash, bundled, 'no UserOperationEvent in the bundle');
     return {
       userOpHash,
       entryPoint: entryPoint09Address,

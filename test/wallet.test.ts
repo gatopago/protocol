@@ -1223,8 +1223,9 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     expect(receipt.success).toBe(true);
   }, 60_000);
 
-  it('reports a reverted bundle instead of waiting forever, so the operation can be resent', async () => {
-    // A relayer transaction that reverts onchain, recorded as if it carried a UserOperation.
+  it('reports a reverted bundle and never sends that operation again', async () => {
+    const { bundlerClient, operation, hash } = await signedTransfer(1_000_000n);
+    // A relayer transaction that reverts onchain, recorded as the bundle of that operation.
     const request = await arbitrum.walletClient.prepareTransactionRequest({
       to: entryPoint09Address,
       data: '0xdeadbeef',
@@ -1237,14 +1238,37 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     expect(
       (await arbitrum.publicClient.waitForTransactionReceipt({ hash: transactionHash })).status,
     ).toBe('reverted');
-    const userOpHash = keccak256('0x01');
-    arbitrum.storage.set(`op:${userOpHash}`, { transactionHash, raw, nonce: request.nonce });
-    arbitrum.storage.set(`nonce:${request.nonce}`, userOpHash);
+    arbitrum.storage.set(`op:${hash}`, { transactionHash, raw, nonce: request.nonce });
+    arbitrum.storage.set(`nonce:${request.nonce}`, hash);
 
-    await expect(
-      arbitrum.bundler().handle('eth_getUserOperationReceipt', [userOpHash]),
-    ).rejects.toThrow(/not included: the bundle transaction reverted/);
-    expect(await arbitrum.bundler().handle('eth_getUserOperationReceipt', [userOpHash])).toBeNull();
+    await expect(arbitrum.bundler().handle('eth_getUserOperationReceipt', [hash])).rejects.toThrow(
+      /not included: the bundle transaction reverted/,
+    );
+    // Its sponsorship already paid one failed bundle: sending it again is refused, every time.
+    const relayerNonce = await arbitrum.publicClient.getTransactionCount({
+      address: relayer.address,
+    });
+    await expect(bundlerClient.sendUserOperation(operation)).rejects.toThrow(
+      /not included: the bundle transaction reverted/,
+    );
+    await expect(arbitrum.bundler().handle('eth_getUserOperationReceipt', [hash])).rejects.toThrow(
+      /not included/,
+    );
+    expect(await arbitrum.publicClient.getTransactionCount({ address: relayer.address })).toBe(
+      relayerNonce,
+    );
+  }, 60_000);
+
+  it('keeps waiting for an included operation whose receipt the node does not show yet', async () => {
+    const { bundlerClient, operation, hash } = await signedTransfer(1_000_000n);
+    await bundlerClient.sendUserOperation(operation);
+    await bundlerClient.waitForUserOperationReceipt({ hash, pollingInterval: 200 });
+    // A node behind the others: no receipt for the bundle, though its relayer nonce is used.
+    const recorded = arbitrum.storage.get(`op:${hash}`) as Record<string, unknown>;
+    arbitrum.storage.set(`op:${hash}`, { ...recorded, transactionHash: keccak256('0x02') });
+
+    expect(await arbitrum.bundler().handle('eth_getUserOperationReceipt', [hash])).toBeNull();
+    expect(arbitrum.storage.get(`op:${hash}`)).toBeDefined();
   }, 60_000);
 
   it.each(['response', 'request'] as const)(
