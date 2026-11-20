@@ -12,8 +12,9 @@ import {ITokenMessengerV2} from "./interfaces/ITokenMessengerV2.sol";
 
 /**
  * @title GatoPagoPaymentRouter
- * @notice Pays a GatoPago Flow payment intent in USDC, as authorized by Flow's signer. The merchant
- *         receives `amount` on this network, or on another one through Circle CCTP V2, whose
+ * @notice Pays a GatoPago Flow payment intent in the `token` Flow authorized it in (USDC, or another
+ *         coin of this network such as AUSD), as authorized by Flow's signer. The merchant receives
+ *         `amount` on this network; in USDC, also on another one through Circle CCTP V2, whose
  *         Forwarding Service mints on the destination. The payer also pays the platform `fee` and,
  *         when crossing networks, at most `maxCctpFee` (what Circle does not charge reaches the
  *         merchant). Non-custodial: funds only pass through within the payment transaction.
@@ -25,6 +26,8 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         bytes32 intentId;
         address payer;
         address merchant;
+        /// @dev The coin paid in, fee included: only USDC crosses networks.
+        address token;
         uint256 amount;
         uint256 fee;
         /// @dev Circle domain where the merchant receives; `LOCAL_DOMAIN` pays on this network.
@@ -35,7 +38,7 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
     }
 
     bytes32 public constant PAYMENT_TYPEHASH = keccak256(
-        "Payment(bytes32 intentId,address payer,address merchant,uint256 amount,uint256 fee,uint32 destinationDomain,uint256 maxCctpFee,uint32 minFinalityThreshold,uint48 validUntil)"
+        "Payment(bytes32 intentId,address payer,address merchant,address token,uint256 amount,uint256 fee,uint32 destinationDomain,uint256 maxCctpFee,uint32 minFinalityThreshold,uint48 validUntil)"
     );
     /// @dev Circle's Forwarding Service request: "cctp-forward" as bytes24, version 0, no extra data.
     bytes private constant FORWARD_HOOK = hex"636374702d666f72776172640000000000000000000000000000000000000000";
@@ -52,6 +55,7 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         bytes32 indexed intentId,
         address indexed payer,
         address indexed merchant,
+        address token,
         uint256 amount,
         uint256 fee,
         uint32 destinationDomain
@@ -64,6 +68,7 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
     error GatoPagoPaymentRouter__Expired();
     error GatoPagoPaymentRouter__AlreadyPaid();
     error GatoPagoPaymentRouter__InvalidSignature();
+    error GatoPagoPaymentRouter__OnlyUsdcCrosses();
 
     constructor(
         address owner_,
@@ -72,7 +77,7 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         IERC20 usdc,
         ITokenMessengerV2 tokenMessenger,
         uint32 localDomain
-    ) EIP712("GatoPago Payment Router", "3") Ownable(owner_) {
+    ) EIP712("GatoPago Payment Router", "4") Ownable(owner_) {
         if (signer_ == address(0) || treasury_ == address(0) || address(usdc) == address(0)) {
             revert GatoPagoPaymentRouter__InvalidAddress();
         }
@@ -83,7 +88,7 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         LOCAL_DOMAIN = localDomain;
     }
 
-    /// @notice Pays with an existing USDC allowance (a smart account approves in the same batch).
+    /// @notice Pays with an existing allowance of the token (a smart account approves in the same batch).
     function pay(Payment calldata payment, bytes calldata signature) external whenNotPaused {
         _pay(payment, signature);
     }
@@ -98,11 +103,11 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         bytes32 r,
         bytes32 s
     ) external whenNotPaused {
-        try IERC20Permit(address(USDC)).permit(msg.sender, address(this), total(payment), deadline, v, r, s) {} catch {}
+        try IERC20Permit(payment.token).permit(msg.sender, address(this), total(payment), deadline, v, r, s) {} catch {}
         _pay(payment, signature);
     }
 
-    /// @notice USDC the payer spends: amount, fee and, when crossing networks, the CCTP fee ceiling.
+    /// @notice What the payer spends of the token: amount, fee and, when crossing, the CCTP fee ceiling.
     function total(Payment calldata payment) public view returns (uint256) {
         return payment.amount + payment.fee + (payment.destinationDomain == LOCAL_DOMAIN ? 0 : payment.maxCctpFee);
     }
@@ -139,14 +144,23 @@ contract GatoPagoPaymentRouter is EIP712, Ownable2Step, Pausable {
         if (ECDSA.recoverCalldata(paymentDigest(payment), signature) != signer) {
             revert GatoPagoPaymentRouter__InvalidSignature();
         }
+        bool crossing = payment.destinationDomain != LOCAL_DOMAIN;
+        if (crossing && payment.token != address(USDC)) revert GatoPagoPaymentRouter__OnlyUsdcCrosses();
         paid[payment.intentId] = true;
         emit PaymentSent(
-            payment.intentId, payment.payer, payment.merchant, payment.amount, payment.fee, payment.destinationDomain
+            payment.intentId,
+            payment.payer,
+            payment.merchant,
+            payment.token,
+            payment.amount,
+            payment.fee,
+            payment.destinationDomain
         );
 
-        if (payment.fee != 0) USDC.safeTransferFrom(msg.sender, treasury, payment.fee);
-        if (payment.destinationDomain == LOCAL_DOMAIN) {
-            USDC.safeTransferFrom(msg.sender, payment.merchant, payment.amount);
+        IERC20 token = IERC20(payment.token);
+        if (payment.fee != 0) token.safeTransferFrom(msg.sender, treasury, payment.fee);
+        if (!crossing) {
+            token.safeTransferFrom(msg.sender, payment.merchant, payment.amount);
         } else {
             uint256 burn = payment.amount + payment.maxCctpFee;
             USDC.safeTransferFrom(msg.sender, address(this), burn);

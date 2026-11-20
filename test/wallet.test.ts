@@ -650,6 +650,7 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
         intentId: keccak256(toHex(intent)),
         payer: account.address,
         merchant,
+        token: home.usdc,
         amount: 5_000_000n,
         fee: 50_000n,
         destinationDomain,
@@ -700,6 +701,7 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
       intentId: keccak256(toHex('pi_browser_wallet')),
       payer: wallet.address,
       merchant,
+      token: home.usdc,
       amount: 5_000_000n,
       fee: 50_000n,
       destinationDomain: home.cctp.domain,
@@ -710,6 +712,7 @@ describe('GatoPago account through viem and the GatoPago bundler', () => {
     const deadline = BigInt(Math.floor(Date.now() / 1000) + 1800);
     const permit = await wallet.signTypedData(
       await paymentPermit(arbitrum.publicClient, network, {
+        token: home.usdc,
         owner: wallet.address,
         value: 5_050_000n,
         deadline,

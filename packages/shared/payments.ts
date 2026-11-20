@@ -13,22 +13,27 @@ import type { WalletNetwork } from './networks';
 
 /** `GatoPagoPaymentRouter` (contracts/src): pays a Flow payment intent as Flow authorized it. */
 export const paymentRouterAbi = parseAbi([
-  'struct Payment { bytes32 intentId; address payer; address merchant; uint256 amount; uint256 fee; uint32 destinationDomain; uint256 maxCctpFee; uint32 minFinalityThreshold; uint48 validUntil; }',
+  'struct Payment { bytes32 intentId; address payer; address merchant; address token; uint256 amount; uint256 fee; uint32 destinationDomain; uint256 maxCctpFee; uint32 minFinalityThreshold; uint48 validUntil; }',
   'function pay(Payment payment, bytes signature)',
   'function payWithPermit(Payment payment, bytes signature, uint256 deadline, uint8 v, bytes32 r, bytes32 s)',
   'function paid(bytes32 intentId) view returns (bool)',
-  'event PaymentSent(bytes32 indexed intentId, address indexed payer, address indexed merchant, uint256 amount, uint256 fee, uint32 destinationDomain)',
+  'event PaymentSent(bytes32 indexed intentId, address indexed payer, address indexed merchant, address token, uint256 amount, uint256 fee, uint32 destinationDomain)',
 ]);
 
 export type Payment = {
   readonly intentId: Hex;
   readonly payer: Address;
   readonly merchant: Address;
+  /** The coin it is paid in, fee included: USDC, or another coin of the network (AUSD). */
+  readonly token: Address;
   /** What the merchant receives. */
   readonly amount: bigint;
   /** Platform fee, paid by the payer. */
   readonly fee: bigint;
-  /** Circle domain where the merchant receives; the paying network's own domain pays locally. */
+  /**
+   * Circle domain where the merchant receives; the paying network's own domain pays locally. Only
+   * USDC crosses networks.
+   */
   readonly destinationDomain: number;
   /** Ceiling of Circle's fee when crossing networks, paid by the payer. */
   readonly maxCctpFee: bigint;
@@ -41,7 +46,7 @@ export function paymentTypedData(network: WalletNetwork, payment: Payment) {
   return {
     domain: {
       name: 'GatoPago Payment Router',
-      version: '3',
+      version: '4',
       chainId: network.chain.id,
       verifyingContract: network.paymentRouter,
     },
@@ -50,6 +55,7 @@ export function paymentTypedData(network: WalletNetwork, payment: Payment) {
         { name: 'intentId', type: 'bytes32' },
         { name: 'payer', type: 'address' },
         { name: 'merchant', type: 'address' },
+        { name: 'token', type: 'address' },
         { name: 'amount', type: 'uint256' },
         { name: 'fee', type: 'uint256' },
         { name: 'destinationDomain', type: 'uint32' },
@@ -63,7 +69,7 @@ export function paymentTypedData(network: WalletNetwork, payment: Payment) {
   } as const satisfies TypedDataDefinition;
 }
 
-/** USDC the payer spends on `network`. */
+/** What the payer spends of the payment's token on `network`. */
 export function paymentTotal(network: WalletNetwork, payment: Payment): bigint {
   const crossing = payment.destinationDomain !== network.cctp.domain;
   return payment.amount + payment.fee + (crossing ? payment.maxCctpFee : 0n);
@@ -73,7 +79,7 @@ export function paymentTotal(network: WalletNetwork, payment: Payment): bigint {
 export function paymentCalls(network: WalletNetwork, payment: Payment, signature: Hex) {
   return [
     {
-      to: network.usdc,
+      to: payment.token,
       data: encodeFunctionData({
         abi: erc20Abi,
         functionName: 'approve',
@@ -92,36 +98,55 @@ export function paymentCalls(network: WalletNetwork, payment: Payment, signature
 }
 
 const permitAbi = parseAbi([
+  'function eip712Domain() view returns (bytes1 fields, string name, string version, uint256 chainId, address verifyingContract, bytes32 salt, uint256[] extensions)',
   'function name() view returns (string)',
   'function version() view returns (string)',
   'function nonces(address owner) view returns (uint256)',
 ]);
 
 /**
- * The EIP-2612 permit a browser wallet signs (no gas) so the router takes exactly `value` USDC in
- * the same transaction as the payment (`payWithPermitCall`): one transaction instead of an approve
- * and a payment, and no allowance left behind. Circle's USDC supports it; its EIP-712 name,
- * version and the owner's nonce are read from the token.
+ * A token's EIP-712 domain: the one it declares (ERC-5267) when it does, as AUSD ("Agora Dollar",
+ * though its `name()` is "AUSD"); otherwise its name and version, as Circle's USDC.
+ */
+async function permitDomain(client: Client, network: WalletNetwork, token: Address) {
+  const declared = await readContract(client, {
+    address: token,
+    abi: permitAbi,
+    functionName: 'eip712Domain',
+  }).catch(() => null);
+  if (declared) {
+    const [, name, version, chainId, verifyingContract] = declared;
+    return { name, version, chainId: Number(chainId), verifyingContract };
+  }
+  const [name, version] = await Promise.all([
+    readContract(client, { address: token, abi: permitAbi, functionName: 'name' }),
+    readContract(client, { address: token, abi: permitAbi, functionName: 'version' }),
+  ]);
+  return { name, version, chainId: network.chain.id, verifyingContract: token };
+}
+
+/**
+ * The EIP-2612 permit a browser wallet signs (no gas) so the router takes exactly `value` of
+ * `token` in the same transaction as the payment (`payWithPermitCall`): one transaction instead of
+ * an approve and a payment, and no allowance left behind. Circle's USDC and Agora's AUSD support it;
+ * the token's EIP-712 domain and the owner's nonce are read from it.
  */
 export async function paymentPermit(
   client: Client,
   network: WalletNetwork,
-  permit: { owner: Address; value: bigint; deadline: bigint },
+  permit: { token: Address; owner: Address; value: bigint; deadline: bigint },
 ) {
-  const read = <const name extends 'name' | 'version'>(functionName: name) =>
-    readContract(client, { address: network.usdc, abi: permitAbi, functionName });
-  const [name, version, nonce] = await Promise.all([
-    read('name'),
-    read('version'),
+  const [domain, nonce] = await Promise.all([
+    permitDomain(client, network, permit.token),
     readContract(client, {
-      address: network.usdc,
+      address: permit.token,
       abi: permitAbi,
       functionName: 'nonces',
       args: [permit.owner],
     }),
   ]);
   return {
-    domain: { name, version, chainId: network.chain.id, verifyingContract: network.usdc },
+    domain,
     types: {
       Permit: [
         { name: 'owner', type: 'address' },

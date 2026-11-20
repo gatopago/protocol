@@ -13,7 +13,7 @@ import {ITokenMessengerV2} from "../src/interfaces/ITokenMessengerV2.sol";
 ///   forge script script/DeployPayments.s.sol --rpc-url <network> --account <keystore> --broadcast \
 ///     --verify --verifier sourcify
 contract DeployPayments is Script {
-    bytes32 internal constant SALT = keccak256("gatopago.payments.v1");
+    bytes32 internal constant SALT = keccak256("gatopago.payments.v2");
     /// @dev Circle's CCTP V2 TokenMessenger on every testnet.
     address internal constant TESTNET_TOKEN_MESSENGER = 0x8FE6B999Dc680CcFDD5Bf7EB0974218be2542DAA;
 

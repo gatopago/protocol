@@ -84,7 +84,7 @@ export const walletNetworks = {
       tokenMinter: CCTP_TESTNET_TOKEN_MINTER,
       fast: true,
     },
-    paymentRouter: '0x1536b89c24b4c5296Ea67d3a5d0BFB7a3dc1c792',
+    paymentRouter: '0xD59c57Ba83364177C058A9F9dd053fE9326B6423',
     aave: {
       pool: '0xBfC91D59fdAA134A4ED45f7B584cAf96D7792Eff',
       aToken: '0x460b97BD498E1157530AEb3086301d5225b91216',
@@ -105,7 +105,7 @@ export const walletNetworks = {
       tokenMinter: CCTP_TESTNET_TOKEN_MINTER,
       fast: false,
     },
-    paymentRouter: '0x52a0a15d762eB68092b5B45D958C4244233b7F58',
+    paymentRouter: '0x95E6FC8Bd5eD2Dfe3041B599D9B31710b5807246',
     aave: {
       pool: '0x8B9b2AF4afB389b4a70A474dfD4AdCD4a302bb40',
       aToken: '0x9CFcc1B289E59FBe1E769f020C77315DF8473760',
@@ -120,7 +120,7 @@ export const walletNetworks = {
       tokenMinter: CCTP_TESTNET_TOKEN_MINTER,
       fast: false,
     },
-    paymentRouter: '0x18F716B0CCAe35471986b65b8a8A15594Ab5BE40',
+    paymentRouter: '0x554627449FaDfe1b57862C91C522AD3A47c355cc',
     // docs.agora.finance/developer/contract-deployments
     tokens: [
       {

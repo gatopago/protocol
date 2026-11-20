@@ -1,5 +1,5 @@
 import { encodeFunctionData, parseAbi, type Address, type Hex } from 'viem';
-import { walletNetwork, XLM_DECIMALS } from './networks';
+import { walletNetwork, walletNetworks, XLM_DECIMALS } from './networks';
 
 /**
  * What a person holds, as coins rather than networks: USDC is one balance wherever it is, each
@@ -66,6 +66,21 @@ export function walletAssets(networkIds: readonly string[], stellarId?: string):
   }
   if (stellarId) add('XLM', 'Stellar Lumens', XLM_DECIMALS, { networkId: stellarId, token: null });
   return [...coins].map(([symbol, coin]) => ({ symbol, ...coin }));
+}
+
+/**
+ * The decimals of a coin of GatoPago's networks by its symbol (USDC, a token such as AUSD, a
+ * network's own coin), or null for one it does not know.
+ */
+export function coinDecimals(symbol: string): number | null {
+  if (symbol === 'USDC') return 6;
+  for (const network of Object.keys(walletNetworks).map(walletNetwork)) {
+    const token = network.tokens?.find((item) => item.symbol === symbol);
+    if (token) return token.decimals;
+    if (network.chain.nativeCurrency.symbol === symbol)
+      return network.chain.nativeCurrency.decimals;
+  }
+  return null;
 }
 
 /**

@@ -58,7 +58,7 @@ describe('payment router addresses', () => {
         ],
       );
       const initCode: Hex = `${bytecode('GatoPagoPaymentRouter')}${args.slice(2)}`;
-      expect(deployed(initCode, keccak256(toBytes('gatopago.payments.v1')))).toBe(
+      expect(deployed(initCode, keccak256(toBytes('gatopago.payments.v2')))).toBe(
         network.paymentRouter,
       );
     }

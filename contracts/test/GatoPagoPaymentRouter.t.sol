@@ -9,8 +9,8 @@ import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
 import {ITokenMessengerV2} from "../src/interfaces/ITokenMessengerV2.sol";
 
-contract TestUsdc is ERC20Permit {
-    constructor() ERC20("USD Coin", "USDC") ERC20Permit("USD Coin") {}
+contract TestToken is ERC20Permit {
+    constructor(string memory name, string memory symbol) ERC20(name, symbol) ERC20Permit(name) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
@@ -49,7 +49,9 @@ contract GatoPagoPaymentRouterTest is Test {
     uint32 internal constant ARBITRUM = 3;
     uint32 internal constant AVALANCHE = 1;
 
-    TestUsdc internal usdc = new TestUsdc();
+    TestToken internal usdc = new TestToken("USD Coin", "USDC");
+    /// @dev Another coin of this network (AUSD on Monad): paid and received here only.
+    TestToken internal ausd = new TestToken("Agora Dollar", "AUSD");
     TestTokenMessenger internal messenger = new TestTokenMessenger();
     uint256 internal signerKey = 0xA11CE;
     uint256 internal payerKey = 0xB0B;
@@ -61,6 +63,7 @@ contract GatoPagoPaymentRouterTest is Test {
 
     function setUp() public {
         usdc.mint(payer, 1_000e6);
+        ausd.mint(payer, 1_000e6);
     }
 
     function _payment(uint32 destinationDomain) internal view returns (GatoPagoPaymentRouter.Payment memory) {
@@ -68,6 +71,7 @@ contract GatoPagoPaymentRouterTest is Test {
             intentId: keccak256("pi_1"),
             payer: payer,
             merchant: merchant,
+            token: address(usdc),
             amount: 100e6,
             fee: 1e6,
             destinationDomain: destinationDomain,
@@ -84,7 +88,7 @@ contract GatoPagoPaymentRouterTest is Test {
 
     function _pay(GatoPagoPaymentRouter.Payment memory payment) internal {
         vm.startPrank(payer);
-        usdc.approve(address(router), router.total(payment));
+        TestToken(payment.token).approve(address(router), router.total(payment));
         router.pay(payment, _sign(payment, signerKey));
         vm.stopPrank();
     }
@@ -95,7 +99,7 @@ contract GatoPagoPaymentRouterTest is Test {
         vm.startPrank(payer);
         usdc.approve(address(router), router.total(payment));
         vm.expectEmit(address(router));
-        emit GatoPagoPaymentRouter.PaymentSent(payment.intentId, payer, merchant, 100e6, 1e6, ARBITRUM);
+        emit GatoPagoPaymentRouter.PaymentSent(payment.intentId, payer, merchant, address(usdc), 100e6, 1e6, ARBITRUM);
         router.pay(payment, signature);
         vm.stopPrank();
 
@@ -103,6 +107,35 @@ contract GatoPagoPaymentRouterTest is Test {
         assertEq(usdc.balanceOf(treasury), 1e6);
         assertEq(usdc.balanceOf(payer), 1_000e6 - 101e6);
         assertTrue(router.paid(payment.intentId));
+    }
+
+    function test_paysTheMerchantInAnotherCoinOfThisNetwork() public {
+        GatoPagoPaymentRouter.Payment memory payment = _payment(ARBITRUM);
+        payment.token = address(ausd);
+        bytes memory signature = _sign(payment, signerKey);
+        vm.startPrank(payer);
+        ausd.approve(address(router), router.total(payment));
+        vm.expectEmit(address(router));
+        emit GatoPagoPaymentRouter.PaymentSent(payment.intentId, payer, merchant, address(ausd), 100e6, 1e6, ARBITRUM);
+        router.pay(payment, signature);
+        vm.stopPrank();
+
+        assertEq(ausd.balanceOf(merchant), 100e6);
+        assertEq(ausd.balanceOf(treasury), 1e6);
+        assertEq(ausd.balanceOf(payer), 1_000e6 - 101e6);
+        assertEq(usdc.balanceOf(payer), 1_000e6);
+    }
+
+    function test_onlyUsdcCrossesNetworks() public {
+        GatoPagoPaymentRouter.Payment memory payment = _payment(AVALANCHE);
+        payment.token = address(ausd);
+        bytes memory signature = _sign(payment, signerKey);
+        vm.startPrank(payer);
+        ausd.approve(address(router), router.total(payment));
+        vm.expectRevert(GatoPagoPaymentRouter.GatoPagoPaymentRouter__OnlyUsdcCrosses.selector);
+        router.pay(payment, signature);
+        vm.stopPrank();
+        assertFalse(router.paid(payment.intentId));
     }
 
     function test_burnsThroughCctpWithForwardingToTheMerchantOnAnotherNetwork() public {
@@ -184,9 +217,14 @@ contract GatoPagoPaymentRouterTest is Test {
         vm.expectRevert(GatoPagoPaymentRouter.GatoPagoPaymentRouter__InvalidSignature.selector);
         router.pay(payment, forged);
 
-        // Changing any signed field invalidates Flow's signature.
+        // Changing any signed field invalidates Flow's signature, the coin included.
         bytes memory signature = _sign(payment, signerKey);
         payment.amount = 1;
+        vm.prank(payer);
+        vm.expectRevert(GatoPagoPaymentRouter.GatoPagoPaymentRouter__InvalidSignature.selector);
+        router.pay(payment, signature);
+        payment.amount = 100e6;
+        payment.token = address(ausd);
         vm.prank(payer);
         vm.expectRevert(GatoPagoPaymentRouter.GatoPagoPaymentRouter__InvalidSignature.selector);
         router.pay(payment, signature);

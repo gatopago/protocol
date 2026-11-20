@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assetBalance, walletAssets } from '../packages/shared/assets';
+import { assetBalance, coinDecimals, walletAssets } from '../packages/shared/assets';
 import { walletNetworks } from '../packages/shared/networks';
 
 const read =
@@ -56,6 +56,16 @@ describe('wallet assets', () => {
       decimals: 7,
       holdings: [{ networkId: 'stellar:testnet', token: null }],
     });
+  });
+
+  it('knows the decimals of each coin by its symbol', () => {
+    expect([
+      coinDecimals('USDC'),
+      coinDecimals('AUSD'),
+      coinDecimals('CTK'),
+      coinDecimals('MON'),
+    ]).toEqual([6, 6, 18, 18]);
+    expect(coinDecimals('DOGE')).toBeNull();
   });
 
   it('adds up a coin across its networks, once every one is read', () => {
