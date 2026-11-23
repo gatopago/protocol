@@ -90,6 +90,8 @@ contract GatoPagoWalletTest is WalletFixture {
         _send(again);
 
         _send(_approvalOp(account, "", 1, removePhone, second));
+        vm.warp(block.timestamp + 2 days);
+        GatoPagoAccount(payable(account)).applyChange(1, removePhone);
         assertFalse(GatoPagoAccount(payable(account)).isSigner(_owners(PHONE)[0]));
     }
 
@@ -194,6 +196,8 @@ contract GatoPagoWalletTest is WalletFixture {
 
         bytes memory upgrade = abi.encodeCall(UUPSUpgradeable.upgradeToAndCall, (next, ""));
         _send(_approvalOp(account, "", 0, upgrade, _approval(account, PHONE, 0, upgrade)));
+        vm.warp(block.timestamp + 2 days);
+        GatoPagoAccount(payable(account)).applyChange(0, upgrade);
         assertEq(address(uint160(uint256(vm.load(account, ERC1967Utils.IMPLEMENTATION_SLOT)))), next);
         assertTrue(GatoPagoAccount(payable(account)).isSigner(_owners(PHONE)[0]));
     }

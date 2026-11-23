@@ -37,11 +37,11 @@ que los comercios cobren en USDC. Todo corre en testnet. Los diagramas están en
 
 ### Tablas
 
-**Wallet Core** (D1, 18 tablas):
+**Wallet Core** (D1, 19 tablas):
 
 | Para qué | Tablas |
 |---|---|
-| Miembros y acceso | `members`, `invites`, `siwe_nonces`, `approvals` (cambios de llaves firmados) |
+| Miembros y acceso | `members`, `invites`, `siwe_nonces`, `approvals` (cambios de llaves firmados), `owner_changes` (quitas programadas, por red) |
 | Conveniencia | `contacts`, `member_groups`, `push_tokens`, `card_interest` |
 | Actividad (caché de la cadena) | `transfers`, `index_cursors`, `index_failures`, `member_networks` (webhook e historial por red) |
 | Gas patrocinado | `sponsorship_usage` |
@@ -80,7 +80,8 @@ cuenta.
   ERC-7913). Recibe antes de existir y se crea con su primera operación.
 - **En Stellar** la cuenta es una smart account de OpenZeppelin `stellar-contracts`, cuyo firmante
   es la llave Ed25519 de Mera. Su dirección sale de la cuenta EVM: también recibe antes de existir.
-- Agregar una llave de respaldo se firma una vez y vale en todas las redes.
+- Agregar una llave de respaldo se firma una vez y vale en todas las redes. Quitar una llave espera 48 h
+  en cada red: mientras tanto cualquier llave lo cancela, y Wallet Core avisa por push.
 
 ### Quién paga el gas
 
@@ -104,8 +105,9 @@ La persona nunca necesita ETH, AVAX, MON ni XLM.
   pidió. El gas de ambas cosas lo paga el paymaster.
 - **En Stellar**, la cuenta patrocinadora despliega la smart account la primera vez que la persona
   envía desde Stellar. Recibir no la necesita.
-- **Cambios de llaves en una red donde la cuenta aún no existe:** se aplican antes de su primera
-  operación en esa red, en orden.
+- **Cambios de llaves:** la app los aplica en las tres redes apenas se firman, y despliega la cuenta
+  donde todavía no existe, para que ninguna red quede con un cambio pendiente que otra llave pueda
+  tomar primero.
 - **Recibir no despliega.** El dinero que llega, de otra persona o de un cobro, queda en el
   contrato del activo a nombre de la dirección. La cuenta se despliega recién cuando tiene que firmar
   para sacar dinero.
@@ -164,8 +166,8 @@ desplegamos nosotros:
 
 | Contrato | Dirección |
 |---|---|
-| Factory de cuentas (`GatoPagoAccountFactory`, propio) | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
-| Cuenta, implementación (`GatoPagoAccount`, propio) | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
+| Factory de cuentas (`GatoPagoAccountFactory`, propio) | `0x96e08aF3d40B7CE17dc06143C1DF2A08D717A5Cf` |
+| Cuenta, implementación (`GatoPagoAccount`, propio) | `0xA24EbbA2673AA178cc5124d1FCF560F0c81206aB` |
 | Paymaster (`GatoPagoPaymaster`, propio): paga el gas | `0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4` |
 | Verificador WebAuthn (código de OpenZeppelin, desplegado por nosotros) | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
 

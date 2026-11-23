@@ -7,6 +7,7 @@ import {
   hashTypedData,
   hexToBigInt,
   isErc6492Signature,
+  keccak256,
   numberToHex,
   pad,
   parseAbi,
@@ -33,7 +34,7 @@ import {
   type UserOperation,
   type WebAuthnAccount,
 } from 'viem/account-abstraction';
-import { readContract, verifyHash } from 'viem/actions';
+import { getCode, readContract, verifyHash } from 'viem/actions';
 import {
   hashMessage,
   hashTypedData as hashNestedTypedData,
@@ -48,8 +49,15 @@ export const gatopagoAccountAbi = parseAbi([
   'function upgradeToAndCall(address newImplementation, bytes data) payable',
   'function applyApproval(uint256 sequence, bytes call)',
   'function approvalSequence() view returns (uint256)',
+  'function applyChange(uint256 sequence, bytes call)',
+  'function cancelChange(bytes32 id)',
+  'function changeReadyAt(bytes32 id) view returns (uint48)',
+  'event ChangeScheduled(bytes32 indexed id, uint256 sequence, bytes call, uint48 readyAt)',
+  'event ChangeApplied(bytes32 indexed id)',
+  'event ChangeCanceled(bytes32 indexed id)',
   'function isSigner(bytes signer) view returns (bool)',
   'function getSigners(uint64 start, uint64 end) view returns (bytes[])',
+  'function getSignerCount() view returns (uint256)',
 ]);
 export const gatopagoAccountFactoryAbi = parseAbi([
   'function createAccount(bytes[] owners, uint256 salt) returns (address)',
@@ -151,31 +159,81 @@ export function encodeApplyApproval(sequence: bigint, call: Hex): Hex {
 
 const isReplayableNonce = (nonce: bigint) => nonce >> 64n === REPLAYABLE_NONCE_KEY;
 
+/**
+ * Id of the change approval number `sequence` schedules (removing owners or upgrading wait two
+ * days), as the account computes it.
+ */
+export const changeId = (sequence: bigint, call: Hex): Hex =>
+  keccak256(encodeAbiParameters([{ type: 'uint256' }, { type: 'bytes' }], [sequence, call]));
+
+/**
+ * Cancels a scheduled change: one call of a normal operation, signed by any owner and bound to its
+ * network, so a cancellation cannot be raced like an approval.
+ */
+export const cancelChangeCall = (account: Address, id: Hex) => ({
+  to: account,
+  data: encodeFunctionData({ abi: gatopagoAccountAbi, functionName: 'cancelChange', args: [id] }),
+});
+
+/** Applies a scheduled change once due: one call of a normal operation (anyone may send it). */
+export const applyChangeCall = (account: Address, sequence: bigint, call: Hex) => ({
+  to: account,
+  data: encodeFunctionData({
+    abi: gatopagoAccountAbi,
+    functionName: 'applyChange',
+    args: [sequence, call],
+  }),
+});
+
 const erc7913VerifierAbi = parseAbi([
   'function verify(bytes key, bytes32 hash, bytes signature) view returns (bytes4)',
 ]);
 const ERC7913_VALID = toFunctionSelector('verify(bytes,bytes32,bytes)');
 
 /**
- * Owners after applying `calls` (approved `addOwners` / `removeOwners`, in order) to the initial
- * owners. Like the account, it stops at a change that cannot apply: none after it can either.
+ * The owners approvals give an account where it is not deployed yet: its initial owners plus every
+ * approved addition. Removals are left out: each waits two days on each network, where it may still
+ * be cancelled, so only a deployed account says whether one applied (`accountOwners`).
  */
-export function ownersAfter(initialOwners: readonly Hex[], calls: readonly Hex[]): Hex[] {
-  let owners = initialOwners.map((owner) => owner.toLowerCase() as Hex);
+export function approvedOwners(initialOwners: readonly Hex[], calls: readonly Hex[]): Hex[] {
+  const owners = new Set(initialOwners.map((owner) => owner.toLowerCase() as Hex));
   for (const call of calls) {
-    try {
-      owners = nextOwners(owners, call);
-    } catch {
-      break;
-    }
+    const { functionName, args } = decodeFunctionData({ abi: gatopagoAccountAbi, data: call });
+    if (functionName === 'addOwners')
+      for (const owner of args[0] as readonly Hex[]) owners.add(owner.toLowerCase() as Hex);
   }
-  return owners;
+  return [...owners];
 }
 
 /**
- * Owners after one approved owner change, refusing what the account would revert (OpenZeppelin's
- * MultiSignerERC7913): an existing or malformed owner, a missing one, or no owner left. Upgrades
- * are not approved through here.
+ * The owners `account` has on `client`'s network once it applies the approvals in `calls` it is
+ * still missing: read from the account where it is deployed, plus the additions among those
+ * approvals; before it is deployed, its initial owners plus every approved addition.
+ */
+export async function accountOwners(
+  client: Client,
+  parameters: { account: Address; initialOwners: readonly Hex[]; calls: readonly Hex[] },
+): Promise<Hex[]> {
+  const { account, initialOwners, calls } = parameters;
+  if (!(await getCode(client, { address: account }))) return approvedOwners(initialOwners, calls);
+  const contract = { address: account, abi: gatopagoAccountAbi } as const;
+  const [count, applied] = await Promise.all([
+    readContract(client, { ...contract, functionName: 'getSignerCount' }),
+    readContract(client, { ...contract, functionName: 'approvalSequence' }),
+  ]);
+  const owners = await readContract(client, {
+    address: account,
+    abi: gatopagoAccountAbi,
+    functionName: 'getSigners',
+    args: [0n, count],
+  });
+  return approvedOwners(owners, calls.slice(Number(applied)));
+}
+
+/**
+ * Owners once one approved owner change applies, refusing what the account would revert
+ * (OpenZeppelin's MultiSignerERC7913): an existing or malformed owner, a missing one, or no owner
+ * left. Upgrades are not approved through here.
  */
 function nextOwners(owners: readonly Hex[], call: Hex): Hex[] {
   const { functionName, args } = decodeFunctionData({ abi: gatopagoAccountAbi, data: call });
@@ -261,39 +319,38 @@ async function signingOwner(
 }
 
 /**
- * Whether `signature` is the next approval of `account`: signed by an owner at that point (the initial
- * owners plus the `previous` approvals), as the account checks it onchain (`signingOwner`), for a
- * change the account can apply. Lets a server store approvals for other networks without trusting
- * the client.
+ * Whether `signature` is approval number `sequence` of `account`, for a change the account can
+ * apply, signed by one of `owners` as the account checks it onchain (`signingOwner`). `owners` are
+ * the ones the account has where the approval is checked (`accountOwners`). Lets a server store
+ * approvals for other networks without trusting the client.
  */
 export async function verifyApproval(
   client: Client,
   parameters: {
     account: Address;
-    initialOwners: readonly Hex[];
-    previous: readonly Hex[];
+    owners: readonly Hex[];
+    sequence: number;
     call: Hex;
     signature: Hex;
   },
 ): Promise<Hex | null> {
-  const { account, initialOwners, previous, call, signature } = parameters;
-  const owners = ownersAfter(initialOwners, previous);
+  const { account, owners, sequence, call, signature } = parameters;
   try {
     // The change itself must be one the account can apply, or it would block the ones after it.
     nextOwners(owners, call);
   } catch {
     return null;
   }
-  const hash = approvalHash(account, BigInt(previous.length), call);
+  const hash = approvalHash(account, BigInt(sequence), call);
   return signingOwner(client, { owners, hash, signature });
 }
 
 /**
- * The owners of `account` now, rebuilt without trusting whoever handed over its history: the
- * address must be the factory's for `initialOwners`, and each approval must be the next one in
- * order, signed by an owner at that point (`verifyApproval`). Throws `APPROVALS_INVALID` when any of
- * it does not hold. A history cut short before a removal cannot be told from a complete one here:
- * the caller compares its length with the newest it knows (the account's own count onchain).
+ * The owners of `account` now (`accountOwners`), its history checked without trusting whoever
+ * handed it over: the address must be the factory's for `initialOwners`, and each approval must be
+ * the next one in order, signed by an owner it approved. Throws `APPROVALS_INVALID` when any of it
+ * does not hold. A history cut short cannot be told from a complete one here: the caller compares
+ * its length with the newest it knows (the account's own count onchain).
  */
 export async function verifiedOwners(
   client: Client,
@@ -312,22 +369,22 @@ export async function verifiedOwners(
     args: [initialOwners, 0n],
   });
   if (derived.toLowerCase() !== account.toLowerCase()) throw new Error('APPROVALS_INVALID');
-  const previous: Hex[] = [];
+  const calls: Hex[] = [];
   for (const [index, approval] of approvals.entries()) {
     const signer =
       approval.sequence === index
         ? await verifyApproval(client, {
             account,
-            initialOwners,
-            previous,
+            owners: approvedOwners(initialOwners, calls),
+            sequence: index,
             call: approval.call,
             signature: approval.signature,
           })
         : null;
     if (!signer) throw new Error('APPROVALS_INVALID');
-    previous.push(approval.call);
+    calls.push(approval.call);
   }
-  return ownersAfter(initialOwners, previous);
+  return accountOwners(client, { account, initialOwners, calls });
 }
 
 export function encodeCalls(calls: readonly { to: Address; value?: bigint; data?: Hex }[]): Hex {

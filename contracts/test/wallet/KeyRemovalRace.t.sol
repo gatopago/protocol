@@ -19,16 +19,14 @@ contract AnyonePaymaster is IPaymaster {
     function postOp(PostOpMode, bytes calldata, uint256, uint256) external pure {}
 }
 
-/// KupiaSec's finding (email of 19-10-2026, medium), reproduced on the real EntryPoint v0.9 and the
-/// compiled wallet: owner changes are signed without the chain id, apply in order on every network,
-/// one passkey is enough, and the approval channel needs a paymaster but not ours. A thief with a
-/// stolen passkey wins every network where the owner's removal of it has not landed yet.
-///
-/// These tests pass while the account is vulnerable. The fix (phase 11) must turn each of them
-/// into the opposite assertion.
+/// KupiaSec's finding (email of 19-10-2026, medium), on the real EntryPoint v0.9: owner changes are
+/// signed without the chain id, apply on every network in sequence order, one passkey is enough, and
+/// the approval channel needs a paymaster but not ours. With a stolen passkey the thief, through its
+/// own paymaster and transactions, used to lock the owner out of any network where the owner's
+/// removal of it had not landed. Now removals wait two days, and the owner cancels the thief's.
 contract KeyRemovalRaceTest is WalletFixture {
-    uint256 constant PHONE = 0xA11CE; // the owner's passkey
-    uint256 constant LAPTOP = 0xB0B; // the stolen one
+    uint256 constant PHONE = 0xA11CE; // the owner's passkey, the account's first
+    uint256 constant LAPTOP = 0xB0B; // the backup, stolen
     uint256 constant ARBITRUM_SEPOLIA = 421614;
     uint256 constant AVALANCHE_FUJI = 43113;
 
@@ -41,64 +39,75 @@ contract KeyRemovalRaceTest is WalletFixture {
         ep.depositTo{value: 1 ether}(address(thiefPaymaster));
     }
 
-    /// The owner removes the stolen laptop; where that removal is still pending, the thief sends
-    /// its own change with the same sequence first, and the owner is out of the account there.
-    function test_thiefWinsWhereTheRemovalIsPending() public {
-        bytes[] memory phone = _owners(PHONE);
+    /// The thief signs its own next approval, removing the owner, and lands it first: it is only
+    /// scheduled, and the owner cancels it.
+    function test_theThiefCannotLockTheOwnerOut() public {
         address account = _deployed(PHONE);
-        bytes memory addLaptop = abi.encodeCall(GatoPagoAccount.addOwners, (_owners(LAPTOP)));
-        _send(_approvalOp(account, "", 0, addLaptop, _approval(account, PHONE, 0, addLaptop)));
-        usdc.mint(account, 100e6);
+        _send(_approvalOp(account, "", 0, _addLaptop(), _approval(account, PHONE, 0, _addLaptop())));
 
-        // The owner's approval #1 removes the laptop. It is already public on another network.
-        bytes memory removeLaptop = abi.encodeCall(GatoPagoAccount.removeOwners, (_owners(LAPTOP)));
-        bytes memory ownerRemoval = _approval(account, PHONE, 1, removeLaptop);
-
-        // Here the thief signs its own #1 with the laptop and lands it first: its paymaster, its
-        // transaction.
-        bytes memory removePhone = abi.encodeCall(GatoPagoAccount.removeOwners, (phone));
-        _thiefSends(_paidByThief(_approvalOp(account, "", 1, removePhone, _approval(account, LAPTOP, 1, removePhone))));
-        assertFalse(GatoPagoAccount(payable(account)).isSigner(phone[0]));
-
-        // The owner's removal comes too late: #1 is spent.
-        PackedUserOperation memory late = _approvalOp(account, "", 1, removeLaptop, ownerRemoval);
-        _expectFailedOp("AA24 signature error");
-        _send(late);
-
-        // The money on this network is the thief's.
-        _drainedBy(account, 100e6);
+        _thiefSends(
+            _paidByThief(_approvalOp(account, "", 1, _removePhone(), _approval(account, LAPTOP, 1, _removePhone())))
+        );
+        assertTrue(GatoPagoAccount(payable(account)).isSigner(_owners(PHONE)[0]));
+        _cancelled(account);
     }
 
-    /// On a network where the account never existed, the owner's approvals are public: the thief
-    /// replays the one that added the laptop, then applies its own next one.
-    function test_thiefTakesANetworkWhereTheAccountNeverExisted() public {
+    /// Where the account never existed, the thief replays the owner's approval that added the
+    /// stolen key, then its own: that one waits too.
+    function test_aNewNetworkGivesTheThiefNoShortcut() public {
         uint256 freshNetwork = vm.snapshotState();
         vm.chainId(ARBITRUM_SEPOLIA);
-        bytes[] memory phone = _owners(PHONE);
         address account = _deployed(PHONE);
-        bytes memory addLaptop = abi.encodeCall(GatoPagoAccount.addOwners, (_owners(LAPTOP)));
-        bytes memory removeLaptop = abi.encodeCall(GatoPagoAccount.removeOwners, (_owners(LAPTOP)));
-        bytes memory added = _approval(account, PHONE, 0, addLaptop);
-        bytes memory removed = _approval(account, PHONE, 1, removeLaptop);
-        _send(_approvalOp(account, "", 0, addLaptop, added));
-        _send(_approvalOp(account, "", 1, removeLaptop, removed));
-        assertFalse(GatoPagoAccount(payable(account)).isSigner(_owners(LAPTOP)[0]));
+        bytes memory added = _approval(account, PHONE, 0, _addLaptop());
 
-        // Avalanche: nothing was ever deployed for this account, and someone pays it there.
         vm.revertToState(freshNetwork);
         vm.chainId(AVALANCHE_FUJI);
         assertEq(account.code.length, 0);
-        usdc.mint(account, 50e6);
+        _thiefSends(_paidByThief(_approvalOp(account, _initCode(_owners(PHONE)), 0, _addLaptop(), added)));
+        _thiefSends(
+            _paidByThief(_approvalOp(account, "", 1, _removePhone(), _approval(account, LAPTOP, 1, _removePhone())))
+        );
+        _cancelled(account);
+    }
 
-        _thiefSends(_paidByThief(_approvalOp(account, _initCode(phone), 0, addLaptop, added)));
-        bytes memory removePhone = abi.encodeCall(GatoPagoAccount.removeOwners, (phone));
-        _thiefSends(_paidByThief(_approvalOp(account, "", 1, removePhone, _approval(account, LAPTOP, 1, removePhone))));
-        assertFalse(GatoPagoAccount(payable(account)).isSigner(phone[0]));
+    /// What the wait cannot close: where nothing was deployed yet, the account starts with its
+    /// first owners only. If the stolen passkey is the first, the thief takes approval #0 there and
+    /// the owner's backup, approved as #0 elsewhere, never gets in. The app applies every approval
+    /// on every network as soon as it is signed, deploying the account where it is missing.
+    function test_theFirstPasskeyStillOwnsNetworksWhereNothingWasDeployed() public {
+        uint256 freshNetwork = vm.snapshotState();
+        vm.chainId(ARBITRUM_SEPOLIA);
+        address account = _deployed(PHONE);
+        // The thief holds PHONE: its own approval #0 is as valid as the owner's.
+        bytes memory addThief = abi.encodeCall(GatoPagoAccount.addOwners, (_owners(0xBAD)));
+        bytes memory signed = _approval(account, PHONE, 0, addThief);
 
-        PackedUserOperation memory late = _approvalOp(account, "", 1, removeLaptop, removed);
-        _expectFailedOp("AA24 signature error");
-        _send(late);
-        _drainedBy(account, 50e6);
+        vm.revertToState(freshNetwork);
+        vm.chainId(AVALANCHE_FUJI);
+        _thiefSends(_paidByThief(_approvalOp(account, _initCode(_owners(PHONE)), 0, addThief, signed)));
+        assertTrue(GatoPagoAccount(payable(account)).isSigner(_owners(0xBAD)[0]));
+    }
+
+    function _addLaptop() internal view returns (bytes memory) {
+        return abi.encodeCall(GatoPagoAccount.addOwners, (_owners(LAPTOP)));
+    }
+
+    function _removePhone() internal view returns (bytes memory) {
+        return abi.encodeCall(GatoPagoAccount.removeOwners, (_owners(PHONE)));
+    }
+
+    /// The owner cancels approval #1 with a normal operation for this network; once due, it cannot
+    /// be applied.
+    function _cancelled(address account) internal {
+        GatoPagoAccount wallet = GatoPagoAccount(payable(account));
+        bytes32 id = wallet.changeId(1, _removePhone());
+        assertGt(wallet.changeReadyAt(id), 0);
+        bytes memory cancel = _batch(account, 0, abi.encodeCall(GatoPagoAccount.cancelChange, (id)));
+        _send(_signed(_op(account, "", cancel, ep.getNonce(account, 0)), PHONE));
+        vm.warp(block.timestamp + 2 days);
+        vm.expectRevert(abi.encodeWithSelector(GatoPagoAccount.GatoPagoAccountChangeNotScheduled.selector, id));
+        wallet.applyChange(1, _removePhone());
+        assertTrue(wallet.isSigner(_owners(PHONE)[0]));
     }
 
     function _paidByThief(PackedUserOperation memory op) internal view returns (PackedUserOperation memory) {
@@ -111,14 +120,5 @@ contract KeyRemovalRaceTest is WalletFixture {
         ops[0] = op;
         vm.prank(thief, thief);
         ep.handleOps(ops, payable(thief));
-    }
-
-    /// A normal payment signed by the laptop alone moves everything to the thief.
-    function _drainedBy(address account, uint256 amount) internal {
-        PackedUserOperation memory drain =
-            _paidByThief(_op(account, "", _transfer(thief, amount), ep.getNonce(account, 0)));
-        _thiefSends(_signed(drain, LAPTOP));
-        assertEq(usdc.balanceOf(thief), amount);
-        assertEq(usdc.balanceOf(account), 0);
     }
 }

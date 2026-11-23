@@ -52,10 +52,15 @@ contract AccountHandler is WalletFixture {
 
     function removeOwner(uint256 signerSeed, uint256 targetSeed) external {
         uint256 index = targetSeed % ownerKeys.length;
-        if (_applyApproval(signerSeed, abi.encodeCall(GatoPagoAccount.removeOwners, (_owners(ownerKeys[index]))))) {
+        bytes memory call = abi.encodeCall(GatoPagoAccount.removeOwners, (_owners(ownerKeys[index])));
+        uint256 sequence = account.approvalSequence();
+        if (!_applyApproval(signerSeed, call)) return;
+        // A removal waits; once due, anyone applies it (unless it would leave no owner).
+        vm.warp(block.timestamp + account.CHANGE_DELAY());
+        try account.applyChange(sequence, call) {
             ownerKeys[index] = ownerKeys[ownerKeys.length - 1];
             ownerKeys.pop();
-        }
+        } catch {}
     }
 
     function spend(uint256 signerSeed, uint256 amount) external {

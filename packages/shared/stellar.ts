@@ -126,7 +126,7 @@ function accountSigners(network: StellarNetwork, owners: readonly Hex[], keys: r
 
 /**
  * Creates the Stellar account of `account` with the EVM account's current passkey `owners`
- * (`ownersAfter`) and approved Ed25519 `keys` (`stellarKeyApproval`), any one of them able to
+ * (`accountOwners`) and approved Ed25519 `keys` (`stellarKeyApproval`), any one of them able to
  * sign. Only `deployer` can send it.
  */
 export function deployAccountOperation(
@@ -160,7 +160,7 @@ const bytes = (value: Hex) => xdr.ScVal.scvBytes(hexToBytes(value));
 
 /**
  * The calls that make the Stellar account's signers the passkeys among the EVM account's `owners`
- * (`ownersAfter`) and its Ed25519 `keys`: keys approved after it was created are added, removed
+ * (`accountOwners`) and its Ed25519 `keys`: keys approved after it was created are added, removed
  * ones taken out. Additions go first, so the account always keeps a signer. Each call is signed on
  * its own.
  */

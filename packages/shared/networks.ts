@@ -10,7 +10,7 @@ import type { WalletContracts } from './wallet';
  */
 export const walletContracts: WalletContracts = {
   webAuthnVerifier: '0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8',
-  factory: '0x4A000246131C2DEd46ff6eA047808E708Fa0da02',
+  factory: '0x96e08aF3d40B7CE17dc06143C1DF2A08D717A5Cf',
   paymaster: '0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4',
 };
 

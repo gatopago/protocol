@@ -10,6 +10,7 @@ import {
   type Hex,
 } from 'viem';
 import { walletContracts, walletNetworks } from '../packages/shared/networks';
+import { changeId } from '../packages/shared/wallet';
 
 const CREATE2_DEPLOYER = '0x4e59b44847b379578588920ca78fbf26c0b4956c';
 const SALT = keccak256(toBytes('gatopago.wallet.v1')); // DeployWallet.s.sol
@@ -32,6 +33,14 @@ describe('wallet contract addresses', () => {
     );
     expect(deployed(`${bytecode('GatoPagoPaymaster')}${paymasterArgs.slice(2)}`)).toBe(
       walletContracts.paymaster,
+    );
+  });
+});
+
+describe('scheduled owner changes', () => {
+  it('are named as the account names them (keccak256(abi.encode(sequence, call)))', () => {
+    expect(changeId(2n, '0x1234')).toBe(
+      '0xd3162693fed379adcb6e07084c441fb2c34456ca2d0e2ed18325ac172a498926',
     );
   });
 });

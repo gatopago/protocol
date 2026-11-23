@@ -29,11 +29,17 @@ The contracts compose audited OpenZeppelin 5.7 components: `Account`, `MultiSign
 `PaymasterSigner`.
 
 - **Account** (`GatoPagoAccount`): passkeys are the owners; any one of them is enough (threshold 1).
-  - Normal channel: payments and calls, signed for one network. It never calls the account itself.
+  - Normal channel: payments and calls, signed for one network. It calls the account itself only to
+    cancel or apply a scheduled change (`cancelChange`, `applyChange`).
   - Approval channel: `applyApproval(sequence, call)` adds or removes owners or upgrades the account.
     It is signed once without the chain id and applies on every network, in order, even where the
     account does not exist yet. The sequence only advances when the change succeeds, so a failed
     attempt can be retried. Coinbase Smart Wallet's pattern, adapted to EntryPoint v0.9.
+  - Adding owners applies at once. Removing owners and upgrading are scheduled for two days, during
+    which any owner cancels them; once due, anyone applies them (`applyChange`). A stolen passkey
+    can still spend, but it can no longer lock the owner out: the race KupiaSec reported
+    (`test/wallet/KeyRemovalRace.t.sol`). Where an account was never deployed it starts with its
+    first owners, so the app applies every approval on every network as soon as it is signed.
 - **Factory**: ERC-1967 proxies through CREATE2; the address commits to the initial owners.
 - **Paymaster**: pays gas for operations signed by the backend's sponsor key; daily budgets live
   off-chain.
@@ -113,8 +119,8 @@ Every contract, the payment routers included, is verified on [Sourcify](https://
 | -------------------------------- | -------------------------------------------- |
 | EntryPoint v0.9 (canonical)      | `0x433709009B8330FDa32311DF1C2AFA402eD8D009` |
 | `ERC7913WebAuthnVerifier`        | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
-| `GatoPagoAccountFactory`         | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
-| `GatoPagoAccount` implementation | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
+| `GatoPagoAccountFactory`         | `0x96e08aF3d40B7CE17dc06143C1DF2A08D717A5Cf` |
+| `GatoPagoAccount` implementation | `0xA24EbbA2673AA178cc5124d1FCF560F0c81206aB` |
 | `GatoPagoPaymaster`              | `0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4` |
 
 On testnets the paymaster's sponsor signer and owner, and the bundler relayer, are all
