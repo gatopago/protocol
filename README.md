@@ -17,7 +17,7 @@ contracts/            Foundry project
   src/                GatoPagoPaymentRouter (Flow)
   script/             DeployWallet.s.sol (wallet) and DeployPayments.s.sol (router)
   test/
-packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, savings, Uniswap, Stellar
+packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, Aave, Uniswap, Stellar
 test/                 End-to-end test on forks of real networks (viem + bundler) and on Stellar testnet
 scripts/              SDK build and storage layout check
 ```
@@ -50,8 +50,9 @@ Circle's Forwarding Service mints on the destination, so no relayer of ours is i
 `@gatopago/shared/passkey` is how a passkey identifies an account, shared by the app and the merchant
 console so both always find the same one: `recoverPasskeyPublicKeys` recovers the passkey's key from
 a WebAuthn signature and `passkeyAccount` matches it against an account's current owners, and
-Mera's fixed recipe turns a passkey's PRF output into keys (`meraSeed`, `meraEvmKey` at
-`m/44'/60'/0'/0/0`, `stellarKeyFromSeed` at SEP-5's `m/44'/148'/0'`). `capturingWebAuthnClient`
+Mera's fixed recipe turns a passkey's PRF output into keys: Mera's own `deriveEvmPrivateKey` at
+`m/44'/60'/0'/0/0`, and `meraSeed` with `stellarKeyFromSeed` at SEP-5's `m/44'/148'/0'` for Stellar,
+which Mera does not derive. `capturingWebAuthnClient`
 lets one prompt serve both: Mera gets its PRF output and the assertion is kept for
 `passkeyAccount` (it types against `@category-labs/mera`, an optional peer dependency).
 `@gatopago/shared/http` is what both Workers answer with: `HttpError` (`{ error_code }`), `json`,
@@ -226,34 +227,6 @@ cd contracts
 forge script script/DeployDeposits.s.sol --rpc-url <network> --account <foundry keystore> --broadcast \
   --verify --verifier sourcify
 ```
-
-## Savings
-
-`@gatopago/shared/savings` is where an account's USDC earns: it deposits into lending markets and
-vaults directly, as their owner, so GatoPago never holds the money. Each provider in
-`savingsProviders` carries a risk sheet read on chain (who can upgrade it, pause withdrawals or
-curate it, and with what delay; audits; incidents), and `savingsTier` derives its tier from it: any
-power held by an EOA is `turbo`, a multisig that can change the code or loans resting on a few
-collaterals is `plus`, and only a DAO vote (or immutable code) is `stable`. The same functions serve the four kinds: `depositCalls` (approve
-exactly and deposit, one operation), `withdrawCalls` (an amount, or `'all'` from a `position`),
-`position`, `withdrawable` (what can leave right now) and `growthIndex`, whose readings
-`realizedRate` turns into the rate actually paid.
-
-| Kind          | Providers                                                            | What `withdrawable` reads                                                                             |
-| ------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `aave-v3`     | Aave on Arbitrum, Avalanche and Monad (and the testnets)             | USDC the aToken holds                                                                                 |
-| `erc4626`     | Fluid fUSDC and Spark sUSDC (Arbitrum), Euler Clearstar Earn (Monad) | `maxWithdraw`                                                                                         |
-| `morpho-v2`   | Morpho Vault V2 August USDC (Monad)                                  | Idle USDC plus what its liquidity adapter can take from its Morpho market (`maxWithdraw` is always 0) |
-| `compound-v2` | BENQI qiUSDCn (Avalanche)                                            | `getCash()`                                                                                           |
-
-BENQI's `mint` and `redeemUnderlying` return an error code instead of reverting, and a batch
-cannot read it: a refused deposit or withdrawal does nothing, so read `position` after it. A
-withdrawal followed by a payment still reverts as a whole, since the payment finds no USDC.
-
-`test/savings.test.ts` runs every mainnet provider on forks of Arbitrum One, Avalanche and Monad:
-deposit, withdraw part, 30 days of yield, withdraw everything, a market lent out, BENQI's silent
-refusal and a loss. The forks need RPCs that serve past state (`ARBITRUM_RPC`, `AVALANCHE_RPC`,
-`MONAD_RPC`; the defaults do).
 
 ## Commands
 

@@ -42,11 +42,6 @@
       "import": "./dist/earn.js",
       "default": "./dist/earn.js"
     },
-    "./savings": {
-      "types": "./dist/savings.d.ts",
-      "import": "./dist/savings.js",
-      "default": "./dist/savings.js"
-    },
     "./swap": {
       "types": "./dist/swap.d.ts",
       "import": "./dist/swap.js",
@@ -84,14 +79,13 @@
     }
   },
   "dependencies": {
-    "@scure/bip32": "1.7.0",
     "@scure/bip39": "1.6.0",
     "@stellar/stellar-sdk": "17.2.0",
     "ox": "0.14.34",
     "viem": "2.55.19"
   },
   "peerDependencies": {
-    "@category-labs/mera": "0.2.0"
+    "@category-labs/mera": "0.4.0"
   },
   "peerDependenciesMeta": {
     "@category-labs/mera": {

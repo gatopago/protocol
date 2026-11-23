@@ -1,4 +1,3 @@
-import { HDKey } from '@scure/bip32';
 import { entropyToMnemonic, mnemonicToSeedSync } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import type { WebAuthnClient } from '@category-labs/mera';
@@ -185,23 +184,12 @@ export function capturingWebAuthnClient(
 
 /**
  * Mera's recipe: a passkey's 32-byte PRF output is the entropy of a BIP-39 recovery phrase, whose
- * seed derives every key. It is fixed: changing any step changes every key derived from it. The
- * caller wipes the seed after use.
+ * seed derives every key. It is fixed: changing any step changes every key derived from it. Mera
+ * derives the Ethereum key itself (`deriveEvmPrivateKey`); this seed is for the Stellar key, which
+ * Mera does not derive. The caller wipes it after use.
  */
 export const meraSeed = (prfOutput: Uint8Array): Uint8Array =>
   mnemonicToSeedSync(entropyToMnemonic(prfOutput, wordlist));
-
-/** BIP-44 path of the first Ethereum account: the key that owns a Mera account. */
-const MERA_EVM_PATH = "m/44'/60'/0'/0/0";
-
-/** The Ethereum private key of a Mera seed (`MERA_EVM_PATH`); the caller wipes it after use. */
-export function meraEvmKey(seed: Uint8Array): Uint8Array {
-  const node = HDKey.fromMasterSeed(seed).derive(MERA_EVM_PATH);
-  if (!node.privateKey) throw new Error('MERA_DERIVATION_FAILED');
-  const key = node.privateKey.slice();
-  node.wipePrivateData();
-  return key;
-}
 
 /**
  * The Ed25519 private key at SEP-5's path `m/44'/148'/<index>'` (SLIP-10, every level hardened) of

@@ -5,7 +5,6 @@ import { privateKeyToAddress, generatePrivateKey } from 'viem/accounts';
 import { crosschainFee } from '../packages/shared/crosschain';
 import { stellarNetworks, walletContracts, walletNetworks } from '../packages/shared/networks';
 import {
-  addSignerOperation,
   burnMessage,
   crosschainOperation,
   deployAccountOperation,
@@ -294,7 +293,12 @@ describe('Stellar accounts on testnet', { timeout: 180_000 }, () => {
     expect(await stellarBurnAllowance(server, network, account)).toBe(0n);
 
     await signed(transferOperation(network, account, sponsor.publicKey(), 10_000_000n), backup);
-    await signed(addSignerOperation(network, account, owner(laptop)), phone);
+    const [addLaptop] = await signerChangeOperations(server, network, account, [
+      owner(phone),
+      owner(backup),
+      owner(laptop),
+    ]);
+    await signed(addLaptop, phone);
     await signed(transferOperation(network, account, sponsor.publicKey(), 10_000_000n), laptop);
     expect(await stellarUsdcBalance(server, network, account)).toBe(10_000_000n);
 

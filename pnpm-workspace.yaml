@@ -4,6 +4,10 @@ allowBuilds:
   esbuild: false
 
 minimumReleaseAge: 10080
+# Mera 0.4.0 (19-11) before its 7 days: built from category-labs/mera at v0.4.0 with npm provenance,
+# and its build makes no network calls. Remove once it is a week old (26-11).
+minimumReleaseAgeExclude:
+  - '@category-labs/mera@0.4.0'
 overrides:
   # Transitive fixes from the 20-11 audit (follow-redirects through stellar-sdk's axios).
   'zod@>=4.0.0 <4.6.6': '^4.6.7'

@@ -158,13 +158,6 @@ const address = (value: string) => new StellarAddress(value).toScVal();
 const i128 = (value: bigint) => nativeToScVal(value, { type: 'i128' });
 const bytes = (value: Hex) => xdr.ScVal.scvBytes(hexToBytes(value));
 
-/** Adds an EVM owner the account approved (`addOwners`) as a Stellar signer. */
-export function addSignerOperation(network: StellarNetwork, account: string, owner: Hex) {
-  const signer = stellarSigner(network, owner);
-  if (!signer) throw new Error('NOT_A_PASSKEY_OWNER');
-  return call(account, 'add_signer', [xdr.ScVal.scvU32(DEFAULT_RULE), signer]);
-}
-
 /**
  * The calls that make the Stellar account's signers the passkeys among the EVM account's `owners`
  * (`ownersAfter`) and its Ed25519 `keys`: keys approved after it was created are added, removed

@@ -3,24 +3,28 @@ import { entropyToMnemonic } from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
 import { bytesToHex, hexToBigInt, sha256, slice, stringToBytes } from 'viem';
 import { mnemonicToAccount, privateKeyToAccount } from 'viem/accounts';
-import { createEd25519SigningSession, getPasskeyPrfOutput } from '@category-labs/mera';
+import {
+  createEd25519SigningSession,
+  deriveEvmPrivateKey,
+  getPasskeyPrfOutput,
+} from '@category-labs/mera';
 import {
   BUSINESS_KEY_SALT,
   businessKey,
   businessSignInMessage,
   capturingWebAuthnClient,
-  meraEvmKey,
-  meraSeed,
 } from '../packages/shared/passkey';
 import { softwarePasskey } from './passkey';
 
 describe('passkeys', () => {
-  it("derive Mera's Ethereum key as any BIP-39 wallet does from the same phrase", () => {
+  it("derive Mera's Ethereum key as any BIP-39 wallet does from the same phrase, unchanged", () => {
     const prfOutput = Uint8Array.from({ length: 32 }, (_, i) => i);
-    const key = meraEvmKey(meraSeed(prfOutput));
-    expect(privateKeyToAccount(bytesToHex(key)).address).toBe(
-      mnemonicToAccount(entropyToMnemonic(prfOutput, wordlist)).address,
+    const { address } = privateKeyToAccount(
+      bytesToHex(deriveEvmPrivateKey({ prfOutput, accountIndex: 0 })),
     );
+    expect(address).toBe(mnemonicToAccount(entropyToMnemonic(prfOutput, wordlist)).address);
+    // What every account's owner has been since the first one: a new Mera may not change it.
+    expect(address).toBe('0xF9297b542BDb5DA50C364f9AE4Cbe1F3933bA40F');
   });
 
   it("ask Mera's fixed PRF salt: another one would derive other keys for every account", async () => {
@@ -48,7 +52,9 @@ describe('passkeys', () => {
     expect(key).toHaveLength(32);
     expect(await businessKey(prfOutput.slice())).toEqual(key);
     expect(await businessKey(prfOutput.map((byte) => byte ^ 1))).not.toEqual(key);
-    expect(bytesToHex(key)).not.toBe(bytesToHex(meraEvmKey(meraSeed(prfOutput.slice()))));
+    expect(bytesToHex(key)).not.toBe(
+      bytesToHex(deriveEvmPrivateKey({ prfOutput: prfOutput.slice(), accountIndex: 0 })),
+    );
     // Its signatures verify with the standard Ed25519 of Web Crypto, as Wallet Core checks them.
     const session = createEd25519SigningSession({ privateKey: key.slice() });
     const message = businessSignInMessage('https://business.gatopago.com', 'a1b2c3d4e5f6a7b8');
