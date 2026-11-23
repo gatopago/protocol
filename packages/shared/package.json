@@ -1,7 +1,7 @@
 {
   "name": "@gatopago/shared",
   "private": true,
-  "version": "6.25.0",
+  "version": "6.27.0",
   "type": "module",
   "files": [
     "dist"
@@ -41,6 +41,11 @@
       "types": "./dist/earn.d.ts",
       "import": "./dist/earn.js",
       "default": "./dist/earn.js"
+    },
+    "./savings": {
+      "types": "./dist/savings.d.ts",
+      "import": "./dist/savings.js",
+      "default": "./dist/savings.js"
     },
     "./swap": {
       "types": "./dist/swap.d.ts",
