@@ -1,4 +1,3 @@
-import { spawn, type ChildProcess } from 'node:child_process';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import {
   createTestClient,
@@ -13,42 +12,22 @@ import { monadTestnet } from 'viem/chains';
 import { faucetCall } from '../packages/shared/assets';
 import { walletNetworks } from '../packages/shared/networks';
 import { quoteSettlement, settlementAllowed, settlementCalls } from '../packages/shared/settlement';
+import { startFork } from './anvil';
 
-const PORT = 8799;
 const monad = walletNetworks['eip155:10143'];
 const [ausd, ctk] = monad.tokens;
-let anvil: ChildProcess;
-const client = createTestClient({
-  chain: monadTestnet,
-  mode: 'anvil',
-  transport: http(`http://127.0.0.1:${PORT}`),
-})
-  .extend(publicActions)
-  .extend(walletActions);
+const forkClient = (url: string) =>
+  createTestClient({ chain: monadTestnet, mode: 'anvil', transport: http(url) })
+    .extend(publicActions)
+    .extend(walletActions);
+let fork: Awaited<ReturnType<typeof startFork>> | undefined;
+let client: ReturnType<typeof forkClient>;
 
 beforeAll(async () => {
-  anvil = spawn(
-    'anvil',
-    [
-      '--fork-url',
-      process.env.MONAD_TESTNET_RPC ?? 'https://testnet-rpc.monad.xyz',
-      '--port',
-      String(PORT),
-      '--silent',
-    ],
-    { stdio: 'ignore' },
-  );
-  for (let attempt = 0; ; attempt++) {
-    try {
-      await client.getChainId();
-      return;
-    } catch (error) {
-      if (attempt > 60) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
+  fork = await startFork(process.env.MONAD_TESTNET_RPC ?? 'https://testnet-rpc.monad.xyz');
+  client = forkClient(fork.url);
 }, 60_000);
-afterAll(() => anvil?.kill());
+afterAll(() => fork?.stop());
 
 describe('Agora Instant Settlement on a Monad testnet fork', () => {
   it('sends AUSD that the recipient receives in the other coin, at the fixed price', async () => {

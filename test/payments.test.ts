@@ -1,4 +1,3 @@
-import { spawn, type ChildProcess } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -28,42 +27,22 @@ import {
   paymentTypedData,
   payWithPermitCall,
 } from '../packages/shared/payments';
+import { startFork } from './anvil';
 
-const PORT = 8798;
 const monad = walletNetworks['eip155:10143'];
 const [ausd] = monad.tokens;
-let anvil: ChildProcess;
-const client = createTestClient({
-  chain: monadTestnet,
-  mode: 'anvil',
-  transport: http(`http://127.0.0.1:${PORT}`),
-})
-  .extend(publicActions)
-  .extend(walletActions);
+const forkClient = (url: string) =>
+  createTestClient({ chain: monadTestnet, mode: 'anvil', transport: http(url) })
+    .extend(publicActions)
+    .extend(walletActions);
+let fork: Awaited<ReturnType<typeof startFork>> | undefined;
+let client: ReturnType<typeof forkClient>;
 
 beforeAll(async () => {
-  anvil = spawn(
-    'anvil',
-    [
-      '--fork-url',
-      process.env.MONAD_TESTNET_RPC ?? 'https://testnet-rpc.monad.xyz',
-      '--port',
-      String(PORT),
-      '--silent',
-    ],
-    { stdio: 'ignore' },
-  );
-  for (let attempt = 0; ; attempt++) {
-    try {
-      await client.getChainId();
-      return;
-    } catch (error) {
-      if (attempt > 60) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    }
-  }
+  fork = await startFork(process.env.MONAD_TESTNET_RPC ?? 'https://testnet-rpc.monad.xyz');
+  client = forkClient(fork.url);
 }, 60_000);
-afterAll(() => anvil?.kill());
+afterAll(() => fork?.stop());
 
 const balance = (token: Address, owner: Address) =>
   client.readContract({ address: token, abi: erc20Abi, functionName: 'balanceOf', args: [owner] });

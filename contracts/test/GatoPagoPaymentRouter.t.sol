@@ -8,40 +8,13 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {Pausable} from "@openzeppelin/contracts/utils/Pausable.sol";
 import {GatoPagoPaymentRouter} from "../src/GatoPagoPaymentRouter.sol";
 import {ITokenMessengerV2} from "../src/interfaces/ITokenMessengerV2.sol";
+import {TestTokenMessenger} from "./mocks/TestTokenMessenger.sol";
 
 contract TestToken is ERC20Permit {
     constructor(string memory name, string memory symbol) ERC20(name, symbol) ERC20Permit(name) {}
 
     function mint(address to, uint256 amount) external {
         _mint(to, amount);
-    }
-}
-
-/// @dev Burns like Circle's TokenMessenger and records what it was asked.
-contract TestTokenMessenger is ITokenMessengerV2 {
-    bytes public lastCall;
-
-    function depositForBurnWithHook(
-        uint256 amount,
-        uint32 destinationDomain,
-        bytes32 mintRecipient,
-        address burnToken,
-        bytes32 destinationCaller,
-        uint256 maxFee,
-        uint32 minFinalityThreshold,
-        bytes calldata hookData
-    ) external {
-        ERC20(burnToken).transferFrom(msg.sender, address(0xdead), amount);
-        lastCall = abi.encode(
-            amount,
-            destinationDomain,
-            mintRecipient,
-            burnToken,
-            destinationCaller,
-            maxFee,
-            minFinalityThreshold,
-            hookData
-        );
     }
 }
 

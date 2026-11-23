@@ -1,4 +1,3 @@
-import { spawn, type ChildProcess } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -29,10 +28,10 @@ import {
   type DepositSettlement,
 } from '../packages/shared/deposits';
 import { walletNetworks } from '../packages/shared/networks';
+import { startFork } from './anvil';
 
 const CREATE2_DEPLOYER: Address = '0x4e59b44847b379578588920cA78FbF26c0B4956C';
 const SALT = keccak256(toBytes('cascabel.deposits.v1')); // DeployDeposits.s.sol
-const PORT = 8799;
 const fuji = walletNetworks['eip155:43113'];
 const ARBITRUM_DOMAIN = walletNetworks['eip155:421614'].cctp.domain;
 
@@ -80,40 +79,22 @@ describe(
   'Cascabel deposits on an Avalanche Fuji fork, with Circle USDC and CCTP',
   { timeout: 60_000 },
   () => {
-    let anvil: ChildProcess;
-    const client = createTestClient({
-      chain: avalancheFuji,
-      mode: 'anvil',
-      transport: http(`http://127.0.0.1:${PORT}`),
-    })
-      .extend(publicActions)
-      .extend(walletActions);
+    const forkClient = (url: string) =>
+      createTestClient({ chain: avalancheFuji, mode: 'anvil', transport: http(url) })
+        .extend(publicActions)
+        .extend(walletActions);
+    let fork: Awaited<ReturnType<typeof startFork>> | undefined;
+    let client: ReturnType<typeof forkClient>;
     const sweeper: Address = '0x00000000000000000000000000000000000000d0';
     const treasury: Address = '0x000000000000000000000000000000000000a11c';
     const localTreasury: Address = '0x000000000000000000000000000000000000b0b0';
 
     beforeAll(async () => {
-      anvil = spawn(
-        'anvil',
-        [
-          '--fork-url',
-          // Avalanche's own public RPC answers 500 to the state reads a fork makes.
-          process.env.FUJI_RPC ?? 'https://avalanche-fuji-c-chain-rpc.publicnode.com',
-          '--port',
-          String(PORT),
-          '--silent',
-        ],
-        { stdio: 'ignore' },
+      fork = await startFork(
+        // Avalanche's own public RPC answers 500 to the state reads a fork makes.
+        process.env.FUJI_RPC ?? 'https://avalanche-fuji-c-chain-rpc.publicnode.com',
       );
-      for (let attempt = 0; ; attempt++) {
-        try {
-          await client.getChainId();
-          break;
-        } catch (error) {
-          if (attempt > 60) throw error;
-          await new Promise((resolve) => setTimeout(resolve, 500));
-        }
-      }
+      client = forkClient(fork.url);
       await client.setBalance({ address: sweeper, value: 10n ** 19n });
       await client.impersonateAccount({ address: sweeper });
       // As DeployDeposits.s.sol does: through the standard CREATE2 deployer.
@@ -124,7 +105,7 @@ describe(
         data: concatHex([SALT, factoryCode()]),
       });
     }, 120_000);
-    afterAll(() => anvil?.kill());
+    afterAll(() => fork?.stop());
 
     /** Circle's FiatToken keeps balances in a mapping at slot 9 (`balanceAndBlacklistStates`). */
     const giveUsdc = async (owner: Address, amount: bigint) => {
