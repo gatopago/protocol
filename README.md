@@ -17,7 +17,7 @@ contracts/            Foundry project
   src/                GatoPagoPaymentRouter (Flow)
   script/             DeployWallet.s.sol (wallet) and DeployPayments.s.sol (router)
   test/
-packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, Aave, Uniswap, Stellar
+packages/shared/      @gatopago/shared: viem account adapter, bundler, networks, CCTP, payments, savings, Uniswap, Stellar
 test/                 End-to-end test on forks of real networks (viem + bundler) and on Stellar testnet
 scripts/              SDK build and storage layout check
 ```
@@ -114,10 +114,10 @@ Every contract, the payment routers included, is verified on [Sourcify](https://
 | `ERC7913WebAuthnVerifier`        | `0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8` |
 | `GatoPagoAccountFactory`         | `0x4A000246131C2DEd46ff6eA047808E708Fa0da02` |
 | `GatoPagoAccount` implementation | `0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D` |
-| `GatoPagoPaymaster`              | `0xe65D7f3a09a532303cdF63Ce9F8E6bd9859Fb1a6` |
+| `GatoPagoPaymaster`              | `0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4` |
 
 On testnets the paymaster's sponsor signer and owner, and the bundler relayer, are all
-`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. The paymaster at `0xe65D…b1a6` (only the bundler's
+`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. The paymaster at `0x2A83…abe4` (only the bundler's
 relayer may include a sponsored operation) replaces `0x9EEE…13b1` and is not deployed yet.
 Explorers: [Arbiscan](https://sepolia.arbiscan.io), [Snowtrace](https://testnet.snowtrace.io),
 [Monad Explorer](https://testnet.monadexplorer.com).
@@ -154,11 +154,13 @@ calls a GatoPago account sends, and for an external wallet the EIP-2612 permit i
 
 | Network          | `GatoPagoPaymentRouter`                      |
 | ---------------- | -------------------------------------------- |
-| Arbitrum Sepolia | `0x1536b89c24b4c5296Ea67d3a5d0BFB7a3dc1c792` |
-| Avalanche Fuji   | `0x52a0a15d762eB68092b5B45D958C4244233b7F58` |
-| Monad testnet    | `0x18F716B0CCAe35471986b65b8a8A15594Ab5BE40` |
+| Arbitrum Sepolia | `0xD59c57Ba83364177C058A9F9dd053fE9326B6423` |
+| Avalanche Fuji   | `0x95E6FC8Bd5eD2Dfe3041B599D9B31710b5807246` |
+| Monad testnet    | `0x554627449FaDfe1b57862C91C522AD3A47c355cc` |
 
 On testnets its owner, Flow signer and treasury are `0x75464f762bc50d0A0B127ab5a085504BF102Bb88`.
+These routers (salt `gatopago.payments.v2`, which pay in a coin other than USDC) are not deployed
+yet; they replace the `gatopago.payments.v1` ones in `contracts/deployments/payments.json`.
 The address depends on them and on the network's USDC; deploy with:
 
 ```sh
@@ -222,6 +224,34 @@ cd contracts
 forge script script/DeployDeposits.s.sol --rpc-url <network> --account <foundry keystore> --broadcast \
   --verify --verifier sourcify
 ```
+
+## Savings
+
+`@gatopago/shared/savings` is where an account's USDC earns: it deposits into lending markets and
+vaults directly, as their owner, so GatoPago never holds the money. Each provider in
+`savingsProviders` carries a risk sheet read on chain (who can upgrade it, pause withdrawals or
+curate it, and with what delay; audits; incidents), and `savingsTier` derives its tier from it: any
+power held by an EOA is `turbo`, a multisig that can change the code or loans resting on a few
+collaterals is `plus`, and only a DAO vote (or immutable code) is `stable`. The same functions serve the four kinds: `depositCalls` (approve
+exactly and deposit, one operation), `withdrawCalls` (an amount, or `'all'` from a `position`),
+`position`, `withdrawable` (what can leave right now) and `growthIndex`, whose readings
+`realizedRate` turns into the rate actually paid.
+
+| Kind          | Providers                                                            | What `withdrawable` reads                                                                             |
+| ------------- | -------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `aave-v3`     | Aave on Arbitrum, Avalanche and Monad (and the testnets)             | USDC the aToken holds                                                                                 |
+| `erc4626`     | Fluid fUSDC and Spark sUSDC (Arbitrum), Euler Clearstar Earn (Monad) | `maxWithdraw`                                                                                         |
+| `morpho-v2`   | Morpho Vault V2 August USDC (Monad)                                  | Idle USDC plus what its liquidity adapter can take from its Morpho market (`maxWithdraw` is always 0) |
+| `compound-v2` | BENQI qiUSDCn (Avalanche)                                            | `getCash()`                                                                                           |
+
+BENQI's `mint` and `redeemUnderlying` return an error code instead of reverting, and a batch
+cannot read it: a refused deposit or withdrawal does nothing, so read `position` after it. A
+withdrawal followed by a payment still reverts as a whole, since the payment finds no USDC.
+
+`test/savings.test.ts` runs every mainnet provider on forks of Arbitrum One, Avalanche and Monad:
+deposit, withdraw part, 30 days of yield, withdraw everything, a market lent out, BENQI's silent
+refusal and a loss. The forks need RPCs that serve past state (`ARBITRUM_RPC`, `AVALANCHE_RPC`,
+`MONAD_RPC`; the defaults do).
 
 ## Commands
 
