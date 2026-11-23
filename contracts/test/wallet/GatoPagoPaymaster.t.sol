@@ -30,6 +30,15 @@ contract GatoPagoPaymasterTest is WalletFixture {
         }
     }
 
+    function test_ownershipMovesOnlyWhenTheNewOwnerAccepts() public {
+        paymaster.transferOwnership(stranger);
+        assertEq(paymaster.owner(), address(this));
+        assertEq(paymaster.pendingOwner(), stranger);
+        vm.prank(stranger);
+        paymaster.acceptOwnership();
+        assertEq(paymaster.owner(), stranger);
+    }
+
     function test_ownerWithdrawsTheDeposit() public {
         uint256 deposit = ep.balanceOf(address(paymaster));
         paymaster.withdraw(payable(stranger), 1 ether);

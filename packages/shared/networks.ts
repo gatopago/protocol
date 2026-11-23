@@ -11,7 +11,7 @@ import type { WalletContracts } from './wallet';
 export const walletContracts: WalletContracts = {
   webAuthnVerifier: '0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8',
   factory: '0x4A000246131C2DEd46ff6eA047808E708Fa0da02',
-  paymaster: '0xe65D7f3a09a532303cdF63Ce9F8E6bd9859Fb1a6',
+  paymaster: '0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4',
 };
 
 export interface WalletNetwork {

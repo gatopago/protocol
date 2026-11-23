@@ -3,7 +3,7 @@ pragma solidity 0.8.34;
 
 import {PaymasterSigner} from "@openzeppelin/contracts/account/paymaster/extensions/PaymasterSigner.sol";
 import {ERC4337Utils} from "@openzeppelin/contracts/account/utils/ERC4337Utils.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {Ownable2Step, Ownable} from "@openzeppelin/contracts/access/Ownable2Step.sol";
 import {PackedUserOperation} from "@openzeppelin/contracts/interfaces/IERC4337.sol";
 import {EIP712} from "@openzeppelin/contracts/utils/cryptography/EIP712.sol";
 import {SignerECDSA} from "@openzeppelin/contracts/utils/cryptography/signers/SignerECDSA.sol";
@@ -14,9 +14,10 @@ import {SignerECDSA} from "@openzeppelin/contracts/utils/cryptography/signers/Si
 /// The EntryPoint pays whoever includes a sponsored operation from this deposit, at the operation's
 /// own gas limits and prices, and the sponsor's signature cannot name who that is. So only GatoPago's
 /// bundler, whose `relayer` sends the transaction (`tx.origin`), may use a sponsorship: nobody else
-/// can include one first, or profit from its limits. ERC-7562 keeps public bundlers from reading
-/// `tx.origin`; this paymaster only serves GatoPago's own.
-contract GatoPagoPaymaster is PaymasterSigner, SignerECDSA, Ownable {
+/// can include one first, or profit from its limits. ERC-7562 forbids reading `tx.origin` during
+/// validation, so public bundlers reject this paymaster's operations: it only serves GatoPago's own.
+/// Ownership moves in two steps, so a mistyped new owner cannot take the deposit.
+contract GatoPagoPaymaster is PaymasterSigner, SignerECDSA, Ownable2Step {
     address public relayer;
 
     event RelayerUpdated(address indexed relayer);
