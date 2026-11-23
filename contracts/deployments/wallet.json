@@ -3,11 +3,12 @@
     "ERC7913WebAuthnVerifier": "0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8",
     "GatoPagoAccountFactory": "0x4A000246131C2DEd46ff6eA047808E708Fa0da02",
     "GatoPagoAccount (implementation)": "0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D",
-    "GatoPagoPaymaster": "0x9EEE399a75C2C06b528E50f05fA6d61aAcE813b1"
+    "GatoPagoPaymaster": "0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4"
   },
   "entryPoint": "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
   "salt": "keccak256(\"gatopago.wallet.v1\")",
   "sponsorSigner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
+  "bundlerRelayer": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
   "paymasterOwner": "0x75464f762bc50d0A0B127ab5a085504BF102Bb88",
   "networks": {
     "eip155:421614": {
@@ -26,13 +27,13 @@
         },
         {
           "transaction": "GatoPagoPaymaster",
-          "hash": "0x20e55f190bd234f8f96d17ff82f8339f90bd7a72f4a2b6b198a4246f6457734e",
-          "block": 315832800
+          "hash": "0xbc98c4abd85b3b4effa97f6852a245f315e89be5dfda3e2db6bf4bbddbc12989",
+          "block": 332000992
         },
         {
           "transaction": "GatoPagoPaymaster.deposit",
-          "hash": "0xd7aa85f002dc4cc17e9453a4e9eba0aa7f929f88b12d1963260b718ce248a1b5",
-          "block": 315832822
+          "hash": "0x900e509fbbb81da0b3f41fba8fad37f7ff09770958c2149457984929cbf2e400",
+          "block": 332001003
         }
       ]
     },
@@ -52,13 +53,13 @@
         },
         {
           "transaction": "GatoPagoPaymaster",
-          "hash": "0xa052a425feda8ffae1cb79a4b665bc54e3e9e9164b03ca008b348dfee471b4a9",
-          "block": 59049285
+          "hash": "0xe2b3360e13d6e7d5e56fa9fb24f47caecd8e71be1651df4fb6d1680e479bab8b",
+          "block": 61521744
         },
         {
           "transaction": "GatoPagoPaymaster.deposit",
-          "hash": "0xcce4016699df94511c2f08e7bb61cbbbd0440fd0bde293a2d3fb4707d5228837",
-          "block": 59049285
+          "hash": "0x2aec1c3710fb12c7213627b4b99adb81b4d29e59def3106edbcfb2a4f75e69ca",
+          "block": 61521744
         }
       ]
     },
@@ -78,13 +79,13 @@
         },
         {
           "transaction": "GatoPagoPaymaster",
-          "hash": "0x060cb8721f69d4c3151a58b42caa05716a9de53ce055b570c21fe89d1fa8a640",
-          "block": 68248220
+          "hash": "0x405082d1f714165b056b1d801218f0a699fb22f7497471278aeb96af301e1be0",
+          "block": 82139828
         },
         {
           "transaction": "GatoPagoPaymaster.deposit",
-          "hash": "0x23dd631f480dcd82034f25ab59c5dfa63c48732940f9a7e4fe00deb6eef755bc",
-          "block": 68248224
+          "hash": "0x89e03f443bd56ef084a688ab496f4dac6e376793b59990e15e1bb939f0278cc2",
+          "block": 82139832
         }
       ]
     }

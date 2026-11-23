@@ -1,0 +1,27 @@
+{
+  "contracts": {
+    "CascabelDepositFactory": "0x8cE7BD73f12934164a9a5C5CD26f173dA8A9Eb48",
+    "CascabelDeposit (implementation)": "0xa69567C9486242038aeD73b0De286C31C0bB01A6"
+  },
+  "salt": "keccak256(\"cascabel.deposits.v1\")",
+  "networks": {
+    "eip155:421614": {
+      "name": "Arbitrum Sepolia",
+      "explorer": "https://sepolia.arbiscan.io",
+      "transaction": "0x32a2e88c70a0109818f47657f57ce9bb7085a2c15a49dbec181be3efb586edd5",
+      "block": 332001183
+    },
+    "eip155:43113": {
+      "name": "Avalanche Fuji",
+      "explorer": "https://testnet.snowtrace.io",
+      "transaction": "0x7eca183af184b8e7e89dcddaea380fd2ffcdde676e280ad407bf09bbba1a136e",
+      "block": 61521801
+    },
+    "eip155:10143": {
+      "name": "Monad testnet",
+      "explorer": "https://testnet.monadexplorer.com",
+      "transaction": "0x0a1f365a9ebc534711ca9e59b2857e09b32563dd60e383d86231ba564de5a400",
+      "block": 82139993
+    }
+  }
+}

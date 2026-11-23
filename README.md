@@ -117,8 +117,9 @@ Every contract, the payment routers included, is verified on [Sourcify](https://
 | `GatoPagoPaymaster`              | `0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4` |
 
 On testnets the paymaster's sponsor signer and owner, and the bundler relayer, are all
-`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. The paymaster at `0x2A83…abe4` (only the bundler's
-relayer may include a sponsored operation) replaces `0x9EEE…13b1` and is not deployed yet.
+`0x75464f762bc50d0A0B127ab5a085504BF102Bb88`. Since 23-11 the paymaster is `0x2A83…abe4` (only
+the bundler's relayer may include a sponsored operation; ownership moves in two steps); it replaced
+`0x9EEE…13b1`.
 Explorers: [Arbiscan](https://sepolia.arbiscan.io), [Snowtrace](https://testnet.snowtrace.io),
 [Monad Explorer](https://testnet.monadexplorer.com).
 
@@ -159,8 +160,8 @@ calls a GatoPago account sends, and for an external wallet the EIP-2612 permit i
 | Monad testnet    | `0x554627449FaDfe1b57862C91C522AD3A47c355cc` |
 
 On testnets its owner, Flow signer and treasury are `0x75464f762bc50d0A0B127ab5a085504BF102Bb88`.
-These routers (salt `gatopago.payments.v2`, which pay in a coin other than USDC) are not deployed
-yet; they replace the `gatopago.payments.v1` ones in `contracts/deployments/payments.json`.
+These routers (salt `gatopago.payments.v2`, which pay in a coin other than USDC) were deployed on
+23-11 and replace the `gatopago.payments.v1` ones.
 The address depends on them and on the network's USDC; deploy with:
 
 ```sh
@@ -216,8 +217,9 @@ theirs.
 | `CascabelDepositFactory`         | `0x8cE7BD73f12934164a9a5C5CD26f173dA8A9Eb48` |
 | `CascabelDeposit` implementation | `0xa69567C9486242038aeD73b0De286C31C0bB01A6` |
 
-Not deployed yet. USDC settles on Avalanche and Arbitrum (mainnet), Avalanche Fuji, Arbitrum
-Sepolia and Monad testnet. Deploy with:
+Deployed on 23-11 on Arbitrum Sepolia, Avalanche Fuji and Monad testnet
+(`contracts/deployments/deposits.json`). USDC settles on Avalanche and Arbitrum (mainnet), Avalanche
+Fuji, Arbitrum Sepolia and Monad testnet. Deploy with:
 
 ```sh
 cd contracts
