@@ -1,8 +1,8 @@
 {
   "contracts": {
     "ERC7913WebAuthnVerifier": "0x3BF33A59064bB8f9006bfF94A20Cc8917D7876E8",
-    "GatoPagoAccountFactory": "0x4A000246131C2DEd46ff6eA047808E708Fa0da02",
-    "GatoPagoAccount (implementation)": "0xB3D5b3612163f29Ba02CDa566196BAc392B4Ff7D",
+    "GatoPagoAccountFactory": "0x96e08aF3d40B7CE17dc06143C1DF2A08D717A5Cf",
+    "GatoPagoAccount (implementation)": "0xA24EbbA2673AA178cc5124d1FCF560F0c81206aB",
     "GatoPagoPaymaster": "0x2A83d8491a6D8E8cd50eE30154316776c8e9abe4"
   },
   "entryPoint": "0x433709009B8330FDa32311DF1C2AFA402eD8D009",
@@ -22,8 +22,8 @@
         },
         {
           "transaction": "GatoPagoAccountFactory",
-          "hash": "0x4e2a719e979dad5e7c83be7f7211589e53c8f242fe461b93a399146bccd55dcb",
-          "block": 315832788
+          "hash": "0x8569a4c839114979d229ce50bbf82ab080d1b6a8e29d0d0b83ec1a2a6bb80439",
+          "block": 332097780
         },
         {
           "transaction": "GatoPagoPaymaster",
@@ -48,8 +48,8 @@
         },
         {
           "transaction": "GatoPagoAccountFactory",
-          "hash": "0x2eeb6e5b03c8a1e23e03968dd7ce010be13ec1a2aa4f1559069e56094a7d8a61",
-          "block": 59049285
+          "hash": "0x4148988b52704c7fbeaa2ced91f5360d9b420b0009174665f91ce887f9d2299f",
+          "block": 61539487
         },
         {
           "transaction": "GatoPagoPaymaster",
@@ -74,8 +74,8 @@
         },
         {
           "transaction": "GatoPagoAccountFactory",
-          "hash": "0xf123da2dbbbf7ea350ac4810b63b76a1c52837f495b08cc1a608a5764c135b65",
-          "block": 68248217
+          "hash": "0xbc7e0eea263df8f91a450301fe6f25980a46aaab78479f1a335c8c8d6e1493e5",
+          "block": 82227158
         },
         {
           "transaction": "GatoPagoPaymaster",
